@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import Header from "./components/Header";
-import CheckAttendance from "./components/CheckAttendance";
+import CheckAttendance from "./components/Calendar";
 import ButtonDemo from "./components/ButtonDemo";
-import Dashboard from "./components/Dashboard";
+import Dashboard from "./pages/Dashboard";
 import ViewAdjustmentRequests from "./components/ViewAdjustmentRequests";
 import "./App.css";
+import CustomButton from "./components/CustomButton";
 
 function App() {
   const [currentView, setCurrentView] = useState("dashboard"); // 'dashboard', 'attendance', 'buttons', 'adjustments'
@@ -101,7 +102,7 @@ function App() {
   // );
   return (
     <>
-    <ViewAdjustmentRequests/>
+    <Dashboard/>
       <h1>Babaji</h1>
     </>
   );

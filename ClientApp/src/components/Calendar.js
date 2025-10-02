@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import './CheckAttendance.css';
+import './Calendar.css';
 
 const mockData = {
   "2025-09": {

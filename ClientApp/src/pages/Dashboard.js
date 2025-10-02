@@ -1,5 +1,6 @@
 import { useState } from "react";
-import CustomButton from "./CustomButton";
+import CustomButton from "../components/CustomButton";
+import attendanceIcon from "../assets/icons/attendance.png";
 
 function Dashboard() {
   const [employeeName] = useState("Nguyen Van A");
@@ -24,11 +25,11 @@ function Dashboard() {
 
       {/* Main content */}
       <div style={{ padding: "40px", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "25px" }}>
-        <CustomButton image="./icons/attendance.png" label="Attendance" bgColor="#27ae60" size={140} iconSize={70} />
-        <CustomButton image="/icons/payroll.png" label="Payroll" bgColor="#2980b9" size={140} iconSize={70} />
-        <CustomButton image="/icons/reports.png" label="Reports" bgColor="#8e44ad" size={140} iconSize={70} />
-        <CustomButton image="/icons/settings.png" label="Settings" bgColor="#f39c12" size={140} iconSize={70} />
-        <CustomButton image="/icons/logout.png" label="Logout" bgColor="#e74c3c" size={140} iconSize={70} />
+        <CustomButton image={attendanceIcon} label="Attendance" bgColor="#27ae60" size={140} iconSize={70} />
+        <CustomButton image="/icons/payroll.png" label="Payroll" bgColor="#27ae60" size={140} iconSize={70} />
+        <CustomButton image="/icons/reports.png" label="Reports" bgColor="#27ae60" size={140} iconSize={70} />
+        <CustomButton image="/icons/settings.png" label="Settings" bgColor="#27ae60" size={140} iconSize={70} />
+        <CustomButton image="/icons/logout.png" label="Logout" bgColor="#27ae60" size={140} iconSize={70} />
       </div>
     </div>
   );
