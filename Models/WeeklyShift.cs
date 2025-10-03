@@ -7,7 +7,7 @@ namespace AttendanceManagementPayrollSystem.Models;
 
 public partial class WeeklyShift
 {
-    public int ShiftIndex { get; set; }
+    public int ShiftId { get; set; }
 
     public string ShiftName { get; set; }
 
@@ -25,5 +25,7 @@ public partial class WeeklyShift
 
     public int? SunDailyShiftIndex { get; set; }
 
-    public string Description { get; set; }
+    public string ShiftDescription { get; set; }
+
+    public virtual ICollection<DepartmentWeeklyShift> DepartmentWeeklyShifts { get; set; } = new List<DepartmentWeeklyShift>();
 }

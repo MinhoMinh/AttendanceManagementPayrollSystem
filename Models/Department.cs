@@ -15,5 +15,7 @@ public partial class Department
 
     public virtual Employee DepHeadNavigation { get; set; }
 
+    public virtual ICollection<DepartmentWeeklyShift> DepartmentWeeklyShifts { get; set; } = new List<DepartmentWeeklyShift>();
+
     public virtual ICollection<Employee> Employees { get; set; } = new List<Employee>();
 }

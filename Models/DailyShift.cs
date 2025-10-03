@@ -14,4 +14,6 @@ public partial class DailyShift
     public string ShiftString { get; set; }
 
     public string ShiftDescription { get; set; }
+
+    public int? ShiftWorkhour { get; set; }
 }

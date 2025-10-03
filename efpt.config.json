@@ -32,6 +32,10 @@
          "ObjectType": 0
       },
       {
+         "Name": "[dbo].[DepartmentWeeklyShift]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[dbo].[Employee]",
          "ObjectType": 0
       },
@@ -57,6 +61,10 @@
       },
       {
          "Name": "[dbo].[EmployeeSalarySlip]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[HolidayCalendar]",
          "ObjectType": 0
       },
       {

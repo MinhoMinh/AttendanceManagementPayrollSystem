@@ -21,6 +21,8 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
 
     public virtual DbSet<Department> Departments { get; set; }
 
+    public virtual DbSet<DepartmentWeeklyShift> DepartmentWeeklyShifts { get; set; }
+
     public virtual DbSet<Employee> Employees { get; set; }
 
     public virtual DbSet<EmployeeAllowance> EmployeeAllowances { get; set; }
@@ -34,6 +36,8 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
     public virtual DbSet<EmployeeSalaryPreview> EmployeeSalaryPreviews { get; set; }
 
     public virtual DbSet<EmployeeSalarySlip> EmployeeSalarySlips { get; set; }
+
+    public virtual DbSet<HolidayCalendar> HolidayCalendars { get; set; }
 
     public virtual DbSet<InsuranceRateSet> InsuranceRateSets { get; set; }
 
@@ -121,12 +125,8 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
             entity.ToTable("DailyShift");
 
             entity.Property(e => e.ShiftDescription).HasMaxLength(100);
-            entity.Property(e => e.ShiftName)
-                .IsRequired()
-                .HasMaxLength(100);
-            entity.Property(e => e.ShiftString)
-                .IsRequired()
-                .HasMaxLength(200);
+            entity.Property(e => e.ShiftName).HasMaxLength(100);
+            entity.Property(e => e.ShiftString).HasMaxLength(200);
         });
 
         modelBuilder.Entity<Department>(entity =>
@@ -144,6 +144,30 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
             entity.HasOne(d => d.DepHeadNavigation).WithMany(p => p.Departments)
                 .HasForeignKey(d => d.DepHead)
                 .HasConstraintName("FK_Department_Employee");
+        });
+
+        modelBuilder.Entity<DepartmentWeeklyShift>(entity =>
+        {
+            entity.HasKey(e => e.DeptShiftId).HasName("PK__Departme__E496BB6704D18714");
+
+            entity.ToTable("DepartmentWeeklyShift");
+
+            entity.Property(e => e.DeptShiftId).HasColumnName("dept_shift_id");
+            entity.Property(e => e.DepId).HasColumnName("dep_id");
+            entity.Property(e => e.IsActive)
+                .HasDefaultValue(true)
+                .HasColumnName("is_active");
+            entity.Property(e => e.ShiftId).HasColumnName("shift_id");
+
+            entity.HasOne(d => d.Dep).WithMany(p => p.DepartmentWeeklyShifts)
+                .HasForeignKey(d => d.DepId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_DepartmentShift_Department");
+
+            entity.HasOne(d => d.Shift).WithMany(p => p.DepartmentWeeklyShifts)
+                .HasForeignKey(d => d.ShiftId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_DepartmentShift_WeeklyShift");
         });
 
         modelBuilder.Entity<Employee>(entity =>
@@ -439,6 +463,29 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
                 .HasForeignKey(d => d.InsuranceRateSetId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_EmployeeSalarySlip_InsuranceRateSet");
+        });
+
+        modelBuilder.Entity<HolidayCalendar>(entity =>
+        {
+            entity.HasKey(e => e.HolidayId).HasName("PK__HolidayC__253884EA69F1126E");
+
+            entity.ToTable("HolidayCalendar");
+
+            entity.Property(e => e.HolidayId).HasColumnName("holiday_id");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime")
+                .HasColumnName("created_at");
+            entity.Property(e => e.EndDatetime)
+                .HasColumnType("datetime")
+                .HasColumnName("end_datetime");
+            entity.Property(e => e.HolidayName)
+                .IsRequired()
+                .HasMaxLength(100)
+                .HasColumnName("holiday_name");
+            entity.Property(e => e.StartDatetime)
+                .HasColumnType("datetime")
+                .HasColumnName("start_datetime");
         });
 
         modelBuilder.Entity<InsuranceRateSet>(entity =>
@@ -793,11 +840,11 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
 
         modelBuilder.Entity<WeeklyShift>(entity =>
         {
-            entity.HasKey(e => e.ShiftIndex).HasName("PK__WeeklySh__1BC1E2CF7AAABB7F");
+            entity.HasKey(e => e.ShiftId).HasName("PK__WeeklySh__1BC1E2CF7AAABB7F");
 
             entity.ToTable("WeeklyShift");
 
-            entity.Property(e => e.Description).HasMaxLength(100);
+            entity.Property(e => e.ShiftDescription).HasMaxLength(100);
             entity.Property(e => e.ShiftName)
                 .IsRequired()
                 .HasMaxLength(100);
