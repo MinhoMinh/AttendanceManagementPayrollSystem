@@ -26,21 +26,31 @@
 //export default App;
 
 
-import React, { useEffect, useState } from "react";
+import React from "react";
+import GeneratePayroll from "./pages/GeneratePayroll";
+
+//function App() {
+//    const [message, setMessage] = useState("Loading...");
+
+//    useEffect(() => {
+//        fetch("http://localhost:5038/api/employees")
+//            .then(response => response.json())
+//            .then(data => setMessage(data.message))
+//            .catch(err => console.error("Fetch error:", err));
+//    }, []);
+
+//    return (
+//        <div>
+//            <h1>{message}</h1>
+//        </div>
+//    );
+//}
 
 function App() {
-    const [message, setMessage] = useState("Loading...");
-
-    useEffect(() => {
-        fetch("http://localhost:5038/api/employees")
-            .then(response => response.json())
-            .then(data => setMessage(data.message))
-            .catch(err => console.error("Fetch error:", err));
-    }, []);
-
     return (
         <div>
-            <h1>{message}</h1>
+            <h1>Payroll Management</h1>
+            <GeneratePayroll />
         </div>
     );
 }

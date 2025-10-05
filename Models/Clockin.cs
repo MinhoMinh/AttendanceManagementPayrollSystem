@@ -11,13 +11,15 @@ public partial class Clockin
 
     public int EmpId { get; set; }
 
-    public DateTime? Date { get; set; }
+    public DateTime Date { get; set; }
 
-    public float? CloCard { get; set; }
+    public decimal? WorkUnits { get; set; }
 
-    public float? CloShiftCard { get; set; }
+    public decimal? ScheduledUnits { get; set; }
 
-    public string ClockString { get; set; }
+    public string ClockLog { get; set; }
+
+    public string WorkUnitBreakdown { get; set; }
 
     public virtual Employee Emp { get; set; }
 }

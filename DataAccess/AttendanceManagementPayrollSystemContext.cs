@@ -97,20 +97,21 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
 
         modelBuilder.Entity<Clockin>(entity =>
         {
-            entity.HasKey(e => e.CloId);
+            entity.HasKey(e => new { e.EmpId, e.Date });
 
             entity.ToTable("Clockin");
 
-            entity.Property(e => e.CloId).HasColumnName("clo_id");
-            entity.Property(e => e.CloCard).HasColumnName("clo_card");
-            entity.Property(e => e.CloShiftCard).HasColumnName("clo_shift_card");
-            entity.Property(e => e.ClockString)
-                .HasMaxLength(200)
-                .HasColumnName("clock_string");
+            entity.Property(e => e.EmpId).HasColumnName("emp_id");
             entity.Property(e => e.Date)
                 .HasColumnType("datetime")
                 .HasColumnName("date");
-            entity.Property(e => e.EmpId).HasColumnName("emp_id");
+            entity.Property(e => e.CloId)
+                .ValueGeneratedOnAdd()
+                .HasColumnName("clo_id");
+            entity.Property(e => e.ClockLog).HasMaxLength(200);
+            entity.Property(e => e.ScheduledUnits).HasColumnType("decimal(3, 2)");
+            entity.Property(e => e.WorkUnitBreakdown).HasMaxLength(200);
+            entity.Property(e => e.WorkUnits).HasColumnType("decimal(3, 2)");
 
             entity.HasOne(d => d.Emp).WithMany(p => p.Clockins)
                 .HasForeignKey(d => d.EmpId)
@@ -749,6 +750,8 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
             entity.Property(e => e.Status)
                 .IsRequired()
                 .HasMaxLength(20)
+                .HasDefaultValue("Pending")
+                .HasAnnotation("Relational:DefaultConstraintName", "DF_PayrollRun_status")
                 .HasColumnName("status");
 
             entity.HasOne(d => d.ApprovedByNavigation).WithMany(p => p.PayrollRunApprovedByNavigations)
@@ -817,13 +820,12 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
             entity.ToTable("SalaryPolicy");
 
             entity.Property(e => e.SalId).HasColumnName("sal_id");
-            entity.Property(e => e.SalCardValue).HasColumnName("sal_card_value");
-            entity.Property(e => e.SalName)
+            entity.Property(e => e.OverclockMultiplier).HasColumnType("decimal(4, 2)");
+            entity.Property(e => e.SalaryPolicyName)
                 .HasMaxLength(50)
-                .IsFixedLength()
-                .HasColumnName("sal_name");
-            entity.Property(e => e.SalOverclockMultiplier).HasColumnName("sal_overclock_multiplier");
-            entity.Property(e => e.SalYearlyPto).HasColumnName("sal_yearly_pto");
+                .IsFixedLength();
+            entity.Property(e => e.WorkUnitValue).HasColumnType("decimal(10, 2)");
+            entity.Property(e => e.YearlyPto).HasColumnName("YearlyPTO");
         });
 
         modelBuilder.Entity<TaxBracket>(entity =>

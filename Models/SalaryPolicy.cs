@@ -9,11 +9,11 @@ public partial class SalaryPolicy
 {
     public int SalId { get; set; }
 
-    public string SalName { get; set; }
+    public string SalaryPolicyName { get; set; }
 
-    public int SalCardValue { get; set; }
+    public decimal? WorkUnitValue { get; set; }
 
-    public int? SalYearlyPto { get; set; }
+    public int? YearlyPto { get; set; }
 
-    public float SalOverclockMultiplier { get; set; }
+    public decimal? OverclockMultiplier { get; set; }
 }

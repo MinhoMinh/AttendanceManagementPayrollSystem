@@ -1,5 +1,6 @@
 ﻿using AttendanceManagementPayrollSystem.DataAccess.Repositories;
 using AttendanceManagementPayrollSystem.Models;
+using AttendanceManagementPayrollSystem.Services;
 using Microsoft.EntityFrameworkCore;
 using System;
 
@@ -25,7 +26,15 @@ builder.Services.AddCors(options =>
 //);
 
 
-//builder.Services.AddScoped<EmployeeRepository, EmployeeRepositoryImpl>();
+builder.Services.AddScoped<PayrollService, PayrollServiceImpl>();
+
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
+        options.JsonSerializerOptions.WriteIndented = true;
+    });
+
 
 RepositoryManager.DoScoped(builder);
 
