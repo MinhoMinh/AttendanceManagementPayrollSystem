@@ -31,8 +31,6 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
 
     public virtual DbSet<EmployeePermission> EmployeePermissions { get; set; }
 
-    public virtual DbSet<EmployeeRole> EmployeeRoles { get; set; }
-
     public virtual DbSet<EmployeeSalaryPreview> EmployeeSalaryPreviews { get; set; }
 
     public virtual DbSet<EmployeeSalarySlip> EmployeeSalarySlips { get; set; }
@@ -137,14 +135,9 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
             entity.ToTable("Department");
 
             entity.Property(e => e.DepId).HasColumnName("dep_id");
-            entity.Property(e => e.DepHead).HasColumnName("dep_head");
             entity.Property(e => e.DepName)
                 .HasMaxLength(50)
                 .HasColumnName("dep_name");
-
-            entity.HasOne(d => d.DepHeadNavigation).WithMany(p => p.Departments)
-                .HasForeignKey(d => d.DepHead)
-                .HasConstraintName("FK_Department_Employee");
         });
 
         modelBuilder.Entity<DepartmentWeeklyShift>(entity =>
@@ -202,6 +195,25 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
             entity.HasOne(d => d.Dep).WithMany(p => p.Employees)
                 .HasForeignKey(d => d.DepId)
                 .HasConstraintName("FK_Employee_Department");
+
+            entity.HasMany(d => d.Roles).WithMany(p => p.Emps)
+                .UsingEntity<Dictionary<string, object>>(
+                    "EmployeeRole",
+                    r => r.HasOne<Role>().WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.ClientSetNull)
+                        .HasConstraintName("FK__UserRoles__RoleI__690797E6"),
+                    l => l.HasOne<Employee>().WithMany()
+                        .HasForeignKey("EmpId")
+                        .OnDelete(DeleteBehavior.ClientSetNull)
+                        .HasConstraintName("FK__UserRoles__emp_i__681373AD"),
+                    j =>
+                    {
+                        j.HasKey("EmpId", "RoleId").HasName("PK__UserRole__760965CC5651F5D8");
+                        j.ToTable("EmployeeRole");
+                        j.IndexerProperty<int>("EmpId").HasColumnName("emp_id");
+                        j.IndexerProperty<int>("RoleId").HasColumnName("RoleID");
+                    });
         });
 
         modelBuilder.Entity<EmployeeAllowance>(entity =>
@@ -297,27 +309,6 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
                 .HasForeignKey(d => d.UserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__UserPermi__UserI__72910220");
-        });
-
-        modelBuilder.Entity<EmployeeRole>(entity =>
-        {
-            entity.HasKey(e => e.RoleId).HasName("PK__UserRole__760965CC5651F5D8");
-
-            entity.ToTable("EmployeeRole");
-
-            entity.Property(e => e.RoleId).HasColumnName("role_id");
-            entity.Property(e => e.EmpId).HasColumnName("emp_id");
-            entity.Property(e => e.RoleId1).HasColumnName("RoleID");
-
-            entity.HasOne(d => d.Emp).WithMany(p => p.EmployeeRoles)
-                .HasForeignKey(d => d.EmpId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__UserRoles__emp_i__681373AD");
-
-            entity.HasOne(d => d.RoleId1Navigation).WithMany(p => p.EmployeeRoles)
-                .HasForeignKey(d => d.RoleId1)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__UserRoles__RoleI__690797E6");
         });
 
         modelBuilder.Entity<EmployeeSalaryPreview>(entity =>
@@ -732,10 +723,14 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
             entity.ToTable("PayrollRun");
 
             entity.Property(e => e.PayrollRunId).HasColumnName("payroll_run_id");
-            entity.Property(e => e.ApprovedBy).HasColumnName("approved_by");
-            entity.Property(e => e.ApprovedDate)
+            entity.Property(e => e.ApprovedFinalAt)
                 .HasColumnType("datetime")
-                .HasColumnName("approved_date");
+                .HasColumnName("approved_final_at");
+            entity.Property(e => e.ApprovedFinalBy).HasColumnName("approved_final_by");
+            entity.Property(e => e.ApprovedFirstAt)
+                .HasColumnType("datetime")
+                .HasColumnName("approved_first_at");
+            entity.Property(e => e.ApprovedFirstBy).HasColumnName("approved_first_by");
             entity.Property(e => e.CreatedBy).HasColumnName("created_by");
             entity.Property(e => e.CreatedDate)
                 .HasDefaultValueSql("(getdate())")
@@ -754,8 +749,12 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
                 .HasAnnotation("Relational:DefaultConstraintName", "DF_PayrollRun_status")
                 .HasColumnName("status");
 
-            entity.HasOne(d => d.ApprovedByNavigation).WithMany(p => p.PayrollRunApprovedByNavigations)
-                .HasForeignKey(d => d.ApprovedBy)
+            entity.HasOne(d => d.ApprovedFinalByNavigation).WithMany(p => p.PayrollRunApprovedFinalByNavigations)
+                .HasForeignKey(d => d.ApprovedFinalBy)
+                .HasConstraintName("FK_PayrollRun_Employee");
+
+            entity.HasOne(d => d.ApprovedFirstByNavigation).WithMany(p => p.PayrollRunApprovedFirstByNavigations)
+                .HasForeignKey(d => d.ApprovedFirstBy)
                 .HasConstraintName("FK__PayrollRu__appro__44CA3770");
 
             entity.HasOne(d => d.CreatedByNavigation).WithMany(p => p.PayrollRunCreatedByNavigations)
@@ -820,12 +819,19 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
             entity.ToTable("SalaryPolicy");
 
             entity.Property(e => e.SalId).HasColumnName("sal_id");
-            entity.Property(e => e.OverclockMultiplier).HasColumnType("decimal(4, 2)");
+            entity.Property(e => e.EffectiveFrom).HasColumnType("datetime");
+            entity.Property(e => e.IsActive).HasAnnotation("Relational:DefaultConstraintName", "DF_SalaryPolicy_IsActive");
+            entity.Property(e => e.OverclockMultiplier)
+                .HasDefaultValue(1.50m)
+                .HasAnnotation("Relational:DefaultConstraintName", "DF_SalaryPolicy_OverclockMultiplier")
+                .HasColumnType("decimal(5, 2)");
             entity.Property(e => e.SalaryPolicyName)
                 .HasMaxLength(50)
                 .IsFixedLength();
             entity.Property(e => e.WorkUnitValue).HasColumnType("decimal(10, 2)");
-            entity.Property(e => e.YearlyPto).HasColumnName("YearlyPTO");
+            entity.Property(e => e.YearlyPto)
+                .HasAnnotation("Relational:DefaultConstraintName", "DF_SalaryPolicy_YearlyPTO")
+                .HasColumnName("YearlyPTO");
         });
 
         modelBuilder.Entity<TaxBracket>(entity =>

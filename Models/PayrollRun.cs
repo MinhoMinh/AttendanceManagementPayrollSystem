@@ -21,11 +21,17 @@ public partial class PayrollRun
 
     public DateTime CreatedDate { get; set; }
 
-    public int? ApprovedBy { get; set; }
+    public int? ApprovedFirstBy { get; set; }
 
-    public DateTime? ApprovedDate { get; set; }
+    public DateTime? ApprovedFirstAt { get; set; }
 
-    public virtual Employee ApprovedByNavigation { get; set; }
+    public int? ApprovedFinalBy { get; set; }
+
+    public DateTime? ApprovedFinalAt { get; set; }
+
+    public virtual Employee ApprovedFinalByNavigation { get; set; }
+
+    public virtual Employee ApprovedFirstByNavigation { get; set; }
 
     public virtual Employee CreatedByNavigation { get; set; }
 

@@ -30,13 +30,16 @@ namespace AttendanceManagementPayrollSystem.Services
 
             var clockins = await _clockinRepo.GetByDateRangeAsync(periodMonth, periodYear);
 
+            var policy = await _payrollRepo.GetActivePolicyAsync(periodMonth, periodYear);
+            if (policy == null)
+                throw new Exception("No active salary policy found for this period.");
+
 
             foreach (var c in clockins)
             {
 
-
                 //decimal hourlyRate = emp.HourlyRate ?? 0;
-                decimal basePay = (c.WorkUnits ?? 0) * 200000;
+                decimal basePay = (c.WorkUnits ?? 0) * policy.WorkUnitValue;
                 //decimal deductions = 0; // maybe from Leave or Penalty tables
                 //decimal allowances = 0; // maybe from Bonus or Allowance tables
                 //decimal netPay = basePay + allowances - deductions;
@@ -54,6 +57,72 @@ namespace AttendanceManagementPayrollSystem.Services
             }
 
             var savedRun = await _payrollRepo.AddAsync(run);
+
+
+            return ToDTO(savedRun);
+        }
+
+        public async Task<PayrollRunDTO> ApproveFirstAsync(int payrollId, int approvedBy)
+        {
+            var payroll = await _payrollRepo.FindAsync(payrollId);
+            if (payroll == null)
+                throw new Exception("Payroll not found.");
+
+            // Example logic
+            if (payroll.ApprovedFirstBy != null)
+                throw new Exception("Already first-approved.");
+
+            payroll.ApprovedFirstBy = approvedBy;
+            payroll.Status = "FirstApproved";
+            payroll.ApprovedFirstAt = DateTime.Now;
+
+
+            await _payrollRepo.Update(payroll);
+
+            return ToDTO(payroll);
+        }
+
+        public async Task<PayrollRunDTO> ApproveFinalAsync(int payrollId, int approvedBy)
+        {
+            var payroll = await _payrollRepo.FindAsync(payrollId);
+            if (payroll == null)
+                throw new Exception("Payroll not found.");
+
+            // Example logic
+            if (payroll.ApprovedFinalBy != null)
+                throw new Exception("Already first-approved.");
+
+            payroll.ApprovedFinalBy = approvedBy;
+            payroll.Status = "FinalApproved";
+            payroll.ApprovedFinalAt = DateTime.Now;
+
+            await _payrollRepo.Update(payroll);
+
+            return ToDTO(payroll);
+        }
+
+        public async Task<PayrollRunDTO> RejectAsync(int payrollId, int rejectedBy)
+        {
+            var payroll = await _payrollRepo.FindAsync(payrollId);
+            if (payroll == null)
+                throw new Exception("Payroll not found.");
+
+            payroll.Status = "Rejected";
+            //payroll.RejectedBy = rejectedBy;
+            await _payrollRepo.Update(payroll);
+
+            return ToDTO(payroll);
+        }
+
+        public async Task<IEnumerable<PayrollRunDTO>> GetAllAsync()
+        {
+            var runs = await _payrollRepo.GetAllAsync();
+            return runs.Select(ToDTO);
+        }
+
+
+        private PayrollRunDTO ToDTO(PayrollRun savedRun)
+        {
             var dto = new PayrollRunDTO
             {
                 PayrollRunId = savedRun.PayrollRunId,
@@ -62,6 +131,8 @@ namespace AttendanceManagementPayrollSystem.Services
                 PeriodYear = savedRun.PeriodYear,
                 Status = savedRun.Status,
                 CreatedDate = savedRun.CreatedDate,
+                ApprovedFirstBy = savedRun.ApprovedFirstBy,
+                ApprovedFinalBy = savedRun.ApprovedFinalBy,
                 Previews = savedRun.EmployeeSalaryPreviews
             .Select(p => new EmployeeSalaryPreviewDTO
             {
@@ -74,7 +145,8 @@ namespace AttendanceManagementPayrollSystem.Services
             };
 
             return dto;
-
         }
+
+        
     }
 }

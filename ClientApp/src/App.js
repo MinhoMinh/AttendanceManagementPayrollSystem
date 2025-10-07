@@ -28,6 +28,7 @@
 
 import React from "react";
 import GeneratePayroll from "./pages/GeneratePayroll";
+import ApprovePayroll from "./pages/ApprovePayroll";
 
 //function App() {
 //    const [message, setMessage] = useState("Loading...");
