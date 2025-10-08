@@ -15,7 +15,7 @@ public partial class Role
 
     public byte SecurityLevel { get; set; }
 
-    public virtual ICollection<EmployeeRole> EmployeeRoles { get; set; } = new List<EmployeeRole>();
-
     public virtual ICollection<RolePermission> RolePermissions { get; set; } = new List<RolePermission>();
+
+    public virtual ICollection<Employee> Emps { get; set; } = new List<Employee>();
 }

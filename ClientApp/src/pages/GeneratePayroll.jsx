@@ -1,4 +1,5 @@
 ﻿import React, { useState } from "react";
+import PayrollView from "../components/PayrollView";
 
 function GeneratePayroll() {
     const [month, setMonth] = useState("");
@@ -18,15 +19,15 @@ function GeneratePayroll() {
         setPayroll(null);
 
         try {
-            const response = await fetch(`http://localhost:5038/api/payroll/generate`, {
+            const response = await fetch("http://localhost:5038/api/payroll/generate", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    "name": "payroll",
-                    "periodMonth": 10,
-                    "periodYear": 2025,
-                    "createdBy": 3
-                })
+                    name: `Payroll-${month}-${year}`,
+                    periodMonth: parseInt(month),
+                    periodYear: parseInt(year),
+                    createdBy: 3,
+                }),
             });
 
             if (!response.ok) {
@@ -41,6 +42,7 @@ function GeneratePayroll() {
             setLoading(false);
         }
     };
+
     return (
         <div style={{ padding: "2rem" }}>
             <h1>Payroll Generation</h1>
@@ -71,44 +73,15 @@ function GeneratePayroll() {
                 </button>
             </div>
 
+            {/* 🔸 Show errors */}
             {error && <p style={{ color: "red" }}>Error: {error}</p>}
 
-            {payroll && (
-                <div>
-                    <h2>Payroll Run: {payroll.name || "(unnamed)"}</h2>
-                    <p>
-                        Period: {payroll.periodMonth}/{payroll.periodYear}
-                    </p>
-                    <p>Status: {payroll.status}</p>
-
-                    <h3>Employee Salary Details</h3>
-                    <table border="1" cellPadding="8">
-                        <thead>
-                            <tr>
-                                <th>Employee ID</th>
-                                <th>Base Pay</th>
-                                <th>Gross Salary</th>
-                                <th>Deductions</th>
-                                <th>Net Pay</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {payroll.previews?.$values?.map((item) => (
-                                <tr key={item.empId}>
-                                    <td>{item.empId}</td>
-                                    <td>{item.baseSalary}</td>
-                                    <td>{item.grossSalary}</td>
-                                    <td>{item.totalDeductions}</td>
-                                    <td>{item.netSalary}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+            {/* 🔸 Show payroll only if success and not loading */}
+            {!loading && !error && payroll && (
+                <PayrollView payroll={payroll} />
             )}
         </div>
     );
-
 }
 
 export default GeneratePayroll;

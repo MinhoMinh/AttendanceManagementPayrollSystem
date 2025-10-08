@@ -32,6 +32,10 @@
          "ObjectType": 0
       },
       {
+         "Name": "[dbo].[DepartmentHolidayCalender]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[dbo].[DepartmentWeeklyShift]",
          "ObjectType": 0
       },

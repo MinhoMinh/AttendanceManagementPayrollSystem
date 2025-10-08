@@ -11,11 +11,9 @@ public partial class Department
 
     public string DepName { get; set; }
 
-    public int? DepHead { get; set; }
-
-    public virtual Employee DepHeadNavigation { get; set; }
-
     public virtual ICollection<DepartmentWeeklyShift> DepartmentWeeklyShifts { get; set; } = new List<DepartmentWeeklyShift>();
 
     public virtual ICollection<Employee> Employees { get; set; } = new List<Employee>();
+
+    public virtual ICollection<HolidayCalendar> Holidays { get; set; } = new List<HolidayCalendar>();
 }

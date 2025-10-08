@@ -9,6 +9,9 @@
         public string Status { get; set; }
         public DateTime CreatedDate { get; set; }
         public int? CreatedBy { get; set; }
+        public int? ApprovedFirstBy { get; set; }
+        public int? ApprovedFinalBy { get; set; }
+
 
         public List<EmployeeSalaryPreviewDTO> Previews { get; set; } = new();
     }

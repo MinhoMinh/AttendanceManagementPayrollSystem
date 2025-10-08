@@ -16,4 +16,6 @@ public partial class HolidayCalendar
     public DateTime EndDatetime { get; set; }
 
     public DateTime? CreatedAt { get; set; }
+
+    public virtual ICollection<Department> Deps { get; set; } = new List<Department>();
 }

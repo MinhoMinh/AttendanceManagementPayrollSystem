@@ -27,8 +27,6 @@ public partial class Employee
 
     public virtual Department Dep { get; set; }
 
-    public virtual ICollection<Department> Departments { get; set; } = new List<Department>();
-
     public virtual ICollection<EmployeeAllowance> EmployeeAllowanceCreatedByNavigations { get; set; } = new List<EmployeeAllowance>();
 
     public virtual ICollection<EmployeeAllowance> EmployeeAllowanceEmps { get; set; } = new List<EmployeeAllowance>();
@@ -36,8 +34,6 @@ public partial class Employee
     public virtual ICollection<EmployeeDependent> EmployeeDependents { get; set; } = new List<EmployeeDependent>();
 
     public virtual ICollection<EmployeePermission> EmployeePermissions { get; set; } = new List<EmployeePermission>();
-
-    public virtual ICollection<EmployeeRole> EmployeeRoles { get; set; } = new List<EmployeeRole>();
 
     public virtual ICollection<EmployeeSalaryPreview> EmployeeSalaryPreviewCreatedByNavigations { get; set; } = new List<EmployeeSalaryPreview>();
 
@@ -63,7 +59,11 @@ public partial class Employee
 
     public virtual ICollection<OvertimeRequest> OvertimeRequestEmps { get; set; } = new List<OvertimeRequest>();
 
-    public virtual ICollection<PayrollRun> PayrollRunApprovedByNavigations { get; set; } = new List<PayrollRun>();
+    public virtual ICollection<PayrollRun> PayrollRunApprovedFinalByNavigations { get; set; } = new List<PayrollRun>();
+
+    public virtual ICollection<PayrollRun> PayrollRunApprovedFirstByNavigations { get; set; } = new List<PayrollRun>();
 
     public virtual ICollection<PayrollRun> PayrollRunCreatedByNavigations { get; set; } = new List<PayrollRun>();
+
+    public virtual ICollection<Role> Roles { get; set; } = new List<Role>();
 }

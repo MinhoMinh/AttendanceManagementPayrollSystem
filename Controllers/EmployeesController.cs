@@ -1,9 +1,5 @@
 ﻿using AttendanceManagementPayrollSystem.DataAccess.Repositories;
-using AttendanceManagementPayrollSystem.Models;
-using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System;
 
 namespace AttendanceManagementPayrollSystem.Controllers
 {
