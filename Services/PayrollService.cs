@@ -11,7 +11,6 @@ namespace AttendanceManagementPayrollSystem.Services
         Task<PayrollRunDTO> ApproveFirstAsync(int id, int approvedBy);
         Task<PayrollRunDTO> ApproveFinalAsync(int id, int approvedBy);
         Task<PayrollRunDTO> RejectAsync(int id, int rejectedBy);
-
         Task<IEnumerable<PayrollRunDTO>> GetAllAsync();
     }
 }

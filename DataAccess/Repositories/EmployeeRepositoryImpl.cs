@@ -2,6 +2,8 @@
 using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Linq.Expressions;
+using Kpi = AttendanceManagementPayrollSystem.Models.Kpi;
 
 namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
 {
@@ -25,6 +27,26 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
         public async Task<IEnumerable<Employee>> GetAllAsync()
         {
             return await _context.Employees.ToListAsync();
+        }
+
+        public async Task<IEnumerable<Employee>> GetByDepartment(int depId, params Expression<Func<Employee, object>>[] includes)
+        {
+            IQueryable<Employee> query = _context.Employees.Where(e => e.DepId == depId);
+
+            foreach (var include in includes)
+                query = query.Include(include);
+
+            return await query.ToListAsync();
+        }
+
+        public async Task<IEnumerable<Employee>> GetByDepartmentWithKPI(int depId)
+        {
+            return await _context.Employees
+                .Where(e => e.DepId == depId)
+                .Include(e => e.KpiEmps)
+                    .ThenInclude(kpi => kpi.Kpicomponents).ToListAsync();
+
+            //return await query.ToListAsync();
         }
 
         public async Task<Employee?> GetByIdAsync(int id)
