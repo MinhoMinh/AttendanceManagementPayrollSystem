@@ -1,8 +1,14 @@
 import { useState } from "react";
 import CustomButton from "../components/CustomButton";
 import attendanceIcon from "../assets/icons/attendance.png";
+import leavequestIcon from "../assets/icons/leaverequest.png";
+import payrollIcon from "../assets/icons/payroll.png";
+import reportsIcon from "../assets/icons/reports.png";
+import settingsIcon from "../assets/icons/settings.png";
+import logoutIcon from "../assets/icons/logout.png";
 
-function Dashboard() {
+
+function Dashboard({ onLeaveRequest, onLogout }) {
   const [employeeName] = useState("Nguyen Van A");
 
   return (
@@ -24,12 +30,64 @@ function Dashboard() {
       </div>
 
       {/* Main content */}
-      <div style={{ padding: "40px", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "25px" }}>
-        <CustomButton image={attendanceIcon} label="Attendance" bgColor="#27ae60" size={140} iconSize={70} />
-        <CustomButton image="/icons/payroll.png" label="Payroll" bgColor="#27ae60" size={140} iconSize={70} />
-        <CustomButton image="/icons/reports.png" label="Reports" bgColor="#27ae60" size={140} iconSize={70} />
-        <CustomButton image="/icons/settings.png" label="Settings" bgColor="#27ae60" size={140} iconSize={70} />
-        <CustomButton image="/icons/logout.png" label="Logout" bgColor="#27ae60" size={140} iconSize={70} />
+      <div
+        style={{
+          padding: "40px",
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
+          gap: "25px"
+        }}
+      >
+        {/* Điểm danh */}
+        <CustomButton
+          image={attendanceIcon}
+          label="Attendance"
+          bgColor="#27ae60"
+          size={140}
+          iconSize={70}
+        />
+
+        {/* Nút xin nghỉ phép */}
+        <CustomButton
+          image={leavequestIcon}
+          label="Leave Request"
+          bgColor="#27ae60"
+          size={140}
+          iconSize={70}
+          onClick={onLeaveRequest}
+        />
+
+        <CustomButton
+          image={payrollIcon}
+          label="Payroll"
+          bgColor="#27ae60"
+          size={140}
+          iconSize={70}
+        />
+        <CustomButton
+          image={reportsIcon}
+          label="Reports"
+          bgColor="#27ae60"
+          size={140}
+          iconSize={70}
+        />
+        <CustomButton
+          image={settingsIcon}
+          label="Settings"
+          bgColor="#27ae60"
+          size={140}
+          iconSize={70}
+        />
+
+        {/* Nút logout */}
+        <CustomButton
+          image={logoutIcon}
+          label="Logout"
+          bgColor="#c0392b"
+          size={140}
+          iconSize={70}
+          onClick={onLogout}
+        />
       </div>
     </div>
   );
