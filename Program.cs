@@ -21,12 +21,16 @@ builder.Services.AddCors(options =>
     });
 });
 
-//builder.Services.AddDbContextPool<AttendanceManagementPayrollSystemContext>(options =>
-//    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
-//);
-
 
 builder.Services.AddScoped<PayrollService, PayrollServiceImpl>();
+builder.Services.AddScoped<KPIService, KPIServiceImpl>();
+
+//builder.Services.AddControllers()
+//    .AddJsonOptions(options =>
+//    {
+//        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
+//        options.JsonSerializerOptions.WriteIndented = true;
+//    });
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>

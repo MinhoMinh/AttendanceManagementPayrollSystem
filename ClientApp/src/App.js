@@ -29,6 +29,8 @@
 import React from "react";
 import GeneratePayroll from "./pages/GeneratePayroll";
 import ApprovePayroll from "./pages/ApprovePayroll";
+import TestKpiPage from "./pages/KpiPageBase";
+import EmployeeKpiPage from "./pages/EmployeeKpiPage";
 
 //function App() {
 //    const [message, setMessage] = useState("Loading...");
@@ -51,7 +53,7 @@ function App() {
     return (
         <div>
             <h1>Payroll Management</h1>
-            <GeneratePayroll />
+            <EmployeeKpiPage />
         </div>
     );
 }
