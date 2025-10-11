@@ -1,29 +1,59 @@
-//import React, { useState } from "react";
-//import Header from "./components/Header";
-//import CheckAttendance from "./components/Calendar";
-//import ButtonDemo from "./components/ButtonDemo";
-//import Dashboard from "./pages/Dashboard";
-//import ViewAdjustmentRequests from "./components/ViewAdjustmentRequests";
-//import "./App.css";
-//import CustomButton from "./components/CustomButton";
+import React, { useState } from "react";
+import Header from "./components/Header";
+import CheckAttendance from "./components/Calendar";
+import ButtonDemo from "./components/ButtonDemo";
+import Dashboard from "./pages/Dashboard";
+import ViewAdjustmentRequests from "./components/ViewAdjustmentRequests";
+import "./App.css";
+import CustomButton from "./components/CustomButton";
 
-//function App() {
-//  const [currentView, setCurrentView] = useState("dashboard"); // 'dashboard', 'attendance', 'buttons', 'adjustments'
+import Login from "./pages/Login";
+import Welcome from "./pages/Welcome";
+import LeaveRequest from "./pages/LeaveRequest";
 
-//  const handleLogout = () => {
-//    alert("Đăng xuất thành công!");
-//    // Thêm logic đăng xuất ở đây
-//  };
+function App() {
+  // State điều hướng view
+  const [currentView, setCurrentView] = useState("login"); // login, welcome, dashboard, leave
+  const [username, setUsername] = useState("");
 
-//  return (
-//    <>
-//    <Dashboard/>
-//      <h1>Babaji</h1>
-//    </>
-//  );
-//}
+  const handleLogout = () => {
+    alert("Đăng xuất thành công!");
+    setCurrentView("login"); // quay về login
+  };
 
-//export default App;
+  return (
+    <>
+      {currentView === "login" && (
+        <Login
+          onLogin={(uname) => {
+            setUsername(uname);
+            setCurrentView("welcome");
+          }}
+        />
+      )}
+
+      {currentView === "welcome" && (
+        <Welcome
+          username={username}
+          onContinue={() => setCurrentView("dashboard")}
+        />
+      )}
+
+      {currentView === "dashboard" && (
+        <Dashboard
+          onLeaveRequest={() => setCurrentView("leave")}
+          onLogout={handleLogout}
+        />
+      )}
+
+      {currentView === "leave" && (
+        <LeaveRequest onBack={() => setCurrentView("dashboard")} />
+      )}
+    </>
+  );
+}
+
+export default App;
 
 
 import React from "react";
@@ -32,7 +62,10 @@ import ApprovePayroll from "./pages/ApprovePayroll";
 import TestKpiPage from "./pages/KpiPageBase";
 import EmployeeKpiPage from "./pages/EmployeeKpiPage";
 
-//function App() {
+// import React from "react";
+// import GeneratePayroll from "./pages/GeneratePayroll";
+
+// function App() {
 //    const [message, setMessage] = useState("Loading...");
 
 //    useEffect(() => {
@@ -47,7 +80,7 @@ import EmployeeKpiPage from "./pages/EmployeeKpiPage";
 //            <h1>{message}</h1>
 //        </div>
 //    );
-//}
+// }
 
 function App() {
     return (
@@ -58,5 +91,5 @@ function App() {
     );
 }
 
-export default App;
+// export default App;
 
