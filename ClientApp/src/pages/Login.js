@@ -10,7 +10,7 @@ export default function Login({ onLogin }) {
     const password = formData.get("password");
 
     try {
-      const response = await fetch("https://localhost:7184/api/auth/login", {
+        const response = await fetch("http://localhost:5038/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
@@ -27,6 +27,21 @@ export default function Login({ onLogin }) {
       if (data.token) {
         localStorage.setItem("token", data.token);
       }
+
+    if (data.empId) {
+        localStorage.setItem("employee", JSON.stringify({
+            empId: data.empId,
+            empName: data.empName,
+            empRole: data.empRole,
+            permissions: data.permissions
+        }));
+
+        const employee = JSON.parse(localStorage.getItem("employee"));
+        console.log(employee.empName);     // "John Doe"
+        console.log(employee.empRole);     // "Manager"
+        console.log(employee.permissions); // ["ViewReports", "ApproveLeave"]
+
+    }
 
       // Báo cho App biết đã login thành công
       if (onLogin) {

@@ -9,7 +9,7 @@ namespace AttendanceManagementPayrollSystem.Services
 {
     public interface AuthService
     {
-        Task<LoginResponse?> LoginAsync(string username, string password);
+        Task<EmployeeDTO?> LoginAsync(string username, string password);
     }
 
     public class AuthServiceImpl : AuthService
@@ -21,23 +21,29 @@ namespace AttendanceManagementPayrollSystem.Services
             _employeeRepo = employeeRepo;
         }
 
-        public async Task<LoginResponse?> LoginAsync(string username, string password)
+        public async Task<EmployeeDTO?> LoginAsync(string username, string password)
         {
             var employee = await _employeeRepo.FindByUsernameAsync(username);
             if (employee == null)
                 return null;
 
-            // Kiểm tra password hash
             if (!VerifyPassword(password, employee.PasswordHash))
                 return null;
 
-            // Trả về DTO cho Controller
-            return new LoginResponse
+            await _employeeRepo.LoadRoles(employee);
+
+            var activeRole = employee.EmployeeRoles.FirstOrDefault(r => r.IsActive);
+            if (activeRole?.Role == null)
+                return null;
+
+            var empRole = activeRole.Role;
+
+            return new EmployeeDTO
             {
                 EmpId = employee.EmpId,
                 EmpName = employee.EmpName,
-                Username = employee.Username,
-                Message = "Đăng nhập thành công!"
+                EmpRole = empRole.RoleName,
+                Permissions = empRole.Permissions.Select(r => r.PermissionName).ToList()
             };
         }
 

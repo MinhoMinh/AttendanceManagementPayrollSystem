@@ -1,95 +1,109 @@
-import React, { useState } from "react";
+import React from "react";
+import { BrowserRouter as Router, Routes, Route, useNavigate } from "react-router-dom";
+
 import Header from "./components/Header";
 import CheckAttendance from "./components/Calendar";
 import ButtonDemo from "./components/ButtonDemo";
 import Dashboard from "./pages/Dashboard";
 import ViewAdjustmentRequests from "./components/ViewAdjustmentRequests";
-import "./App.css";
 import CustomButton from "./components/CustomButton";
 
 import Login from "./pages/Login";
 import Welcome from "./pages/Welcome";
 import LeaveRequest from "./pages/LeaveRequest";
+import { Navigate } from "react-router-dom";
 
-function App() {
-  // State điều hướng view
-  const [currentView, setCurrentView] = useState("login"); // login, welcome, dashboard, leave
-  const [username, setUsername] = useState("");
-
-  const handleLogout = () => {
-    alert("Đăng xuất thành công!");
-    setCurrentView("login"); // quay về login
-  };
-
-  return (
-    <>
-      {currentView === "login" && (
-        <Login
-          onLogin={(uname) => {
-            setUsername(uname);
-            setCurrentView("welcome");
-          }}
-        />
-      )}
-
-      {currentView === "welcome" && (
-        <Welcome
-          username={username}
-          onContinue={() => setCurrentView("dashboard")}
-        />
-      )}
-
-      {currentView === "dashboard" && (
-        <Dashboard
-          onLeaveRequest={() => setCurrentView("leave")}
-          onLogout={handleLogout}
-        />
-      )}
-
-      {currentView === "leave" && (
-        <LeaveRequest onBack={() => setCurrentView("dashboard")} />
-      )}
-    </>
-  );
-}
-
-export default App;
-
-
-import React from "react";
+import "./App.css";
 import GeneratePayroll from "./pages/GeneratePayroll";
-import ApprovePayroll from "./pages/ApprovePayroll";
-import TestKpiPage from "./pages/KpiPageBase";
-import EmployeeKpiPage from "./pages/EmployeeKpiPage";
-
-// import React from "react";
-// import GeneratePayroll from "./pages/GeneratePayroll";
-
-// function App() {
-//    const [message, setMessage] = useState("Loading...");
-
-//    useEffect(() => {
-//        fetch("http://localhost:5038/api/employees")
-//            .then(response => response.json())
-//            .then(data => setMessage(data.message))
-//            .catch(err => console.error("Fetch error:", err));
-//    }, []);
-
-//    return (
-//        <div>
-//            <h1>{message}</h1>
-//        </div>
-//    );
-// }
 
 function App() {
     return (
-        <div>
-            <h1>Payroll Management</h1>
-            <EmployeeKpiPage />
-        </div>
+        <Router>
+            <Routes>
+                <Route path="/" element={<LoginWrapper />} />
+                <Route path="/login" element={<LoginWrapper />} />
+
+                <Route
+                    path="/dashboard"
+                    element={
+                        <ProtectedRoute>
+                            <Dashboard />
+                        </ProtectedRoute>
+                    }
+                />
+
+                <Route
+                    path="/leave-request"
+                    element={
+                        <ProtectedRoute>
+                            <LeaveRequest />
+                        </ProtectedRoute>
+                    }
+                />
+
+                <Route
+                    path="/generate-payroll"
+                    element={
+                        <ProtectedRoute>
+                            <GeneratePayrollWrapper />
+                        </ProtectedRoute>
+                    }
+                />
+            </Routes>
+        </Router>
     );
 }
 
-// export default App;
+// Wrappers handle navigation logic
 
+function ProtectedRoute({ children }) {
+    const emp = localStorage.getItem("employee");
+    if (!emp) {
+        return <Navigate to="/login" replace />;
+    }
+    return children;
+}
+
+function LoginWrapper() {
+    const navigate = useNavigate();
+    return (
+        <Login
+            onLogin={(uname) => {
+                localStorage.setItem("username", uname);
+                navigate("/dashboard");
+            }}
+        />
+    );
+}
+
+function GeneratePayrollWrapper() {
+    const navigate = useNavigate();
+    return (
+        <GeneratePayroll
+            onContinue={() => navigate("/dashboard")}
+        />
+    );
+}
+
+function DashboardWrapper() {
+    const navigate = useNavigate();
+    return (
+        <Dashboard
+            onLeaveRequest={() => navigate("/leave")}
+            onLogout={() => {
+                alert("Đăng xuất thành công!");
+                localStorage.removeItem("username");
+                navigate("/");
+            }}
+        />
+    );
+}
+
+function LeaveWrapper() {
+    const navigate = useNavigate();
+    return <LeaveRequest onBack={() => navigate("/dashboard")} />;
+}
+
+
+
+export default App;

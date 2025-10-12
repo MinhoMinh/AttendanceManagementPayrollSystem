@@ -28,8 +28,8 @@ function PayrollView({ payroll }) {
                     </tr>
                 </thead>
                 <tbody>
-                    {payroll.previews?.$values?.length > 0 ? (
-                        payroll.previews.$values.map((item) => (
+                    {payroll.previews?.length > 0 ? (
+                        payroll.previews.map((item) => (
                             <tr key={item.empId}>
                                 <td>{item.empId}</td>
                                 <td>{item.baseSalary.toLocaleString()}</td>

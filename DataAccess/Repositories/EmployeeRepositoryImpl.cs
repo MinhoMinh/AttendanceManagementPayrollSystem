@@ -86,5 +86,16 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
             return await _context.Employees
                 .FirstOrDefaultAsync(e => e.Username == username);
         }
+
+        public async Task LoadRoles(Employee employee)
+        {
+            await _context.Entry(employee)
+                .Collection(e => e.EmployeeRoles)
+                .Query()
+                .Include(er => er.Role)
+                    //.ThenInclude(r => r.RolePermissions)
+                        .ThenInclude(rp => rp.Permissions)
+                .LoadAsync();
+        }
     }
 }

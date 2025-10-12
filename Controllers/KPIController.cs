@@ -18,7 +18,7 @@ namespace AttendanceManagementPayrollSystem.Controllers
         }
 
         [HttpGet("{empId}")]
-        public async Task<ActionResult<EmployeeWithKpiDTO>> GetEmployeeKpi( int empId, [FromQuery] int month, [FromQuery] int year)
+        public async Task<ActionResult<KpiDto>> GetEmployeeKpi( int empId, [FromQuery] int month, [FromQuery] int year)
         {
             // Optional: validate month/year
             if (month < 1 || month > 12) return BadRequest("Invalid month.");
@@ -32,22 +32,22 @@ namespace AttendanceManagementPayrollSystem.Controllers
             return Ok(employeeKpi);
         }
 
-        [HttpPost("{empId}/save")]
-        public async Task<IActionResult> SaveEmployeeKpi( int empId, [FromQuery] string phase, [FromBody] EmployeeWithKpiDTO updatedKpi)
-        {
-            if (updatedKpi == null || updatedKpi.Kpi == null)
-                return BadRequest("No KPI data provided.");
+        //[HttpPost("{empId}/save")]
+        //public async Task<IActionResult> SaveEmployeeKpi( int empId, [FromQuery] string phase, [FromBody] KpiDto updatedKpi)
+        //{
+        //    if (updatedKpi == null)
+        //        return BadRequest("No KPI data provided.");
 
-            try
-            {
-                await _service.SaveEmployeeKpiAsync(empId, phase, updatedKpi);
-                return Ok(updatedKpi); // return saved data
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
-            }
-        }
+        //    try
+        //    {
+        //        await _service.Sa(empId, phase, updatedKpi);
+        //        return Ok(updatedKpi); // return saved data
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(500, ex.Message);
+        //    }
+        //}
 
 
 

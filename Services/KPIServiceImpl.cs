@@ -34,7 +34,7 @@ namespace AttendanceManagementPayrollSystem.Services
                 PeriodYear = kpi.PeriodYear,
                 PeriodMonth = kpi.PeriodMonth,
                 KpiRate = kpi.KpiRate,
-                KpiMode = KPIAccessHelper.GetKpiMode(kpi.PeriodYear, kpi.PeriodMonth, employee.Roles),
+                KpiMode = KPIAccessHelper.GetKpiMode(kpi.PeriodYear, kpi.PeriodMonth, "employee"),
                 Components = kpi.Kpicomponents.Select(c => new KpiComponentDto
                 {
                     KpiComponentId = c.KpiCompId,

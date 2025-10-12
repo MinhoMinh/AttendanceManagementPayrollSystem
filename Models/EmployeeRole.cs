@@ -5,15 +5,19 @@ using System.Collections.Generic;
 
 namespace AttendanceManagementPayrollSystem.Models;
 
-public partial class RolePermission
+public partial class EmployeeRole
 {
-    public int RolePermissionId { get; set; }
+    public int EmpId { get; set; }
 
     public int RoleId { get; set; }
 
-    public int PermissionId { get; set; }
+    public bool IsActive { get; set; }
 
-    public virtual Permission Permission { get; set; }
+    public DateTime? StartDate { get; set; }
+
+    public DateTime? EndDate { get; set; }
+
+    public virtual Employee Emp { get; set; }
 
     public virtual Role Role { get; set; }
 }

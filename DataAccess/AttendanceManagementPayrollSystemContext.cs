@@ -31,6 +31,8 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
 
     public virtual DbSet<EmployeePermission> EmployeePermissions { get; set; }
 
+    public virtual DbSet<EmployeeRole> EmployeeRoles { get; set; }
+
     public virtual DbSet<EmployeeSalaryPreview> EmployeeSalaryPreviews { get; set; }
 
     public virtual DbSet<EmployeeSalarySlip> EmployeeSalarySlips { get; set; }
@@ -56,8 +58,6 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
     public virtual DbSet<Permission> Permissions { get; set; }
 
     public virtual DbSet<Role> Roles { get; set; }
-
-    public virtual DbSet<RolePermission> RolePermissions { get; set; }
 
     public virtual DbSet<SalaryPolicy> SalaryPolicies { get; set; }
 
@@ -209,25 +209,6 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
             entity.HasOne(d => d.Dep).WithMany(p => p.Employees)
                 .HasForeignKey(d => d.DepId)
                 .HasConstraintName("FK_Employee_Department");
-
-            entity.HasMany(d => d.Roles).WithMany(p => p.Emps)
-                .UsingEntity<Dictionary<string, object>>(
-                    "EmployeeRole",
-                    r => r.HasOne<Role>().WithMany()
-                        .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("FK__EmployeeR__RoleI__0D7A0286"),
-                    l => l.HasOne<Employee>().WithMany()
-                        .HasForeignKey("EmpId")
-                        .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("FK__UserRoles__emp_i__681373AD"),
-                    j =>
-                    {
-                        j.HasKey("EmpId", "RoleId").HasName("PK__UserRole__760965CC5651F5D8");
-                        j.ToTable("EmployeeRole");
-                        j.IndexerProperty<int>("EmpId").HasColumnName("emp_id");
-                        j.IndexerProperty<int>("RoleId").HasColumnName("RoleID");
-                    });
         });
 
         modelBuilder.Entity<EmployeeAllowance>(entity =>
@@ -318,6 +299,28 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
                 .HasForeignKey(d => d.UserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__UserPermi__UserI__72910220");
+        });
+
+        modelBuilder.Entity<EmployeeRole>(entity =>
+        {
+            entity.HasKey(e => new { e.EmpId, e.RoleId }).HasName("PK__UserRole__760965CC5651F5D8");
+
+            entity.ToTable("EmployeeRole");
+
+            entity.Property(e => e.EmpId).HasColumnName("emp_id");
+            entity.Property(e => e.RoleId).HasColumnName("RoleID");
+            entity.Property(e => e.EndDate).HasColumnType("datetime");
+            entity.Property(e => e.StartDate).HasColumnType("datetime");
+
+            entity.HasOne(d => d.Emp).WithMany(p => p.EmployeeRoles)
+                .HasForeignKey(d => d.EmpId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__UserRoles__emp_i__681373AD");
+
+            entity.HasOne(d => d.Role).WithMany(p => p.EmployeeRoles)
+                .HasForeignKey(d => d.RoleId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__EmployeeR__RoleI__0D7A0286");
         });
 
         modelBuilder.Entity<EmployeeSalaryPreview>(entity =>
@@ -782,27 +785,25 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
                 .IsRequired()
                 .HasMaxLength(50);
             entity.Property(e => e.SecurityLevel).HasAnnotation("Relational:DefaultConstraintName", "DF_Roles_SecurityLevel");
-        });
 
-        modelBuilder.Entity<RolePermission>(entity =>
-        {
-            entity.HasKey(e => e.RolePermissionId).HasName("PK__RolePerm__120F469AC923DC9A");
-
-            entity.ToTable("RolePermission");
-
-            entity.Property(e => e.RolePermissionId).HasColumnName("RolePermissionID");
-            entity.Property(e => e.PermissionId).HasColumnName("PermissionID");
-            entity.Property(e => e.RoleId).HasColumnName("RoleID");
-
-            entity.HasOne(d => d.Permission).WithMany(p => p.RolePermissions)
-                .HasForeignKey(d => d.PermissionId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__RolePermi__Permi__236943A5");
-
-            entity.HasOne(d => d.Role).WithMany(p => p.RolePermissions)
-                .HasForeignKey(d => d.RoleId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__RolePermi__RoleI__245D67DE");
+            entity.HasMany(d => d.Permissions).WithMany(p => p.Roles)
+                .UsingEntity<Dictionary<string, object>>(
+                    "RolePermission",
+                    r => r.HasOne<Permission>().WithMany()
+                        .HasForeignKey("PermissionId")
+                        .OnDelete(DeleteBehavior.ClientSetNull)
+                        .HasConstraintName("FK__RolePermi__Permi__236943A5"),
+                    l => l.HasOne<Role>().WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.ClientSetNull)
+                        .HasConstraintName("FK__RolePermi__RoleI__245D67DE"),
+                    j =>
+                    {
+                        j.HasKey("RoleId", "PermissionId").HasName("PK__RolePerm__120F469AC923DC9A");
+                        j.ToTable("RolePermission");
+                        j.IndexerProperty<int>("RoleId").HasColumnName("RoleID");
+                        j.IndexerProperty<int>("PermissionId").HasColumnName("PermissionID");
+                    });
         });
 
         modelBuilder.Entity<SalaryPolicy>(entity =>

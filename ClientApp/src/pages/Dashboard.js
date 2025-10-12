@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import CustomButton from "../components/CustomButton";
 import attendanceIcon from "../assets/icons/attendance.png";
 import leavequestIcon from "../assets/icons/leaverequest.png";
@@ -7,90 +8,99 @@ import reportsIcon from "../assets/icons/reports.png";
 import settingsIcon from "../assets/icons/settings.png";
 import logoutIcon from "../assets/icons/logout.png";
 
+function Dashboard() {
+    const [employeeName] = useState("Nguyen Van A");
 
-function Dashboard({ onLeaveRequest, onLogout }) {
-  const [employeeName] = useState("Nguyen Van A");
+    const emp = JSON.parse(localStorage.getItem("employee"));
+    const hasPermission = (perm) => emp?.permissions?.includes(perm);
 
-  return (
-    <div style={{ fontFamily: "Arial, sans-serif", minHeight: "100vh", backgroundColor: "#f4f6f9" }}>
-      {/* Header */}
-      <div
-        style={{
-          backgroundColor: "#2c3e50",
-          color: "white",
-          padding: "15px 30px",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          boxShadow: "0 4px 6px rgba(0,0,0,0.1)"
-        }}
-      >
-        <h2 style={{ margin: 0 }}>📊 Dashboard</h2>
-        <div style={{ fontSize: "16px", fontWeight: "bold" }}>👤 {employeeName}</div>
-      </div>
+    const navigate = useNavigate();
 
-      {/* Main content */}
-      <div
-        style={{
-          padding: "40px",
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
-          gap: "25px"
-        }}
-      >
-        {/* Điểm danh */}
-        <CustomButton
-          image={attendanceIcon}
-          label="Attendance"
-          bgColor="#27ae60"
-          size={140}
-          iconSize={70}
-        />
+    const handleLogout = () => {
+        localStorage.removeItem("employee");
+        navigate("/login");
+    };
 
-        {/* Nút xin nghỉ phép */}
-        <CustomButton
-          image={leavequestIcon}
-          label="Leave Request"
-          bgColor="#27ae60"
-          size={140}
-          iconSize={70}
-          onClick={onLeaveRequest}
-        />
+    return (
+        <div
+            style={{
+                fontFamily: "Arial, sans-serif",
+                minHeight: "100vh",
+                backgroundColor: "#f4f6f9"
+            }}
+        >
+            {/* Header */}
+            <div
+                style={{
+                    backgroundColor: "#2c3e50",
+                    color: "white",
+                    padding: "15px 30px",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    boxShadow: "0 4px 6px rgba(0,0,0,0.1)"
+                }}
+            >
+                <h2 style={{ margin: 0 }}>📊 Dashboard</h2>
+                <div style={{ fontSize: "16px", fontWeight: "bold" }}>👤 {employeeName}</div>
+            </div>
 
-        <CustomButton
-          image={payrollIcon}
-          label="Payroll"
-          bgColor="#27ae60"
-          size={140}
-          iconSize={70}
-        />
-        <CustomButton
-          image={reportsIcon}
-          label="Reports"
-          bgColor="#27ae60"
-          size={140}
-          iconSize={70}
-        />
-        <CustomButton
-          image={settingsIcon}
-          label="Settings"
-          bgColor="#27ae60"
-          size={140}
-          iconSize={70}
-        />
+            {/* Main content */}
+            <div
+                style={{
+                    padding: "40px",
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
+                    gap: "25px"
+                }}
+            >
+                {hasPermission("has_clockin") && (
+                <CustomButton
+                    image={attendanceIcon}
+                    label="Attendance"
+                    onClick={() => navigate("/attendance")}
+                    />)}
 
-        {/* Nút logout */}
-        <CustomButton
-          image={logoutIcon}
-          label="Logout"
-          bgColor="#c0392b"
-          size={140}
-          iconSize={70}
-          onClick={onLogout}
-        />
-      </div>
-    </div>
-  );
+                {hasPermission("has_leave_request") && (
+                <CustomButton
+                    image={leavequestIcon}
+                    label="Leave Request"
+                    onClick={() => navigate("/leave-request")}
+                    />)}
+
+                {hasPermission("generate_payroll_run") && (
+                    <CustomButton
+                        image={leavequestIcon}
+                        label="Generate Payroll"
+                        onClick={() => navigate("/generate-payroll")}
+                    />)}
+
+                <CustomButton
+                    image={payrollIcon}
+                    label="Payroll"
+                    onClick={() => navigate("/payroll")}
+                />
+
+                <CustomButton
+                    image={reportsIcon}
+                    label="Reports"
+                    onClick={() => navigate("/reports")}
+                />
+
+                <CustomButton
+                    image={settingsIcon}
+                    label="Settings"
+                    onClick={() => navigate("/settings")}
+                />
+
+                <CustomButton
+                    image={logoutIcon}
+                    label="Logout"
+                    onClick={handleLogout}
+                />
+            </div>
+        </div>
+    );
 }
 
 export default Dashboard;

@@ -10,11 +10,11 @@ const CustomButton = ({
   
   // Styling
   variant = "primary", // primary, secondary, success, warning, danger, info
-  size = "medium", // small, medium, large, xlarge hoặc số (px)
+  size = 140, // small, medium, large, xlarge hoặc số (px)
   shape = "rounded", // rounded, circle, square
   
   // Colors
-  bgColor,
+  bgColor = "#27ae60",
   textColor,
   hoverColor,
   
@@ -35,7 +35,7 @@ const CustomButton = ({
   className = "",
   
   // Legacy props for backward compatibility
-  iconSize, // Kích thước icon/ảnh (px)
+  iconSize = 70, // Kích thước icon/ảnh (px)
   
   // Accessibility
   ariaLabel,
