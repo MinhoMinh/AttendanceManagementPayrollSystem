@@ -37,6 +37,8 @@ builder.Services.AddControllers()
 
 builder.Services.AddScoped<EmployeeRepository, EmployeeRepositoryImpl>(); // Đăng ký EmployeeRepositoryImpl
 builder.Services.AddScoped<AuthService, AuthServiceImpl>(); // Đăng ký AuthServiceImpl
+builder.Services.AddScoped<ILeaveRequestRepository, LeaveRequestRepositoryImpl>();
+builder.Services.AddScoped<ILeaveRequestService, LeaveRequestServiceImpl>();
 
 
 RepositoryManager.DoScoped(builder);

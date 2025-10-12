@@ -9,16 +9,46 @@ export default function LeaveRequest({ onBack }) {
   const [details, setDetails] = useState("");     // chi tiết lý do
   const [leaveType, setLeaveType] = useState(""); // loại nghỉ (có phép/không phép)
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    alert(
-      `📅 Nghỉ từ: ${startDate} ➝ ${endDate}
-📝 Loại nghỉ: ${leaveType}
-📩 Lý do: ${reason === "khac" ? otherReason : reason}
-📌 Chi tiết: ${details}`
-    );
-    onBack();
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+
+
+  const empId = localStorage.getItem("empId"); // ✅ Lấy empId từ login
+  if (!empId) {
+    alert("⚠️ Bạn chưa đăng nhập!");
+    return;
+  }
+
+  const leaveData = {
+    empId: 3,
+    startDate,
+    endDate,
+    reason: reason === "khac" ? otherReason : reason,
+    details,
+    leaveType,
   };
+
+  try {
+    const response = await fetch("https://localhost:7184/api/LeaveRequest", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(leaveData),
+    });
+
+    if (response.ok) {
+      alert("✅ Gửi đơn nghỉ thành công!");
+      onBack();
+    } else {
+      alert("❌ Lỗi khi gửi đơn nghỉ!");
+    }
+  } catch (error) {
+    console.error("Error:", error);
+    alert("⚠️ Không thể kết nối đến máy chủ!");
+  }
+};
+
 
   return (
     <div className="leave-wrapper">

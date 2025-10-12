@@ -23,6 +23,8 @@ export default function Login({ onLogin }) {
 
       const data = await response.json();
 
+      localStorage.setItem("empId", 3);
+
       // Lưu token vào localStorage
       if (data.token) {
         localStorage.setItem("token", data.token);

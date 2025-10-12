@@ -34,7 +34,7 @@ namespace AttendanceManagementPayrollSystem.Services
             // Trả về DTO cho Controller
             return new LoginResponse
             {
-                EmpId = employee.EmpId,
+                EmpId = 3,
                 EmpName = employee.EmpName,
                 Username = employee.Username,
                 Message = "Đăng nhập thành công!"

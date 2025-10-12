@@ -58,7 +58,7 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
             return existing;
         }
 
-        // ✅ Find by username + password (for login)
+        // ✅ Find by username (for login)
         public async Task<Employee?> FindByUsernameAsync(string username)
         {
             return await _context.Employees
