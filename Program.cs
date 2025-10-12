@@ -27,6 +27,13 @@ builder.Services.AddCors(options =>
 
 
 builder.Services.AddScoped<PayrollService, PayrollServiceImpl>();
+builder.Services.AddScoped<AllowanceTypeService, AllowanceTypeServiceImpl>();
+builder.Services.AddScoped<AllowanceTypeRepository, AllowanceTypeRepositoryImpl>();
+builder.Services.AddScoped<EmployeeAllowanceRepository, EmployeeAllowanceRepositoryImpl>();
+builder.Services.AddScoped<EmployeeAllowanceService, EmployeeAllowanceServiceImpl>();
+
+
+
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>

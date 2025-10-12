@@ -29,6 +29,7 @@
 import React from "react";
 import GeneratePayroll from "./pages/GeneratePayroll";
 import ApprovePayroll from "./pages/ApprovePayroll";
+import AddAllowanceTypeForm from "./components/AddAllowanceTypeForm";
 
 //function App() {
 //    const [message, setMessage] = useState("Loading...");
@@ -47,12 +48,21 @@ import ApprovePayroll from "./pages/ApprovePayroll";
 //    );
 //}
 
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import AllowanceTypeList from "./components/AllowanceTypeList";
+import EmployeeAllowanceList from "./components/EmployeeAllowanceList";
+// import AddAllowanceTypeForm from "./components/AddAllowanceTypeForm";
+
+
 function App() {
     return (
-        <div>
-            <h1>Payroll Management</h1>
-            <GeneratePayroll />
-        </div>
+        <Router>
+            <Routes>
+                <Route path="/" element={<AllowanceTypeList />} />
+                <Route path="/add" element={<AddAllowanceTypeForm />} />
+                <Route path="/babaji" element={<EmployeeAllowanceList />} />
+            </Routes>
+        </Router>
     );
 }
 
