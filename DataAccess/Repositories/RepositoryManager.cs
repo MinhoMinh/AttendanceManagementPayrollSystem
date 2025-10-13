@@ -10,13 +10,9 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
             builder.Services.AddDbContextPool<AttendanceManagementPayrollSystemContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
             );
-
-
             builder.Services.AddScoped<EmployeeRepository, EmployeeRepositoryImpl>();
             builder.Services.AddScoped<ClockinRepository, ClockinRepositoryImpl>();
             builder.Services.AddScoped<PayrollRepository, PayrollRepositoryImpl>();
-
-
         }
 
     }

@@ -1,60 +1,119 @@
-//import React, { useState } from "react";
-//import Header from "./components/Header";
-//import CheckAttendance from "./components/Calendar";
-//import ButtonDemo from "./components/ButtonDemo";
-//import Dashboard from "./pages/Dashboard";
-//import ViewAdjustmentRequests from "./components/ViewAdjustmentRequests";
-//import "./App.css";
-//import CustomButton from "./components/CustomButton";
-
-//function App() {
-//  const [currentView, setCurrentView] = useState("dashboard"); // 'dashboard', 'attendance', 'buttons', 'adjustments'
-
-//  const handleLogout = () => {
-//    alert("Đăng xuất thành công!");
-//    // Thêm logic đăng xuất ở đây
-//  };
-
-//  return (
-//    <>
-//    <Dashboard/>
-//      <h1>Babaji</h1>
-//    </>
-//  );
-//}
-
-//export default App;
-
-
 import React from "react";
+import { BrowserRouter as Router, Routes, Route, useNavigate, Navigate } from "react-router-dom";
+
+import Header from "./components/Header";
+import Calendar from "./components/Calendar";
+import ButtonDemo from "./components/ButtonDemo";
+import Dashboard from "./pages/Dashboard";
+import ViewAdjustmentRequests from "./components/ViewAdjustmentRequests";
+import CustomButton from "./components/CustomButton";
+
+import Login from "./pages/Login";
+import EmployeeKpiPage from "./pages/EmployeeKpiPage";
+import LeaveRequest from "./pages/LeaveRequest";
 import GeneratePayroll from "./pages/GeneratePayroll";
-import ApprovePayroll from "./pages/ApprovePayroll";
 
-//function App() {
-//    const [message, setMessage] = useState("Loading...");
-
-//    useEffect(() => {
-//        fetch("http://localhost:5038/api/employees")
-//            .then(response => response.json())
-//            .then(data => setMessage(data.message))
-//            .catch(err => console.error("Fetch error:", err));
-//    }, []);
-
-//    return (
-//        <div>
-//            <h1>{message}</h1>
-//        </div>
-//    );
-//}
+import "./App.css";
 
 function App() {
     return (
-        <div>
-            <h1>Payroll Management</h1>
-            <GeneratePayroll />
-        </div>
+        <Router>
+            <Routes>
+                <Route path="/" element={<LoginWrapper />} />
+                <Route path="/login" element={<LoginWrapper />} />
+
+                <Route
+                    path="/dashboard"
+                    element={
+                        <ProtectedRoute>
+                            <Dashboard />
+                        </ProtectedRoute>
+                    }
+                />
+
+                <Route
+                    path="/attendance"
+                    element={
+                        <ProtectedRoute>
+                            <Calendar />
+                        </ProtectedRoute>
+                    }
+                />
+
+                <Route
+                    path="/leave-request"
+                    element={
+                        <ProtectedRoute>
+                            <LeaveRequest />
+                        </ProtectedRoute>
+                    }
+                />
+
+                <Route
+                    path="/generate-payroll"
+                    element={
+                        <ProtectedRoute>
+                            <GeneratePayrollWrapper />
+                        </ProtectedRoute>
+                    }
+                />
+
+                <Route
+                    path="/self-kpi"
+                    element={
+                        <ProtectedRoute>
+                            <EmployeeKpiPage />
+                        </ProtectedRoute>
+                    }
+                />
+
+                <Route
+                    path="/head-kpi"
+                    element={
+                        <ProtectedRoute>
+                            <EmployeeKpiPage />
+                        </ProtectedRoute>
+                    }
+                />
+
+                <Route
+                    path="/manager-kpi"
+                    element={
+                        <ProtectedRoute>
+                            <EmployeeKpiPage />
+                        </ProtectedRoute>
+                    }
+                />
+            </Routes>
+        </Router>
     );
 }
 
-export default App;
+// ---- Route wrappers ----
 
+function ProtectedRoute({ children }) {
+    const emp = localStorage.getItem("employee");
+    if (!emp) {
+        return <Navigate to="/login" replace />;
+    }
+    return children;
+}
+
+function LoginWrapper() {
+    const navigate = useNavigate();
+    return (
+        <Login
+            onLogin={(uname) => {
+                localStorage.setItem("username", uname);
+                navigate("/dashboard");
+            }}
+        />
+    );
+}
+
+function GeneratePayrollWrapper() {
+    const navigate = useNavigate();
+    return <GeneratePayroll onContinue={() => navigate("/dashboard")} />;
+}
+
+export default App;

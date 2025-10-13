@@ -35,6 +35,8 @@ public partial class Employee
 
     public virtual ICollection<EmployeePermission> EmployeePermissions { get; set; } = new List<EmployeePermission>();
 
+    public virtual ICollection<EmployeeRole> EmployeeRoles { get; set; } = new List<EmployeeRole>();
+
     public virtual ICollection<EmployeeSalaryPreview> EmployeeSalaryPreviewCreatedByNavigations { get; set; } = new List<EmployeeSalaryPreview>();
 
     public virtual ICollection<EmployeeSalaryPreview> EmployeeSalaryPreviewEmps { get; set; } = new List<EmployeeSalaryPreview>();
@@ -65,5 +67,4 @@ public partial class Employee
 
     public virtual ICollection<PayrollRun> PayrollRunCreatedByNavigations { get; set; } = new List<PayrollRun>();
 
-    public virtual ICollection<Role> Roles { get; set; } = new List<Role>();
 }

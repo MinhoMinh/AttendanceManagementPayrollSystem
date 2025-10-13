@@ -31,6 +31,8 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
 
     public virtual DbSet<EmployeePermission> EmployeePermissions { get; set; }
 
+    public virtual DbSet<EmployeeRole> EmployeeRoles { get; set; }
+
     public virtual DbSet<EmployeeSalaryPreview> EmployeeSalaryPreviews { get; set; }
 
     public virtual DbSet<EmployeeSalarySlip> EmployeeSalarySlips { get; set; }
@@ -57,8 +59,6 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
 
     public virtual DbSet<Role> Roles { get; set; }
 
-    public virtual DbSet<RolePermission> RolePermissions { get; set; }
-
     public virtual DbSet<SalaryPolicy> SalaryPolicies { get; set; }
 
     public virtual DbSet<TaxBracket> TaxBrackets { get; set; }
@@ -69,7 +69,7 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
     {
         modelBuilder.Entity<AllowanceType>(entity =>
         {
-            entity.HasKey(e => e.TypeId).HasName("PK__Allowanc__2C0005981CDFE0B2");
+            entity.HasKey(e => e.TypeId).HasName("PK__Allowanc__2C0005980EE0433C");
 
             entity.ToTable("AllowanceType");
 
@@ -80,7 +80,6 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
                 .IsUnicode(false)
                 .HasColumnName("calculation_type");
             entity.Property(e => e.CreatedAt)
-                .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime")
                 .HasColumnName("created_at");
             entity.Property(e => e.EffectiveStartDate).HasColumnName("effective_start_date");
@@ -161,15 +160,13 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
 
         modelBuilder.Entity<DepartmentWeeklyShift>(entity =>
         {
-            entity.HasKey(e => e.DeptShiftId).HasName("PK__Departme__E496BB67C024BC6E");
+            entity.HasKey(e => e.DeptShiftId).HasName("PK__Departme__E496BB675B130812");
 
             entity.ToTable("DepartmentWeeklyShift");
 
             entity.Property(e => e.DeptShiftId).HasColumnName("dept_shift_id");
             entity.Property(e => e.DepId).HasColumnName("dep_id");
-            entity.Property(e => e.IsActive)
-                .HasDefaultValue(true)
-                .HasColumnName("is_active");
+            entity.Property(e => e.IsActive).HasColumnName("is_active");
             entity.Property(e => e.ShiftId).HasColumnName("shift_id");
 
             entity.HasOne(d => d.Dep).WithMany(p => p.DepartmentWeeklyShifts)
@@ -212,36 +209,16 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
             entity.HasOne(d => d.Dep).WithMany(p => p.Employees)
                 .HasForeignKey(d => d.DepId)
                 .HasConstraintName("FK_Employee_Department");
-
-            entity.HasMany(d => d.Roles).WithMany(p => p.Emps)
-                .UsingEntity<Dictionary<string, object>>(
-                    "EmployeeRole",
-                    r => r.HasOne<Role>().WithMany()
-                        .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("FK__EmployeeR__RoleI__0D7A0286"),
-                    l => l.HasOne<Employee>().WithMany()
-                        .HasForeignKey("EmpId")
-                        .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("FK__UserRoles__emp_i__681373AD"),
-                    j =>
-                    {
-                        j.HasKey("EmpId", "RoleId").HasName("PK__UserRole__760965CC5651F5D8");
-                        j.ToTable("EmployeeRole");
-                        j.IndexerProperty<int>("EmpId").HasColumnName("emp_id");
-                        j.IndexerProperty<int>("RoleId").HasColumnName("RoleID");
-                    });
         });
 
         modelBuilder.Entity<EmployeeAllowance>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Employee__3213E83F344C7FA6");
+            entity.HasKey(e => e.Id).HasName("PK__Employee__3213E83FB246632E");
 
             entity.ToTable("EmployeeAllowance");
 
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.CreatedAt)
-                .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime")
                 .HasColumnName("created_at");
             entity.Property(e => e.CreatedBy).HasColumnName("created_by");
@@ -255,7 +232,6 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
                 .IsRequired()
                 .HasMaxLength(10)
                 .IsUnicode(false)
-                .HasDefaultValue("Active")
                 .HasColumnName("status");
             entity.Property(e => e.TypeId).HasColumnName("type_id");
 
@@ -277,15 +253,12 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
 
         modelBuilder.Entity<EmployeeDependent>(entity =>
         {
-            entity.HasKey(e => e.DependentId).HasName("PK__Employee__9BC67C11A66C60A9");
+            entity.HasKey(e => e.DependentId).HasName("PK__Employee__9BC67C117C53E9F4");
 
             entity.ToTable("EmployeeDependent");
 
             entity.Property(e => e.DependentId).HasColumnName("DependentID");
-            entity.Property(e => e.CreatedDate)
-                .HasDefaultValueSql("(getdate())")
-                .HasColumnType("datetime");
-            entity.Property(e => e.EffectiveStartDate).HasDefaultValueSql("(getdate())");
+            entity.Property(e => e.CreatedDate).HasColumnType("datetime");
             entity.Property(e => e.EmployeeId).HasColumnName("EmployeeID");
             entity.Property(e => e.FullName)
                 .IsRequired()
@@ -309,7 +282,7 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
 
         modelBuilder.Entity<EmployeePermission>(entity =>
         {
-            entity.HasKey(e => e.UserPermissionId).HasName("PK__Employee__A90F88D2C15DB93F");
+            entity.HasKey(e => e.UserPermissionId).HasName("PK__Employee__A90F88D264E8D983");
 
             entity.ToTable("EmployeePermission");
 
@@ -326,6 +299,28 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
                 .HasForeignKey(d => d.UserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__UserPermi__UserI__72910220");
+        });
+
+        modelBuilder.Entity<EmployeeRole>(entity =>
+        {
+            entity.HasKey(e => new { e.EmpId, e.RoleId }).HasName("PK__UserRole__760965CC5651F5D8");
+
+            entity.ToTable("EmployeeRole");
+
+            entity.Property(e => e.EmpId).HasColumnName("emp_id");
+            entity.Property(e => e.RoleId).HasColumnName("RoleID");
+            entity.Property(e => e.EndDate).HasColumnType("datetime");
+            entity.Property(e => e.StartDate).HasColumnType("datetime");
+
+            entity.HasOne(d => d.Emp).WithMany(p => p.EmployeeRoles)
+                .HasForeignKey(d => d.EmpId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__UserRoles__emp_i__681373AD");
+
+            entity.HasOne(d => d.Role).WithMany(p => p.EmployeeRoles)
+                .HasForeignKey(d => d.RoleId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__EmployeeR__RoleI__0D7A0286");
         });
 
         modelBuilder.Entity<EmployeeSalaryPreview>(entity =>
@@ -345,7 +340,6 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
                 .HasColumnType("decimal(12, 2)")
                 .HasColumnName("bonus");
             entity.Property(e => e.CreatedAt)
-                .HasDefaultValueSql("(getdate())")
                 .HasAnnotation("Relational:DefaultConstraintName", "DF_EmployeeSalaryPreview_created_at")
                 .HasColumnType("datetime")
                 .HasColumnName("created_at");
@@ -420,7 +414,6 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
                 .HasColumnType("decimal(12, 2)")
                 .HasColumnName("bonus");
             entity.Property(e => e.CreatedAt)
-                .HasDefaultValueSql("(getdate())")
                 .HasAnnotation("Relational:DefaultConstraintName", "DF_EmployeeSalarySlip_created_at")
                 .HasColumnType("datetime")
                 .HasColumnName("created_at");
@@ -476,13 +469,12 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
 
         modelBuilder.Entity<HolidayCalendar>(entity =>
         {
-            entity.HasKey(e => e.HolidayId).HasName("PK__HolidayC__253884EA9EA8C743");
+            entity.HasKey(e => e.HolidayId).HasName("PK__HolidayC__253884EAE88B1183");
 
             entity.ToTable("HolidayCalendar");
 
             entity.Property(e => e.HolidayId).HasColumnName("holiday_id");
             entity.Property(e => e.CreatedAt)
-                .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime")
                 .HasColumnName("created_at");
             entity.Property(e => e.EndDatetime)
@@ -499,7 +491,7 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
 
         modelBuilder.Entity<InsuranceRateSet>(entity =>
         {
-            entity.HasKey(e => e.InsuranceRateSetId).HasName("PK__Insuranc__4E8CF9F646516E04");
+            entity.HasKey(e => e.InsuranceRateSetId).HasName("PK__Insuranc__4E8CF9F66B2AD402");
 
             entity.ToTable("InsuranceRateSet");
 
@@ -536,7 +528,6 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
 
             entity.Property(e => e.KpiId).HasColumnName("kpi_id");
             entity.Property(e => e.AssignedAt)
-                .HasDefaultValueSql("(getdate())")
                 .HasAnnotation("Relational:DefaultConstraintName", "DF_KPI_assigned_at")
                 .HasColumnType("datetime")
                 .HasColumnName("assigned_at");
@@ -546,7 +537,6 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
             entity.Property(e => e.PeriodMonth).HasColumnName("period_month");
             entity.Property(e => e.PeriodYear).HasColumnName("period_year");
             entity.Property(e => e.Prorate)
-                .HasDefaultValue(false)
                 .HasAnnotation("Relational:DefaultConstraintName", "DF_KPI_prorate")
                 .HasColumnName("prorate");
 
@@ -598,7 +588,7 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
 
         modelBuilder.Entity<LeaveRequest>(entity =>
         {
-            entity.HasKey(e => e.ReqId).HasName("PK__LeaveReq__1513A6FB8397E3C0");
+            entity.HasKey(e => e.ReqId).HasName("PK__LeaveReq__1513A6FB7B28EF3A");
 
             entity.ToTable("LeaveRequest");
 
@@ -613,9 +603,7 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
             entity.Property(e => e.Reason)
                 .HasMaxLength(255)
                 .HasColumnName("reason");
-            entity.Property(e => e.ReqDate)
-                .HasDefaultValueSql("(getdate())")
-                .HasColumnName("req_date");
+            entity.Property(e => e.ReqDate).HasColumnName("req_date");
             entity.Property(e => e.StartDate).HasColumnName("start_date");
             entity.Property(e => e.Status)
                 .IsRequired()
@@ -635,12 +623,12 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
             entity.HasOne(d => d.Type).WithMany(p => p.LeaveRequests)
                 .HasForeignKey(d => d.TypeId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__LeaveRequ__type___1CBC4616");
+                .HasConstraintName("FK__LeaveRequ__type___1AD3FDA4");
         });
 
         modelBuilder.Entity<LeaveType>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__LeaveTyp__3213E83F2C7FD8CA");
+            entity.HasKey(e => e.Id).HasName("PK__LeaveTyp__3213E83F84CC6C9A");
 
             entity.ToTable("LeaveType");
 
@@ -655,9 +643,7 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
             entity.Property(e => e.PaidPercent)
                 .HasColumnType("decimal(5, 2)")
                 .HasColumnName("paid_percent");
-            entity.Property(e => e.RequiresApproval)
-                .HasDefaultValue(true)
-                .HasColumnName("requires_approval");
+            entity.Property(e => e.RequiresApproval).HasColumnName("requires_approval");
         });
 
         modelBuilder.Entity<OvertimeRate>(entity =>
@@ -686,16 +672,14 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
 
         modelBuilder.Entity<OvertimeRequest>(entity =>
         {
-            entity.HasKey(e => e.ReqId).HasName("PK__Overtime__1513A6FB25C33270");
+            entity.HasKey(e => e.ReqId).HasName("PK__Overtime__1513A6FBD2AB57D2");
 
             entity.ToTable("OvertimeRequest");
 
             entity.Property(e => e.ReqId).HasColumnName("req_id");
             entity.Property(e => e.ApprovedBy).HasColumnName("approved_by");
             entity.Property(e => e.ApprovedDate).HasColumnName("approved_date");
-            entity.Property(e => e.CreatedDate)
-                .HasDefaultValueSql("(getdate())")
-                .HasColumnName("created_date");
+            entity.Property(e => e.CreatedDate).HasColumnName("created_date");
             entity.Property(e => e.EmpId).HasColumnName("emp_id");
             entity.Property(e => e.EndTime).HasColumnName("end_time");
             entity.Property(e => e.Hours)
@@ -712,7 +696,6 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
                 .IsRequired()
                 .HasMaxLength(20)
                 .IsUnicode(false)
-                .HasDefaultValue("Pending")
                 .HasColumnName("status");
 
             entity.HasOne(d => d.ApprovedByNavigation).WithMany(p => p.OvertimeRequestApprovedByNavigations)
@@ -735,7 +718,7 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
 
         modelBuilder.Entity<PayrollRun>(entity =>
         {
-            entity.HasKey(e => e.PayrollRunId).HasName("PK__PayrollR__042B3F669A470EB9");
+            entity.HasKey(e => e.PayrollRunId).HasName("PK__PayrollR__042B3F66A4356420");
 
             entity.ToTable("PayrollRun");
 
@@ -750,7 +733,6 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
             entity.Property(e => e.ApprovedFirstBy).HasColumnName("approved_first_by");
             entity.Property(e => e.CreatedBy).HasColumnName("created_by");
             entity.Property(e => e.CreatedDate)
-                .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime")
                 .HasColumnName("created_date");
             entity.Property(e => e.Name)
@@ -762,7 +744,6 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
             entity.Property(e => e.Status)
                 .IsRequired()
                 .HasMaxLength(20)
-                .HasDefaultValue("Pending")
                 .HasAnnotation("Relational:DefaultConstraintName", "DF_PayrollRun_status")
                 .HasColumnName("status");
 
@@ -781,9 +762,9 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
 
         modelBuilder.Entity<Permission>(entity =>
         {
-            entity.HasKey(e => e.PermissionId).HasName("PK__Permissi__EFA6FB0FDE7EEF4A");
+            entity.HasKey(e => e.PermissionId).HasName("PK__Permissi__EFA6FB0FEF16C69C");
 
-            entity.HasIndex(e => e.PermissionName, "UQ__Permissi__0FFDA3571562A5C6").IsUnique();
+            entity.HasIndex(e => e.PermissionName, "UQ__Permissi__0FFDA3570EAE1213").IsUnique();
 
             entity.Property(e => e.PermissionId).HasColumnName("PermissionID");
             entity.Property(e => e.Description).HasMaxLength(255);
@@ -794,39 +775,35 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
 
         modelBuilder.Entity<Role>(entity =>
         {
-            entity.HasKey(e => e.RoleId).HasName("PK__Roles__8AFACE3A6E3955AB");
+            entity.HasKey(e => e.RoleId).HasName("PK__Roles__8AFACE3A014DF0E9");
 
-            entity.HasIndex(e => e.RoleName, "UQ__Roles__8A2B6160189DADA1").IsUnique();
+            entity.HasIndex(e => e.RoleName, "UQ__Roles__8A2B616029B1E93E").IsUnique();
 
             entity.Property(e => e.RoleId).HasColumnName("RoleID");
             entity.Property(e => e.Description).HasMaxLength(255);
             entity.Property(e => e.RoleName)
                 .IsRequired()
                 .HasMaxLength(50);
-            entity.Property(e => e.SecurityLevel)
-                .HasDefaultValue((byte)1)
-                .HasAnnotation("Relational:DefaultConstraintName", "DF_Roles_SecurityLevel");
-        });
+            entity.Property(e => e.SecurityLevel).HasAnnotation("Relational:DefaultConstraintName", "DF_Roles_SecurityLevel");
 
-        modelBuilder.Entity<RolePermission>(entity =>
-        {
-            entity.HasKey(e => e.RolePermissionId).HasName("PK__RolePerm__120F469AE2652BE1");
-
-            entity.ToTable("RolePermission");
-
-            entity.Property(e => e.RolePermissionId).HasColumnName("RolePermissionID");
-            entity.Property(e => e.PermissionId).HasColumnName("PermissionID");
-            entity.Property(e => e.RoleId).HasColumnName("RoleID");
-
-            entity.HasOne(d => d.Permission).WithMany(p => p.RolePermissions)
-                .HasForeignKey(d => d.PermissionId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__RolePermi__Permi__25518C17");
-
-            entity.HasOne(d => d.Role).WithMany(p => p.RolePermissions)
-                .HasForeignKey(d => d.RoleId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__RolePermi__RoleI__2645B050");
+            entity.HasMany(d => d.Permissions).WithMany(p => p.Roles)
+                .UsingEntity<Dictionary<string, object>>(
+                    "RolePermission",
+                    r => r.HasOne<Permission>().WithMany()
+                        .HasForeignKey("PermissionId")
+                        .OnDelete(DeleteBehavior.ClientSetNull)
+                        .HasConstraintName("FK__RolePermi__Permi__236943A5"),
+                    l => l.HasOne<Role>().WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.ClientSetNull)
+                        .HasConstraintName("FK__RolePermi__RoleI__245D67DE"),
+                    j =>
+                    {
+                        j.HasKey("RoleId", "PermissionId").HasName("PK__RolePerm__120F469AC923DC9A");
+                        j.ToTable("RolePermission");
+                        j.IndexerProperty<int>("RoleId").HasColumnName("RoleID");
+                        j.IndexerProperty<int>("PermissionId").HasColumnName("PermissionID");
+                    });
         });
 
         modelBuilder.Entity<SalaryPolicy>(entity =>
@@ -839,7 +816,6 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
             entity.Property(e => e.EffectiveFrom).HasColumnType("datetime");
             entity.Property(e => e.IsActive).HasAnnotation("Relational:DefaultConstraintName", "DF_SalaryPolicy_IsActive");
             entity.Property(e => e.OverclockMultiplier)
-                .HasDefaultValue(1.50m)
                 .HasAnnotation("Relational:DefaultConstraintName", "DF_SalaryPolicy_OverclockMultiplier")
                 .HasColumnType("decimal(5, 2)");
             entity.Property(e => e.SalaryPolicyName)
@@ -853,7 +829,7 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
 
         modelBuilder.Entity<TaxBracket>(entity =>
         {
-            entity.HasKey(e => e.BracketId).HasName("PK__TaxBrack__8AC2D7995A1B6DD8");
+            entity.HasKey(e => e.BracketId).HasName("PK__TaxBrack__8AC2D799EC71D7EC");
 
             entity.ToTable("TaxBracket");
 
@@ -865,7 +841,7 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
 
         modelBuilder.Entity<WeeklyShift>(entity =>
         {
-            entity.HasKey(e => e.ShiftId).HasName("PK__WeeklySh__C0A838819359FC41");
+            entity.HasKey(e => e.ShiftId).HasName("PK__WeeklySh__C0A838813BFFACB5");
 
             entity.ToTable("WeeklyShift");
 

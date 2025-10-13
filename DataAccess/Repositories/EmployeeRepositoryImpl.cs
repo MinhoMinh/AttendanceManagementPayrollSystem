@@ -4,6 +4,8 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq.Expressions;
 using Kpi = AttendanceManagementPayrollSystem.Models.Kpi;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
 {
@@ -16,7 +18,7 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
             _context = context;
         }
 
-
+        // ✅ Add new employee
         public async Task<Employee> AddAsync(Employee emp)
         {
             _context.Employees.Add(emp);
@@ -24,6 +26,7 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
             return emp;
         }
 
+        // ✅ Get all employees
         public async Task<IEnumerable<Employee>> GetAllAsync()
         {
             return await _context.Employees.ToListAsync();
@@ -49,11 +52,13 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
             //return await query.ToListAsync();
         }
 
+        // ✅ Get by ID
         public async Task<Employee?> GetByIdAsync(int id)
         {
             return await _context.Employees.FindAsync(id);
         }
 
+        // ✅ Update employee
         public async Task<Employee?> UpdateAsync(Employee emp)
         {
             // 1. Find existing entity in the database
@@ -73,6 +78,24 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
 
             // 4. Return updated entity
             return existing;
+        }
+
+        // ✅ Find by username + password (for login)
+        public async Task<Employee?> FindByUsernameAsync(string username)
+        {
+            return await _context.Employees
+                .FirstOrDefaultAsync(e => e.Username == username);
+        }
+
+        public async Task LoadRoles(Employee employee)
+        {
+            await _context.Entry(employee)
+                .Collection(e => e.EmployeeRoles)
+                .Query()
+                .Include(er => er.Role)
+                    //.ThenInclude(r => r.RolePermissions)
+                        .ThenInclude(rp => rp.Permissions)
+                .LoadAsync();
         }
     }
 }

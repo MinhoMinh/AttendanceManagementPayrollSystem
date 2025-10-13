@@ -1,0 +1,39 @@
+﻿@using System.Globalization
+
+<div class="d-flex align-items-center gap-2">
+    <select class="form-select w-auto" @bind="SelectedMonth">
+        @for (int m = 1; m <= 12; m++)
+        {
+            <option value="@m">@CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(m)</option>
+        }
+    </select>
+
+    <select class="form-select w-auto" @bind="SelectedYear">
+        @foreach (var y in Enumerable.Range(StartYear, EndYear - StartYear + 1).Reverse())
+        {
+            <option value="@y">@y</option>
+        }
+    </select>
+</div>
+
+@code {
+    [Parameter] public int SelectedMonth { get; set; } = DateTime.Now.Month;
+    [Parameter] public int SelectedYear { get; set; } = DateTime.Now.Year;
+    [Parameter] public EventCallback<int> SelectedMonthChanged { get; set; }
+    [Parameter] public EventCallback<int> SelectedYearChanged { get; set; }
+
+    [Parameter] public int StartYear { get; set; } = DateTime.Now.Year - 5;
+    [Parameter] public int EndYear { get; set; } = DateTime.Now.Year + 1;
+
+    private async Task OnMonthChanged(ChangeEventArgs e)
+    {
+        SelectedMonth = int.Parse(e.Value.ToString() ?? "1");
+        await SelectedMonthChanged.InvokeAsync(SelectedMonth);
+    }
+
+    private async Task OnYearChanged(ChangeEventArgs e)
+    {
+        SelectedYear = int.Parse(e.Value.ToString() ?? DateTime.Now.Year.ToString());
+        await SelectedYearChanged.InvokeAsync(SelectedYear);
+    }
+}

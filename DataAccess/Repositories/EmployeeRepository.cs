@@ -1,6 +1,7 @@
 ﻿using AttendanceManagementPayrollSystem.Models;
 using DocumentFormat.OpenXml.Spreadsheet;
 using System.Linq.Expressions;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
@@ -13,5 +14,8 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
         Task<Employee?> GetByIdAsync(int id);
         Task<Employee> AddAsync(Employee emp);
         Task<Employee?> UpdateAsync(Employee emp);
+        Task<Employee?> FindByUsernameAsync(string username); // ✅ Thêm mới
+        Task LoadRoles(Employee employee);
+
     }
 }
