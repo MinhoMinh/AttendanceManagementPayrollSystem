@@ -1,0 +1,41 @@
+{
+  "Files": [
+    {
+      "Id": "C:\\Users\\MinhooMinh\\source\\repos\\AttendanceManagementPayrollSystem\\obj\\Debug\\net8.0\\scopedcss\\projectbundle\\AttendanceManagementPayrollSystem.bundle.scp.css",
+      "PackagePath": "staticwebassets\\AttendanceManagementPayrollSystem.bundle.scp.css"
+    },
+    {
+      "Id": "C:\\Users\\MinhooMinh\\source\\repos\\AttendanceManagementPayrollSystem\\wwwroot\\app.css",
+      "PackagePath": "staticwebassets\\app.css"
+    },
+    {
+      "Id": "C:\\Users\\MinhooMinh\\source\\repos\\AttendanceManagementPayrollSystem\\wwwroot\\bootstrap\\bootstrap.min.css",
+      "PackagePath": "staticwebassets\\bootstrap\\bootstrap.min.css"
+    },
+    {
+      "Id": "C:\\Users\\MinhooMinh\\source\\repos\\AttendanceManagementPayrollSystem\\wwwroot\\bootstrap\\bootstrap.min.css.map",
+      "PackagePath": "staticwebassets\\bootstrap\\bootstrap.min.css.map"
+    },
+    {
+      "Id": "C:\\Users\\MinhooMinh\\source\\repos\\AttendanceManagementPayrollSystem\\wwwroot\\favicon.png",
+      "PackagePath": "staticwebassets\\favicon.png"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.AttendanceManagementPayrollSystem.Microsoft.AspNetCore.StaticWebAssets.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.build.AttendanceManagementPayrollSystem.props",
+      "PackagePath": "build\\AttendanceManagementPayrollSystem.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.buildMultiTargeting.AttendanceManagementPayrollSystem.props",
+      "PackagePath": "buildMultiTargeting\\AttendanceManagementPayrollSystem.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.buildTransitive.AttendanceManagementPayrollSystem.props",
+      "PackagePath": "buildTransitive\\AttendanceManagementPayrollSystem.props"
+    }
+  ],
+  "ElementsToRemove": []
+}

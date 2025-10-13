@@ -1,0 +1,55 @@
+﻿@page "/"
+@rendermode InteractiveServer
+@using AttendanceManagementPayrollSystem.DTO
+
+<h3>Test KPI Component</h3>
+
+<KpiComponentTable Kpi="@testKpi" OnSave="HandleSave" />
+
+@code {
+    private KpiDto testKpi = new()
+    {
+        KpiId = 1,
+        PeriodYear = 2025,
+        PeriodMonth = 10,
+        KpiRate = 85,
+        KpiMode = "edit",
+        Components = new List<KpiComponentDto>
+        {
+            new KpiComponentDto
+            {
+                KpiComponentId = 1,
+                Name = "Quality",
+                Description = "Product quality score",
+                TargetValue = 90,
+                AchievedValue = 85,
+                Weight = 50,
+                SelfScore = 4.2m,
+                AssignedScore = 4.0m
+            },
+            new KpiComponentDto
+            {
+                KpiComponentId = 2,
+                Name = "Efficiency",
+                Description = "Operational efficiency score",
+                TargetValue = 80,
+                AchievedValue = 78,
+                Weight = 50,
+                SelfScore = 3.8m,
+                AssignedScore = 3.9m
+            }
+        }
+    };
+
+
+
+    private void HandleSave(KpiDto savedKpi)
+
+    {
+
+        Console.WriteLine("Saved!");
+
+        // TODO: send to API or persist changes
+
+    }
+}
