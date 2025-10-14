@@ -79,7 +79,9 @@ function Dashboard() {
                     <CustomButton
                         image={leavequestIcon}
                         label="Self KPI"
-                        onClick={() => navigate("/self-kpi")}
+                        onClick={() => {
+                            window.location.href = '/kpi/self';
+                        }}
                     />)}
 
                 <CustomButton

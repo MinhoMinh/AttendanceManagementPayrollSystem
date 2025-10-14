@@ -386,3 +386,7 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 *.png
+/ClientApp/node_modules
+/ClientApp/node_modules
+/ClientApp/node_modules/.cache
+/.vs

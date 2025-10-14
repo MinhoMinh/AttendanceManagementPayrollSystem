@@ -11,6 +11,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
+
 builder.Services.AddControllersWithViews();
 
 // Add CORS
@@ -19,12 +20,13 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowReactApp", policy =>
     {
         policy.SetIsOriginAllowed(origin =>
-            origin.StartsWith("http://localhost:")
+            origin.StartsWith("http://localhost:") || origin.StartsWith("https://localhost:")
         )
         .AllowAnyHeader()
         .AllowAnyMethod();
     });
 });
+
 
 // Register services
 builder.Services.AddScoped<PayrollService, PayrollServiceImpl>();
@@ -40,6 +42,11 @@ builder.Services.AddControllers()
     });
 
 RepositoryManager.DoScoped(builder);
+
+builder.Services.AddHttpClient("ApiClient", client =>
+{
+    client.BaseAddress = new Uri("http://localhost:5038/");
+});
 
 var app = builder.Build();
 

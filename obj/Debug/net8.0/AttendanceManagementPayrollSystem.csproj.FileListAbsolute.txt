@@ -149,6 +149,7 @@ C:\Users\MinhooMinh\source\repos\AttendanceManagementPayrollSystem\bin\Debug\net
 C:\Users\MinhooMinh\source\repos\AttendanceManagementPayrollSystem\bin\Debug\net8.0\runtimes\win\lib\net6.0\System.Windows.Extensions.dll
 C:\Users\MinhooMinh\source\repos\AttendanceManagementPayrollSystem\obj\Debug\net8.0\AttendanceManagementPayrollSystem.csproj.AssemblyReference.cache
 C:\Users\MinhooMinh\source\repos\AttendanceManagementPayrollSystem\obj\Debug\net8.0\Attendan.C0D16283.Up2Date
+C:\Users\MinhooMinh\source\repos\AttendanceManagementPayrollSystem\obj\Debug\net8.0\AttendanceManagementPayrollSystem.sourcelink.json
 C:\Users\MinhooMinh\source\repos\AttendanceManagementPayrollSystem\obj\Debug\net8.0\staticwebassets\msbuild.AttendanceManagementPayrollSystem.Microsoft.AspNetCore.StaticWebAssets.props
 C:\Users\MinhooMinh\source\repos\AttendanceManagementPayrollSystem\obj\Debug\net8.0\staticwebassets\msbuild.build.AttendanceManagementPayrollSystem.props
 C:\Users\MinhooMinh\source\repos\AttendanceManagementPayrollSystem\obj\Debug\net8.0\staticwebassets\msbuild.buildMultiTargeting.AttendanceManagementPayrollSystem.props

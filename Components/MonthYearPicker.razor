@@ -1,14 +1,14 @@
 ﻿@using System.Globalization
 
 <div class="d-flex align-items-center gap-2">
-    <select class="form-select w-auto" @bind="SelectedMonth">
+    <select class="form-select w-auto" value="@SelectedMonth" @onchange="OnMonthChanged">
         @for (int m = 1; m <= 12; m++)
         {
             <option value="@m">@CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(m)</option>
         }
     </select>
 
-    <select class="form-select w-auto" @bind="SelectedYear">
+    <select class="form-select w-auto" value="@SelectedYear" @onchange="OnYearChanged">
         @foreach (var y in Enumerable.Range(StartYear, EndYear - StartYear + 1).Reverse())
         {
             <option value="@y">@y</option>

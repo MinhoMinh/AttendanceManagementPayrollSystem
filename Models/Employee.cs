@@ -66,5 +66,4 @@ public partial class Employee
     public virtual ICollection<PayrollRun> PayrollRunApprovedFirstByNavigations { get; set; } = new List<PayrollRun>();
 
     public virtual ICollection<PayrollRun> PayrollRunCreatedByNavigations { get; set; } = new List<PayrollRun>();
-
 }

@@ -1,52 +1,85 @@
-﻿@page "/"
-@rendermode InteractiveServer
+﻿@page "/kpi/self"
 @using AttendanceManagementPayrollSystem.DTO
+@using System.Text.Json
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+@inject IHttpClientFactory HttpFactory
 
-<h3>Test KPI Component</h3>
+<h3>My KPI</h3>
 
-<KpiComponentTable Kpi="@testKpi" OnSave="HandleSave" />
+<div class="d-flex align-items-center gap-2 mb-3">
+    <MonthYearPicker @bind-SelectedMonth="periodMonth" @bind-SelectedYear="periodYear" />
+    <button class="btn btn-primary" @onclick="ApplyPeriod">Apply</button>
+</div>
+
+<p>Selected Period: @periodYear / @periodMonth</p>
+
+
+<KpiComponentTable Kpi="@Kpi" OnSave="HandleSave" />
+
 
 @code {
-    private KpiDto testKpi = new()
+    private int periodYear = DateTime.Now.Year;
+    private int periodMonth = DateTime.Now.Month;
+    private KpiDto? Kpi;
+
+    private EmployeeDTO? Employee;
+
+    // private async Task LoadEmployeeAsync()
+    // {
+    //     //Get the JSON string from localStorage
+    //     var json = await JS.InvokeAsync<string>("localStorage.getItem", "employee");
+
+    //     if (!string.IsNullOrWhiteSpace(json))
+    //     {
+    //         Employee = JsonSerializer.Deserialize<EmployeeDTO>(json);
+    //     }
+    // }
+
+    //protected override async Task OnInitializedAsync()
+    //{
+    // var empJson = await JS.InvokeAsync<string>("localStorage.getItem", "employee");
+    // if (string.IsNullOrWhiteSpace(empJson)) return;
+
+    // var employee = JsonSerializer.Deserialize<EmployeeDTO>(empJson);
+    // if (employee == null) return;
+
+    // int month = periodMonth;
+    // int year = periodYear;
+
+    // try
+    // {
+    //     var client = HttpFactory.CreateClient("ApiClient");
+    //     var kpi = await client.GetFromJsonAsync<KpiDto>($"api/kpi/self?empId=9&month={periodMonth}&year={periodYear}");
+
+
+    // }
+    // catch (Exception ex)
+    // {
+    //     Console.WriteLine($"Error fetching KPI: {ex.Message}");
+    // }
+    //}
+
+    private async Task ApplyPeriod()
     {
-        KpiId = 1,
-        PeriodYear = 2025,
-        PeriodMonth = 10,
-        KpiRate = 85,
-        KpiMode = "edit",
-        Components = new List<KpiComponentDto>
+        Console.WriteLine($"periodmonth = {periodMonth}");
+        try
         {
-            new KpiComponentDto
-            {
-                KpiComponentId = 1,
-                Name = "Quality",
-                Description = "Product quality score",
-                TargetValue = 90,
-                AchievedValue = 85,
-                Weight = 50,
-                SelfScore = 4.2m,
-                AssignedScore = 4.0m
-            },
-            new KpiComponentDto
-            {
-                KpiComponentId = 2,
-                Name = "Efficiency",
-                Description = "Operational efficiency score",
-                TargetValue = 80,
-                AchievedValue = 78,
-                Weight = 50,
-                SelfScore = 3.8m,
-                AssignedScore = 3.9m
-            }
+            var client = HttpFactory.CreateClient("ApiClient");
+            Kpi = await client.GetFromJsonAsync<KpiDto>($"api/kpi/self?empId=9&month={periodMonth}&year={periodYear}");
+
+            //StateHasChanged();
         }
-    };
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error fetching KPI: {ex.Message}");
 
-
+            Kpi = null;
+        }
+    }
 
     private void HandleSave(KpiDto savedKpi)
-
     {
-
         Console.WriteLine("Saved!");
 
         // TODO: send to API or persist changes

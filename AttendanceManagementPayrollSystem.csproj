@@ -4,11 +4,11 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>60622681-235e-4252-83f4-c32fc35c828a</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
     <Folder Include="Views\" />
-    <Folder Include="Models\" />
     <None Include="efpt.config.json.user" />
   </ItemGroup>
 
