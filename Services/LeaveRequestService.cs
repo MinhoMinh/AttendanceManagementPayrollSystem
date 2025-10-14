@@ -16,18 +16,37 @@ namespace AttendanceManagementPayrollSystem.Services
 
         public async Task<LeaveRequestDTO> AddAsync(LeaveRequestDTO dto)
         {
+
+            var totalDays = (dto.EndDate.ToDateTime(TimeOnly.MinValue) - dto.StartDate.ToDateTime(TimeOnly.MinValue)).TotalDays + 1;
+
             var entity = new LeaveRequest
             {
-                EmpId = 3, // gắn từ localStorage của Frontend
+
+                EmpId = 3,
                 StartDate = dto.StartDate,
                 EndDate = dto.EndDate,
                 Reason = dto.Reason,
                 Status = "Pending",
-                TypeId = 1, // bạn có thể fix cứng tạm thời hoặc map theo dto.LeaveType
+                NumbersOfDays = (decimal)totalDays,
+                TypeId = dto.typeId
             };
 
             await _repository.AddAsync(entity);
             return dto;
+        }
+        public async Task<IEnumerable<LeaveRequestDTO>> GetByEmployeeIdAsync(int empId)
+        {
+            var list = await _repository.GetByEmployeeIdAsync(empId);
+            return list.Select(lr => new LeaveRequestDTO
+            {
+                ReqId = lr.ReqId,
+                EmpId = lr.EmpId,
+                StartDate = lr.StartDate,
+                EndDate = lr.EndDate,
+                Reason = lr.Reason,
+                typeId = lr.TypeId,
+                Status = "Pending"
+            }).ToList();
         }
     }
 }

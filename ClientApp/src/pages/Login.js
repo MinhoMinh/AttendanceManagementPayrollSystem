@@ -34,6 +34,7 @@ export default function Login({ onLogin }) {
       if (onLogin) {
         onLogin(username);
       }
+      
     } catch (err) {
       alert("⚠️ Lỗi đăng nhập: " + err.message);
     }

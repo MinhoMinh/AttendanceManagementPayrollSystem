@@ -1,5 +1,6 @@
-﻿using System.Threading.Tasks;
-using AttendanceManagementPayrollSystem.Models;
+﻿using AttendanceManagementPayrollSystem.Models;
+using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks;
 
 namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
 {
@@ -12,12 +13,18 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
             _context = context;
         }
 
-        // ✅ Chỉ cần phương thức AddAsync để lưu dữ liệu
         public async Task<LeaveRequest> AddAsync(LeaveRequest request)
         {
             _context.LeaveRequests.Add(request);
             await _context.SaveChangesAsync();
             return request;
+        }
+        public async Task<IEnumerable<LeaveRequest>> GetByEmployeeIdAsync(int empId)
+        {
+            return await _context.LeaveRequests
+                .Where(lr => lr.EmpId == empId)
+                .OrderByDescending(lr => lr.ReqDate)
+                .ToListAsync();
         }
     }
 }

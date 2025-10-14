@@ -1,7 +1,7 @@
-﻿using AttendanceManagementPayrollSystem.DTOs;
-using AttendanceManagementPayrollSystem.Services;
-using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
+﻿    using AttendanceManagementPayrollSystem.DTOs;
+    using AttendanceManagementPayrollSystem.Services;
+    using Microsoft.AspNetCore.Mvc;
+    using System.Threading.Tasks;
 
 namespace AttendanceManagementPayrollSystem.Controllers
 {
@@ -24,6 +24,15 @@ namespace AttendanceManagementPayrollSystem.Controllers
 
             var created = await _service.AddAsync(dto);
             return Ok(created);
+        }
+
+        [HttpGet("history/{empId}")]
+        public async Task<IActionResult> GetHistory(int empId)
+        {
+            var history = await _service.GetByEmployeeIdAsync(empId);
+
+            // ✅ Luôn trả về Ok([]) thay vì NotFound
+            return Ok(history ?? Enumerable.Empty<LeaveRequestDTO>());
         }
     }
 }
