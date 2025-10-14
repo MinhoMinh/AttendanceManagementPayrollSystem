@@ -1,0 +1,191 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\MinhooMinh\\source\\repos\\AttendanceManagementPayrollSystem\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{3BBA1840-123F-4A58-B5CB-B6913A6CAF02}|AttendanceManagementPayrollSystem.csproj|c:\\users\\minhoominh\\source\\repos\\attendancemanagementpayrollsystem\\components\\pages\\login.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{3BBA1840-123F-4A58-B5CB-B6913A6CAF02}|AttendanceManagementPayrollSystem.csproj|solutionrelative:components\\pages\\login.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{3BBA1840-123F-4A58-B5CB-B6913A6CAF02}|AttendanceManagementPayrollSystem.csproj|c:\\users\\minhoominh\\source\\repos\\attendancemanagementpayrollsystem\\components\\pages\\example.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{3BBA1840-123F-4A58-B5CB-B6913A6CAF02}|AttendanceManagementPayrollSystem.csproj|solutionrelative:components\\pages\\example.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{3BBA1840-123F-4A58-B5CB-B6913A6CAF02}|AttendanceManagementPayrollSystem.csproj|c:\\users\\minhoominh\\source\\repos\\attendancemanagementpayrollsystem\\controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{3BBA1840-123F-4A58-B5CB-B6913A6CAF02}|AttendanceManagementPayrollSystem.csproj|solutionrelative:controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{3BBA1840-123F-4A58-B5CB-B6913A6CAF02}|AttendanceManagementPayrollSystem.csproj|c:\\users\\minhoominh\\source\\repos\\attendancemanagementpayrollsystem\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{3BBA1840-123F-4A58-B5CB-B6913A6CAF02}|AttendanceManagementPayrollSystem.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{3BBA1840-123F-4A58-B5CB-B6913A6CAF02}|AttendanceManagementPayrollSystem.csproj|c:\\users\\minhoominh\\source\\repos\\attendancemanagementpayrollsystem\\clientapp\\src\\pages\\login.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
+      "RelativeMoniker": "D:0:0:{3BBA1840-123F-4A58-B5CB-B6913A6CAF02}|AttendanceManagementPayrollSystem.csproj|solutionrelative:clientapp\\src\\pages\\login.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{3BBA1840-123F-4A58-B5CB-B6913A6CAF02}|AttendanceManagementPayrollSystem.csproj|c:\\users\\minhoominh\\source\\repos\\attendancemanagementpayrollsystem\\services\\kpiserviceimpl.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{3BBA1840-123F-4A58-B5CB-B6913A6CAF02}|AttendanceManagementPayrollSystem.csproj|solutionrelative:services\\kpiserviceimpl.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{3BBA1840-123F-4A58-B5CB-B6913A6CAF02}|AttendanceManagementPayrollSystem.csproj|c:\\users\\minhoominh\\source\\repos\\attendancemanagementpayrollsystem\\controllers\\kpicontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{3BBA1840-123F-4A58-B5CB-B6913A6CAF02}|AttendanceManagementPayrollSystem.csproj|solutionrelative:controllers\\kpicontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{3BBA1840-123F-4A58-B5CB-B6913A6CAF02}|AttendanceManagementPayrollSystem.csproj|c:\\users\\minhoominh\\source\\repos\\attendancemanagementpayrollsystem\\clientapp\\src\\pages\\dashboard.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
+      "RelativeMoniker": "D:0:0:{3BBA1840-123F-4A58-B5CB-B6913A6CAF02}|AttendanceManagementPayrollSystem.csproj|solutionrelative:clientapp\\src\\pages\\dashboard.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{3BBA1840-123F-4A58-B5CB-B6913A6CAF02}|AttendanceManagementPayrollSystem.csproj|c:\\users\\minhoominh\\source\\repos\\attendancemanagementpayrollsystem\\dto\\kpidto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{3BBA1840-123F-4A58-B5CB-B6913A6CAF02}|AttendanceManagementPayrollSystem.csproj|solutionrelative:dto\\kpidto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{3BBA1840-123F-4A58-B5CB-B6913A6CAF02}|AttendanceManagementPayrollSystem.csproj|c:\\users\\minhoominh\\source\\repos\\attendancemanagementpayrollsystem\\dataaccess\\repositories\\payrollrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{3BBA1840-123F-4A58-B5CB-B6913A6CAF02}|AttendanceManagementPayrollSystem.csproj|solutionrelative:dataaccess\\repositories\\payrollrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 2,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:128:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "AuthController.cs",
+              "DocumentMoniker": "C:\\Users\\MinhooMinh\\source\\repos\\AttendanceManagementPayrollSystem\\Controllers\\AuthController.cs",
+              "RelativeDocumentMoniker": "Controllers\\AuthController.cs",
+              "ToolTip": "C:\\Users\\MinhooMinh\\source\\repos\\AttendanceManagementPayrollSystem\\Controllers\\AuthController.cs",
+              "RelativeToolTip": "Controllers\\AuthController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAA2AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-13T14:57:47.206Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Login.razor",
+              "DocumentMoniker": "C:\\Users\\MinhooMinh\\source\\repos\\AttendanceManagementPayrollSystem\\Components\\Pages\\Login.razor",
+              "RelativeDocumentMoniker": "Components\\Pages\\Login.razor",
+              "ToolTip": "C:\\Users\\MinhooMinh\\source\\repos\\AttendanceManagementPayrollSystem\\Components\\Pages\\Login.razor",
+              "RelativeToolTip": "Components\\Pages\\Login.razor",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-10-13T14:30:16.705Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Example.razor",
+              "DocumentMoniker": "C:\\Users\\MinhooMinh\\source\\repos\\AttendanceManagementPayrollSystem\\Components\\Pages\\Example.razor",
+              "RelativeDocumentMoniker": "Components\\Pages\\Example.razor",
+              "ToolTip": "C:\\Users\\MinhooMinh\\source\\repos\\AttendanceManagementPayrollSystem\\Components\\Pages\\Example.razor",
+              "RelativeToolTip": "Components\\Pages\\Example.razor",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAEAAAAdAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-10-13T14:26:08.182Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "Login.js",
+              "DocumentMoniker": "C:\\Users\\MinhooMinh\\source\\repos\\AttendanceManagementPayrollSystem\\ClientApp\\src\\pages\\Login.js",
+              "RelativeDocumentMoniker": "ClientApp\\src\\pages\\Login.js",
+              "ToolTip": "C:\\Users\\MinhooMinh\\source\\repos\\AttendanceManagementPayrollSystem\\ClientApp\\src\\pages\\Login.js",
+              "RelativeToolTip": "ClientApp\\src\\pages\\Login.js",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABAAAAAJAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
+              "WhenOpened": "2025-10-13T14:21:44.965Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "Dashboard.js",
+              "DocumentMoniker": "C:\\Users\\MinhooMinh\\source\\repos\\AttendanceManagementPayrollSystem\\ClientApp\\src\\pages\\Dashboard.js",
+              "RelativeDocumentMoniker": "ClientApp\\src\\pages\\Dashboard.js",
+              "ToolTip": "C:\\Users\\MinhooMinh\\source\\repos\\AttendanceManagementPayrollSystem\\ClientApp\\src\\pages\\Dashboard.js",
+              "RelativeToolTip": "ClientApp\\src\\pages\\Dashboard.js",
+              "ViewState": "AgIAAD4AAAAAAAAAAAAQwEoAAABFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
+              "WhenOpened": "2025-10-13T13:01:15.664Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "KpiController.cs",
+              "DocumentMoniker": "C:\\Users\\MinhooMinh\\source\\repos\\AttendanceManagementPayrollSystem\\Controllers\\KpiController.cs",
+              "RelativeDocumentMoniker": "Controllers\\KpiController.cs",
+              "ToolTip": "C:\\Users\\MinhooMinh\\source\\repos\\AttendanceManagementPayrollSystem\\Controllers\\KpiController.cs",
+              "RelativeToolTip": "Controllers\\KpiController.cs",
+              "ViewState": "AgIAACEAAAAAAAAAAAAowCEAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-13T12:52:49.718Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "KPIServiceImpl.cs",
+              "DocumentMoniker": "C:\\Users\\MinhooMinh\\source\\repos\\AttendanceManagementPayrollSystem\\Services\\KPIServiceImpl.cs",
+              "RelativeDocumentMoniker": "Services\\KPIServiceImpl.cs",
+              "ToolTip": "C:\\Users\\MinhooMinh\\source\\repos\\AttendanceManagementPayrollSystem\\Services\\KPIServiceImpl.cs",
+              "RelativeToolTip": "Services\\KPIServiceImpl.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABgAAAAmAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-13T11:51:37.096Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "KpiDto.cs",
+              "DocumentMoniker": "C:\\Users\\MinhooMinh\\source\\repos\\AttendanceManagementPayrollSystem\\DTO\\KpiDto.cs",
+              "RelativeDocumentMoniker": "DTO\\KpiDto.cs",
+              "ToolTip": "C:\\Users\\MinhooMinh\\source\\repos\\AttendanceManagementPayrollSystem\\DTO\\KpiDto.cs",
+              "RelativeToolTip": "DTO\\KpiDto.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAAmAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-13T06:50:15.308Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "PayrollRepository.cs",
+              "DocumentMoniker": "C:\\Users\\MinhooMinh\\source\\repos\\AttendanceManagementPayrollSystem\\DataAccess\\Repositories\\PayrollRepository.cs",
+              "RelativeDocumentMoniker": "DataAccess\\Repositories\\PayrollRepository.cs",
+              "ToolTip": "C:\\Users\\MinhooMinh\\source\\repos\\AttendanceManagementPayrollSystem\\DataAccess\\Repositories\\PayrollRepository.cs",
+              "RelativeToolTip": "DataAccess\\Repositories\\PayrollRepository.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAyAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-13T03:47:33.13Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\MinhooMinh\\source\\repos\\AttendanceManagementPayrollSystem\\Program.cs",
+              "RelativeDocumentMoniker": "Program.cs",
+              "ToolTip": "C:\\Users\\MinhooMinh\\source\\repos\\AttendanceManagementPayrollSystem\\Program.cs",
+              "RelativeToolTip": "Program.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAB0AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-13T03:34:27.565Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

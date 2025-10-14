@@ -13,15 +13,22 @@
 
             if (role == "employee")
             {
-                if (today >= startSelf && today < endSelf)
-                    return "self";
+                //if (today >= startSelf && today < endSelf)
+                //    return "self";
+                //return "view";
+
+                return "self";
+            }
+
+            if (role == "head")
+            {
+                if (today >= endSelf && today < endAssign)
+                    return "assign";
                 return "view";
             }
 
             if (role == "manager")
             {
-                if (today >= endSelf && today < endAssign)
-                    return "assign";
                 return "view";
             }
 

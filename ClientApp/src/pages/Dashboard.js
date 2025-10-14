@@ -75,6 +75,15 @@ function Dashboard() {
                         onClick={() => navigate("/generate-payroll")}
                     />)}
 
+                {hasPermission("has_kpi") && (
+                    <CustomButton
+                        image={leavequestIcon}
+                        label="Self KPI"
+                        onClick={() => {
+                            window.location.href = '/kpi/self';
+                        }}
+                    />)}
+
                 <CustomButton
                     image={payrollIcon}
                     label="Payroll"

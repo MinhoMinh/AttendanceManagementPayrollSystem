@@ -73,7 +73,8 @@ export default function Login({ onLogin }) {
           />
           <button type="submit">Đăng nhập</button>
         </form>
-      </div>
+          </div>
+          <a href="/blazor/index.html">Go to Blazor</a>
     </div>
   );
 }

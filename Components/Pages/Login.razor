@@ -1,0 +1,68 @@
+﻿@page "/"
+@page "/login"
+
+@using AttendanceManagementPayrollSystem.DTO
+@inject IHttpClientFactory HttpFactory
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+
+<h2>Đăng nhập</h2>
+
+@if (!string.IsNullOrEmpty(ErrorMessage))
+{
+    <div style="color:red">@ErrorMessage</div>
+}
+
+<EditForm Model="loginRequest" OnValidSubmit="HandleLogin" FormName="LoginForm">
+    <InputText @bind-Value="loginRequest.Username" placeholder="Tên đăng nhập" />
+    <InputText @bind-Value="loginRequest.Password" type="password" placeholder="Mật khẩu" />
+    <button type="submit">Đăng nhập</button>
+</EditForm>
+
+@code {
+    private LoginRequest loginRequest = new();
+    private string ErrorMessage;
+
+    private async Task HandleLogin()
+    {
+        try
+        {
+            var client = HttpFactory.CreateClient();
+
+            Console.WriteLine($"username: {loginRequest.Username}");
+            Console.WriteLine($"Password: {loginRequest.Password}");
+
+            var response = await client.PostAsJsonAsync(
+                "http://localhost:5038/api/auth/login", loginRequest);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                ErrorMessage = await response.Content.ReadAsStringAsync() ?? "Đăng nhập thất bại";
+                return;
+            }
+
+            // Deserialize directly to EmployeeDTO
+            var employeeDto = await response.Content.ReadFromJsonAsync<EmployeeDTO>();
+
+            // if (employeeDto?.Token != null)
+            // {
+            //     await JS.InvokeVoidAsync("localStorage.setItem", "token", employeeDto.Token);
+            // }
+
+            if (employeeDto?.EmpId != null)
+            {
+                var employeeJson = System.Text.Json.JsonSerializer.Serialize(employeeDto);
+                await JS.InvokeVoidAsync("localStorage.setItem", "employee", employeeJson);
+
+                // Optional: console log in browser
+                await JS.InvokeVoidAsync("console.log", employeeDto.EmpName, employeeDto.EmpRole, employeeDto.Permissions);
+            }
+
+            Navigation.NavigateTo("/kpi/self");
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = "Lỗi đăng nhập: " + ex.Message;
+        }
+    }
+}

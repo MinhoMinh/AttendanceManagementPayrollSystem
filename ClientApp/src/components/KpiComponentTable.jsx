@@ -1,8 +1,13 @@
-﻿import { useState } from "react";
+﻿import { useState, useEffect } from "react";
 
-export default function KpiComponentTable({ components, mode = "view", onChange, onSave }) {
+export default function KpiComponentTable({ components, mode = "view", onSave }) {
+    const editable = mode !== "view";
     const [localComponents, setLocalComponents] = useState(components || []);
     const [error, setError] = useState("");
+
+    useEffect(() => {
+        setLocalComponents(components || []);
+    }, [components]);
 
     const handleChange = (id, field, value) => {
         let val = value;
@@ -16,7 +21,6 @@ export default function KpiComponentTable({ components, mode = "view", onChange,
             c.kpiComponentId === id ? { ...c, [field]: val } : c
         );
         setLocalComponents(updated);
-        if (onChange) onChange(id, field, val);
     };
 
     const handleAdd = () => {
@@ -63,12 +67,16 @@ export default function KpiComponentTable({ components, mode = "view", onChange,
             }
         }
         setError("");
-        if (onSave) onSave(localComponents);
+        onSave?.(localComponents);
     };
 
     return (
         <div>
-            <table border="1" cellPadding="5" style={{ borderCollapse: "collapse", width: "100%" }}>
+            <table
+                border="1"
+                cellPadding="5"
+                style={{ borderCollapse: "collapse", width: "100%" }}
+            >
                 <thead>
                     <tr>
                         <th>Name</th>
@@ -84,88 +92,40 @@ export default function KpiComponentTable({ components, mode = "view", onChange,
                 <tbody>
                     {localComponents.map((item) => (
                         <tr key={item.kpiComponentId}>
-                            <td>
-                                {isEditable("name") ? (
-                                    <input
-                                        value={item.name}
-                                        onChange={(e) => handleChange(item.kpiComponentId, "name", e.target.value)}
-                                    />
-                                ) : (
-                                    item.name
-                                )}
-                            </td>
-                            <td>
-                                {isEditable("description") ? (
-                                    <input
-                                        value={item.description}
-                                        onChange={(e) => handleChange(item.kpiComponentId, "description", e.target.value)}
-                                    />
-                                ) : (
-                                    item.description
-                                )}
-                            </td>
-                            <td>
-                                {isEditable("targetValue") ? (
-                                    <input
-                                        type="number"
-                                        value={item.targetValue}
-                                        onChange={(e) => handleChange(item.kpiComponentId, "targetValue", e.target.value)}
-                                    />
-                                ) : (
-                                    item.targetValue
-                                )}
-                            </td>
-                            <td>
-                                {isEditable("achievedValue") ? (
-                                    <input
-                                        type="number"
-                                        value={item.achievedValue ?? ""}
-                                        onChange={(e) => handleChange(item.kpiComponentId, "achievedValue", e.target.value)}
-                                    />
-                                ) : (
-                                    item.achievedValue ?? "-"
-                                )}
-                            </td>
-                            <td>
-                                {isEditable("weight") ? (
-                                    <input
-                                        type="number"
-                                        value={item.weight}
-                                        onChange={(e) => handleChange(item.kpiComponentId, "weight", e.target.value)}
-                                    />
-                                ) : (
-                                    item.weight
-                                )}
-                            </td>
-                            <td>
-                                {isEditable("selfScore") ? (
-                                    <input
-                                        type="number"
-                                        min="0"
-                                        max="10"
-                                        value={item.selfScore ?? ""}
-                                        onChange={(e) => handleChange(item.kpiComponentId, "selfScore", e.target.value)}
-                                    />
-                                ) : (
-                                    item.selfScore ?? "-"
-                                )}
-                            </td>
-                            <td>
-                                {isEditable("assignedScore") ? (
-                                    <input
-                                        type="number"
-                                        min="0"
-                                        max="10"
-                                        value={item.assignedScore ?? ""}
-                                        onChange={(e) => handleChange(item.kpiComponentId, "assignedScore", e.target.value)}
-                                    />
-                                ) : (
-                                    item.assignedScore ?? "-"
-                                )}
-                            </td>
+                            {[
+                                "name",
+                                "description",
+                                "targetValue",
+                                "achievedValue",
+                                "weight",
+                                "selfScore",
+                                "assignedScore",
+                            ].map((field) => (
+                                <td key={field}>
+                                    {isEditable(field) ? (
+                                        <input
+                                            type={
+                                                ["targetValue", "achievedValue", "weight", "selfScore", "assignedScore"].includes(field)
+                                                    ? "number"
+                                                    : "text"
+                                            }
+                                            value={item[field] ?? ""}
+                                            onChange={(e) =>
+                                                handleChange(item.kpiComponentId, field, e.target.value)
+                                            }
+                                            min={["selfScore", "assignedScore"].includes(field) ? "0" : undefined}
+                                            max={["selfScore", "assignedScore"].includes(field) ? "10" : undefined}
+                                        />
+                                    ) : (
+                                        item[field] ?? "-"
+                                    )}
+                                </td>
+                            ))}
                             {mode === "edit" && (
                                 <td>
-                                    <button onClick={() => handleRemove(item.kpiComponentId)}>Remove</button>
+                                    <button onClick={() => handleRemove(item.kpiComponentId)}>
+                                        Remove
+                                    </button>
                                 </td>
                             )}
                         </tr>
@@ -173,9 +133,7 @@ export default function KpiComponentTable({ components, mode = "view", onChange,
                 </tbody>
             </table>
 
-            {error && (
-                <div style={{ color: "red", marginTop: "10px" }}>{error}</div>
-            )}
+            {error && <div style={{ color: "red", marginTop: "10px" }}>{error}</div>}
 
             {mode === "edit" && (
                 <div style={{ marginTop: "10px" }}>
@@ -183,10 +141,13 @@ export default function KpiComponentTable({ components, mode = "view", onChange,
                 </div>
             )}
 
-            {mode !== "view" && onSave && (
-                <div style={{ marginTop: "10px" }}>
-                    <button onClick={handleSave}>Save</button>
-                </div>
+            {editable && (
+                <button
+                    onClick={() => onSave(localComponents)}
+                    style={{ marginTop: "10px", padding: "8px 14px" }}
+                >
+                    💾 Lưu thay đổi
+                </button>
             )}
         </div>
     );

@@ -13,46 +13,63 @@ namespace AttendanceManagementPayrollSystem.Services
             _context = context;
         }
 
-        public async Task<KpiDto?> GetKpiAsync(int empId, int month, int year)
+        public async Task<KpiDto?> GetKpiBySelfAsync(int empId, int month, int year)
         {
-            var employee = await _context.Employees
-            .Where(e => e.EmpId == empId)
-            .Include(e => e.KpiEmps)
-                .ThenInclude(k => k.Kpicomponents)
-            .FirstOrDefaultAsync();
-
-            if (employee == null)
-                return null;
-
-            var kpi = employee.KpiEmps
-                .FirstOrDefault(k => k.PeriodYear == year && k.PeriodMonth == month);
-
-#pragma warning disable CS8601 // Possible null reference assignment.
-            var dto = new KpiDto
+            var kpi = await _context.Kpis
+        .Include(k => k.Kpicomponents)
+        .Where(k => k.EmpId == empId && k.PeriodMonth == month && k.PeriodYear == year)
+        .Select(k => new KpiDto
+        {
+            KpiId = k.KpiId,
+            PeriodMonth = k.PeriodMonth,
+            PeriodYear = k.PeriodYear,
+            KpiRate = k.KpiRate,
+            //KpiMode = KPIAccessHelper.GetKpiMode(k.PeriodMonth, k.PeriodYear, "employee"),
+            KpiMode = "self",
+            Components = k.Kpicomponents.Select(c => new KpiComponentDto
             {
-                KpiId = kpi.KpiId,
-                PeriodYear = kpi.PeriodYear,
-                PeriodMonth = kpi.PeriodMonth,
-                KpiRate = kpi.KpiRate,
-                KpiMode = KPIAccessHelper.GetKpiMode(kpi.PeriodYear, kpi.PeriodMonth, "employee"),
-                Components = kpi.Kpicomponents.Select(c => new KpiComponentDto
-                {
-                    KpiComponentId = c.KpiCompId,
-                    Name = c.Name,
-                    Description = c.Description,
-                    TargetValue = c.TargetValue,
-                    AchievedValue = c.AchievedValue,   // now nullable
-                    Weight = c.Weight,
-                    SelfScore = c.SelfScore,           // now nullable
-                    AssignedScore = c.AssignedScore    // now nullable
-                }).ToList()
+                KpiComponentId = c.KpiCompId,
+                Name = c.Name,
+                Description = c.Description,
+                TargetValue = c.TargetValue,
+                AchievedValue = c.AchievedValue,
+                Weight = c.Weight,
+                SelfScore = c.SelfScore,
+                AssignedScore = c.AssignedScore
+            }).ToList()
+        })
+        .FirstOrDefaultAsync();
 
-            };
-#pragma warning restore CS8601 // Possible null reference assignment.
-
-            return dto;
-
+            return kpi;
         }
+
+        public async Task SaveKpiAsync(int empId, KpiDto kpiDto)
+        {
+            var kpi = await _context.Kpis
+                .Include(k => k.Kpicomponents)
+                .FirstOrDefaultAsync(k =>
+                    k.EmpId == empId &&
+                    k.PeriodMonth == kpiDto.PeriodMonth &&
+                    k.PeriodYear == kpiDto.PeriodYear);
+
+            if (kpi == null)
+                throw new KeyNotFoundException("KPI not found for this employee and period.");
+
+            foreach (var compDto in kpiDto.Components)
+            {
+                var comp = kpi.Kpicomponents.FirstOrDefault(c => c.KpiCompId == compDto.KpiComponentId);
+                if (comp != null)
+                {
+                    comp.AchievedValue = compDto.AchievedValue;
+                    comp.SelfScore = compDto.SelfScore;
+                    comp.AchievedValue = compDto.AchievedValue;
+                }
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
+
 
         //public async Task SaveEmployeeKpiAsync(int empId, string phase, EmployeeWithKpiDTO updatedKpi)
         //{
