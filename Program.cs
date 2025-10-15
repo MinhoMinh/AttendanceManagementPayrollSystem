@@ -41,6 +41,12 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.WriteIndented = true;
     });
 
+builder.Services.AddScoped<EmployeeRepository, EmployeeRepositoryImpl>(); // Đăng ký EmployeeRepositoryImpl
+builder.Services.AddScoped<AuthService, AuthServiceImpl>(); // Đăng ký AuthServiceImpl
+builder.Services.AddScoped<ILeaveRequestRepository, LeaveRequestRepositoryImpl>();
+builder.Services.AddScoped<ILeaveRequestService, LeaveRequestServiceImpl>();
+
+
 RepositoryManager.DoScoped(builder);
 
 builder.Services.AddHttpClient("ApiClient", client =>

@@ -40,7 +40,7 @@ namespace AttendanceManagementPayrollSystem.Services
 
             return new EmployeeDTO
             {
-                EmpId = employee.EmpId,
+                EmpId = 3,
                 EmpName = employee.EmpName,
                 EmpRole = empRole.RoleName,
                 Permissions = empRole.Permissions.Select(r => r.PermissionName).ToList()
