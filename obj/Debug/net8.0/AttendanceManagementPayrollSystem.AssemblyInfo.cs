@@ -15,7 +15,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("AttendanceManagementPayrollSystem")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1cf18e15864dd665955d5bf9aea7bef5410da6c6")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+52e1eb0a04d15668683eb69210ce145b259e862b")]
 [assembly: System.Reflection.AssemblyProductAttribute("AttendanceManagementPayrollSystem")]
 [assembly: System.Reflection.AssemblyTitleAttribute("AttendanceManagementPayrollSystem")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
