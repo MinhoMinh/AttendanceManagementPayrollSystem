@@ -4,12 +4,12 @@ using AttendanceManagementPayrollSystem.Models;
 
 namespace AttendanceManagementPayrollSystem.Services
 {
-    public class PayrollServiceImpl : PayrollService
+    public class PayRunServiceImpl : PayRunService
     {
         private readonly ClockinRepository _clockinRepo;
-        private readonly PayrollRepository _payrollRepo;
+        private readonly PayRunRepository _payrollRepo;
 
-        public PayrollServiceImpl(ClockinRepository clockinRepo, PayrollRepository payrollRepo)
+        public PayRunServiceImpl(ClockinRepository clockinRepo, PayRunRepository payrollRepo)
         {
             _clockinRepo = clockinRepo;
             _payrollRepo = payrollRepo;
@@ -17,7 +17,7 @@ namespace AttendanceManagementPayrollSystem.Services
 
         public async Task<PayrollRunDTO> GeneratePayrollAsync(string name, int periodMonth, int periodYear, int createdBy)
         {
-            var run = new PayrollRun
+            var run = new PayRun
             {
                 Name = name,
                 PeriodMonth = periodMonth,
@@ -114,26 +114,80 @@ namespace AttendanceManagementPayrollSystem.Services
             return ToDTO(payroll);
         }
 
-        public async Task<IEnumerable<PayrollRunDTO>> GetAllAsync()
+        public async Task<IEnumerable<PayRunBasicDto>> GetAllAsync()
         {
             var runs = await _payrollRepo.GetAllAsync();
-            return runs.Select(ToDTO);
+            return runs.Select(ToBasicDTO);
         }
 
+        public async Task<PayRunDto?> GetPayRunAsync(int id)
+        {
+            var run = await _payrollRepo.GetDtoAsync(id);
+            return run;
+        }
 
-        private PayrollRunDTO ToDTO(PayrollRun savedRun)
+        
+
+        private PayRunBasicDto ToBasicDTO(PayRun run)
+        {
+
+
+            var dto = new PayRunBasicDto
+            {
+                PayrollRunId = run.PayrollRunId,
+                Name = run.Name,
+                PeriodMonth = run.PeriodMonth,
+                PeriodYear = run.PeriodYear,
+                Status = run.Status,
+                CreatedDate = run.CreatedDate
+            };
+
+            return dto;
+        }
+
+        //private PayRunDto? ToPayRunDTO(PayRun run)
+        //{
+        //    if (run == null) return null;
+
+
+        //    var dto = new PayRunDto
+        //    {
+        //        PayrollRunId = run.PayrollRunId,
+        //        Name = run.Name,
+        //        PeriodMonth = run.PeriodMonth,
+        //        PeriodYear = run.PeriodYear,
+        //        Status = run.Status,
+        //        CreatedDate = run.CreatedDate,
+        //        ApprovedFirstBy = run.ApprovedFirstBy,
+        //        ApprovedFinalBy = run.ApprovedFinalBy,
+        //        Previews = run.EmployeeSalaryPreviews
+        //    .Select(p => new EmployeeSalaryPreviewDTO
+        //    {
+        //        EmpId = p.EmpId,
+        //        BaseSalary = p.BaseSalary,
+        //        GrossSalary = p.GrossSalary,
+        //        TotalDeductions = p.TotalDeductions,
+        //        NetSalary = p.NetSalary
+        //    }).ToList()
+        //    };
+
+        //    return dto;
+        //}
+
+
+        private PayrollRunDTO ToDTO(PayRun run)
         {
             var dto = new PayrollRunDTO
             {
-                PayrollRunId = savedRun.PayrollRunId,
-                Name = savedRun.Name,
-                PeriodMonth = savedRun.PeriodMonth,
-                PeriodYear = savedRun.PeriodYear,
-                Status = savedRun.Status,
-                CreatedDate = savedRun.CreatedDate,
-                ApprovedFirstBy = savedRun.ApprovedFirstBy,
-                ApprovedFinalBy = savedRun.ApprovedFinalBy,
-                Previews = savedRun.EmployeeSalaryPreviews
+                PayrollRunId = run.PayrollRunId,
+                Name = run.Name,
+                PeriodMonth = run.PeriodMonth,
+                PeriodYear = run.PeriodYear,
+                Status = run.Status,
+                CreatedDate = run.CreatedDate,
+                ApprovedFirstBy = run.ApprovedFirstBy,
+                ApprovedFinalBy = run.ApprovedFinalBy,
+                Previews = run.EmployeeSalaryPreviews
             .Select(p => new EmployeeSalaryPreviewDTO
             {
                 EmpId = p.EmpId,
@@ -146,6 +200,8 @@ namespace AttendanceManagementPayrollSystem.Services
 
             return dto;
         }
+
+
 
         
     }

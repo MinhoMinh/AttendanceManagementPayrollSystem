@@ -1,0 +1,78 @@
+﻿@page "/payruns/{id:int}"
+@using AttendanceManagementPayrollSystem.DTO
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+@inject IHttpClientFactory HttpFactory
+
+<h3>Pay Run View</h3>
+
+@if (isLoading)
+{
+    <p>Loading...</p>
+}
+else if (loadError)
+{
+    <div class="alert alert-danger">Failed to load pay run data.</div>
+}
+else if (payRun is null)
+{
+    <div class="alert alert-warning">No data found for this Pay Run.</div>
+}
+else
+{
+    <div class="row">
+        <div class="col-2">
+            <PayRunDetails PayRun="@payRun" />
+        </div>
+
+        <div class="col-8">
+            <PayRunItemList Items="@payRun.PayRunItems" OnItemSelected="@SelectItem" />
+        </div>
+
+        <div class="col-2">
+            <PayRunItemDetails Item="@selectedItem" />
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private PayRunDto? payRun;
+    private PayRunItemDto? selectedItem;
+    private bool isLoading = true;
+    private bool loadError = false;
+
+    private void SelectItem(PayRunItemDto item)
+    {
+        selectedItem = item;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var client = HttpFactory.CreateClient("ApiClient");
+
+            var response = await client.GetAsync($"api/pay-run/{Id}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                payRun = await response.Content.ReadFromJsonAsync<PayRunDto>();
+            }
+            else
+            {
+                loadError = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error loading PayRun: {ex.Message}");
+            loadError = true;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}

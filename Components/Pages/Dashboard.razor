@@ -1,0 +1,63 @@
+﻿@page "/dashboard"
+
+@using AttendanceManagementPayrollSystem.DTO
+@using System.Text.Json
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+
+<DashboardButtonGroup Buttons="@Group1" GroupName="Employee Service" />
+<DashboardButtonGroup Buttons="@Group2" GroupName="Department Head Service" />
+
+@code {
+    private EmployeeDTO? Employee;
+
+    private List<DashboardButton> Group1 = new();
+    private List<DashboardButton> Group2 = new();
+
+    private void BuildButtonGroups()
+    {
+        if (Employee == null) return;
+
+        Group1 = new List<DashboardButton>
+        {
+            new() { Label = "Attendance", OnClick = EventCallback.Factory.Create(this, NavigateAttendance), Visible = HasPermission("has_clockin") },
+            new() { Label = "Self KPI", OnClick = EventCallback.Factory.Create(this, NavigateSelfKpi), Visible = HasPermission("has_kpi") },
+        };
+
+        Group2 = new List<DashboardButton>
+        {
+            new() { Label = "Dep KPI", OnClick = EventCallback.Factory.Create(this, NavigateDepKpi), Visible = HasPermission("assign_kpi") },
+        };
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+
+        try
+        {
+            var empJson = await JS.InvokeAsync<string>("localStorage.getItem", "employee");
+            if (!string.IsNullOrWhiteSpace(empJson))
+            {
+                Employee = JsonSerializer.Deserialize<EmployeeDTO>(empJson);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+        }
+
+        BuildButtonGroups();
+        StateHasChanged();
+    }
+
+    private bool HasPermission(string task)
+    {
+        if (Employee?.Permissions == null) return false;
+        return Employee.Permissions.Contains(task);
+    }
+
+    private void NavigateAttendance() => Navigation.NavigateTo("/attendance");
+    private void NavigateSelfKpi() => Navigation.NavigateTo("/kpi/self");
+    private void NavigateDepKpi() => Navigation.NavigateTo("/kpi/head");
+}

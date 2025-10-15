@@ -29,7 +29,7 @@ builder.Services.AddCors(options =>
 
 
 // Register services
-builder.Services.AddScoped<PayrollService, PayrollServiceImpl>();
+builder.Services.AddScoped<PayRunService, PayRunServiceImpl>();
 builder.Services.AddScoped<KPIService, KPIServiceImpl>();
 builder.Services.AddScoped<ClockinService, ClockinServiceImpl>();
 builder.Services.AddScoped<AuthService, AuthServiceImpl>();

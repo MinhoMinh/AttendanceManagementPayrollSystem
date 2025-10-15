@@ -47,5 +47,5 @@ public partial class EmployeeSalaryPreview
 
     public virtual InsuranceRateSet InsuranceRateSet { get; set; }
 
-    public virtual PayrollRun PayrollRun { get; set; }
+    public virtual PayRun PayrollRun { get; set; }
 }

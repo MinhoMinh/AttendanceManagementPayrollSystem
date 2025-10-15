@@ -61,9 +61,11 @@ public partial class Employee
 
     public virtual ICollection<OvertimeRequest> OvertimeRequestEmps { get; set; } = new List<OvertimeRequest>();
 
-    public virtual ICollection<PayrollRun> PayrollRunApprovedFinalByNavigations { get; set; } = new List<PayrollRun>();
+    public virtual ICollection<PayRun> PayRunApprovedFinalByNavigations { get; set; } = new List<PayRun>();
 
-    public virtual ICollection<PayrollRun> PayrollRunApprovedFirstByNavigations { get; set; } = new List<PayrollRun>();
+    public virtual ICollection<PayRun> PayRunApprovedFirstByNavigations { get; set; } = new List<PayRun>();
 
-    public virtual ICollection<PayrollRun> PayrollRunCreatedByNavigations { get; set; } = new List<PayrollRun>();
+    public virtual ICollection<PayRun> PayRunCreatedByNavigations { get; set; } = new List<PayRun>();
+
+    public virtual ICollection<PayRunItem> PayRunItems { get; set; } = new List<PayRunItem>();
 }

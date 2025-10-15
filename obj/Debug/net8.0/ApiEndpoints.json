@@ -18,7 +18,7 @@
   {
     "ContainingType": "AttendanceManagementPayrollSystem.Controllers.ClockinController",
     "Method": "GetClockinsByEmployee",
-    "RelativePath": "api/Clockin/employee/{empId}",
+    "RelativePath": "api/clockin/employee/{empId}",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
@@ -39,6 +39,16 @@
         "IsRequired": false
       }
     ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "AttendanceManagementPayrollSystem.Controllers.ClockinController",
+    "Method": "UploadXls",
+    "RelativePath": "api/clockin/uploadxls",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
     "ReturnTypes": []
   },
   {
@@ -66,6 +76,187 @@
       }
     ],
     "ReturnTypes": []
+  },
+  {
+    "ContainingType": "AttendanceManagementPayrollSystem.Controllers.KpiController",
+    "Method": "GetEmployeesWithKpiByHeadAsync",
+    "RelativePath": "api/Kpi/head",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "headId",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "month",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "year",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.List\u00601[[AttendanceManagementPayrollSystem.DTO.EmployeeBasicDTO, AttendanceManagementPayrollSystem, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "AttendanceManagementPayrollSystem.Controllers.KpiController",
+    "Method": "SaveAssignedScore",
+    "RelativePath": "api/Kpi/head/{empId}/assign",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "empId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "kpiDto",
+        "Type": "AttendanceManagementPayrollSystem.DTO.KpiDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "AttendanceManagementPayrollSystem.Controllers.KpiController",
+    "Method": "EditKpi",
+    "RelativePath": "api/Kpi/head/{empId}/edit",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "empId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "kpiDto",
+        "Type": "AttendanceManagementPayrollSystem.DTO.KpiDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "AttendanceManagementPayrollSystem.Controllers.KpiController",
+    "Method": "GetKpiByManager",
+    "RelativePath": "api/Kpi/head/kpi",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "empId",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "month",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "year",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "AttendanceManagementPayrollSystem.DTO.KpiDto",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "AttendanceManagementPayrollSystem.Controllers.KpiController",
+    "Method": "GetEmployeesWithKpiAsync",
+    "RelativePath": "api/Kpi/manager",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "month",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "year",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.List\u00601[[AttendanceManagementPayrollSystem.DTO.EmployeeBasicDTO, AttendanceManagementPayrollSystem, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "AttendanceManagementPayrollSystem.Controllers.KpiController",
+    "Method": "GetKpiByHead",
+    "RelativePath": "api/Kpi/manager/kpi",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "empId",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "month",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "year",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "AttendanceManagementPayrollSystem.DTO.KpiDto",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
   },
   {
     "ContainingType": "AttendanceManagementPayrollSystem.Controllers.KpiController",
@@ -125,19 +316,55 @@
     "ReturnTypes": []
   },
   {
-    "ContainingType": "AttendanceManagementPayrollSystem.Controllers.PayrollController",
+    "ContainingType": "AttendanceManagementPayrollSystem.Controllers.PayRunController",
     "Method": "GetAll",
-    "RelativePath": "api/Payroll",
+    "RelativePath": "api/pay-run",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
     "Parameters": [],
-    "ReturnTypes": []
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.List\u00601[[AttendanceManagementPayrollSystem.DTO.PayRunBasicDto, AttendanceManagementPayrollSystem, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
   },
   {
-    "ContainingType": "AttendanceManagementPayrollSystem.Controllers.PayrollController",
+    "ContainingType": "AttendanceManagementPayrollSystem.Controllers.PayRunController",
+    "Method": "GetPayRun",
+    "RelativePath": "api/pay-run/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "AttendanceManagementPayrollSystem.DTO.PayRunDto",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "AttendanceManagementPayrollSystem.Controllers.PayRunController",
     "Method": "ApproveFinal",
-    "RelativePath": "api/Payroll/approve/final/{id}",
+    "RelativePath": "api/pay-run/approve/final/{id}",
     "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,
@@ -156,9 +383,9 @@
     "ReturnTypes": []
   },
   {
-    "ContainingType": "AttendanceManagementPayrollSystem.Controllers.PayrollController",
+    "ContainingType": "AttendanceManagementPayrollSystem.Controllers.PayRunController",
     "Method": "ApproveFirst",
-    "RelativePath": "api/Payroll/approve/first/{id}",
+    "RelativePath": "api/pay-run/approve/first/{id}",
     "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,
@@ -177,9 +404,9 @@
     "ReturnTypes": []
   },
   {
-    "ContainingType": "AttendanceManagementPayrollSystem.Controllers.PayrollController",
+    "ContainingType": "AttendanceManagementPayrollSystem.Controllers.PayRunController",
     "Method": "Generate",
-    "RelativePath": "api/Payroll/generate",
+    "RelativePath": "api/pay-run/generate",
     "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,
@@ -193,9 +420,9 @@
     "ReturnTypes": []
   },
   {
-    "ContainingType": "AttendanceManagementPayrollSystem.Controllers.PayrollController",
+    "ContainingType": "AttendanceManagementPayrollSystem.Controllers.PayRunController",
     "Method": "Reject",
-    "RelativePath": "api/Payroll/reject/{id}",
+    "RelativePath": "api/pay-run/reject/{id}",
     "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,

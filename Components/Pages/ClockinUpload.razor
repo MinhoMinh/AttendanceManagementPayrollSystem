@@ -1,0 +1,53 @@
+﻿@page "/"
+@page "/xlsupload"
+@using System.Net.Http.Headers
+@inject IHttpClientFactory ClientFactory
+
+<h3>Upload XLS</h3>
+
+<InputFile OnChange="UploadFile" accept=".xls" />
+
+@if (!string.IsNullOrEmpty(Status))
+{
+    <p>@Status</p>
+}
+
+@code {
+    private string Status;
+
+    const int MAX_FILESIZE = 5000 * 1024;
+
+    public async Task UploadFile(InputFileChangeEventArgs e)
+    {
+        var browserFile = e.File;
+
+        if (browserFile != null)
+        {
+            Status = browserFile.Name;
+
+            try
+            {
+                // Read the file into memory
+                using var memoryStream = new MemoryStream();
+                using var fileStream = browserFile.OpenReadStream(MAX_FILESIZE);
+                await fileStream.CopyToAsync(memoryStream);
+                memoryStream.Position = 0;
+
+                // Send HTTP request
+                using var client = ClientFactory.CreateClient();
+                using var content = new StreamContent(memoryStream);
+                content.Headers.ContentType = new MediaTypeHeaderValue("application/vnd.ms-excel");
+
+                var response = await client.PostAsync("http://localhost:5038/api/clockin/uploadxls", content);
+
+                Status = response.IsSuccessStatusCode
+                    ? "File uploaded and processed"
+                    : $"Upload failed: {response.ReasonPhrase}";
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+        }
+    }
+}

@@ -155,3 +155,7 @@ C:\Users\MinhooMinh\source\repos\AttendanceManagementPayrollSystem\obj\Debug\net
 C:\Users\MinhooMinh\source\repos\AttendanceManagementPayrollSystem\obj\Debug\net8.0\staticwebassets\msbuild.buildMultiTargeting.AttendanceManagementPayrollSystem.props
 C:\Users\MinhooMinh\source\repos\AttendanceManagementPayrollSystem\obj\Debug\net8.0\staticwebassets\msbuild.buildTransitive.AttendanceManagementPayrollSystem.props
 C:\Users\MinhooMinh\source\repos\AttendanceManagementPayrollSystem\obj\Debug\net8.0\staticwebassets.pack.json
+C:\Users\MinhooMinh\source\repos\AttendanceManagementPayrollSystem\bin\Debug\net8.0\package-lock.json
+C:\Users\MinhooMinh\source\repos\AttendanceManagementPayrollSystem\bin\Debug\net8.0\package.json
+C:\Users\MinhooMinh\source\repos\AttendanceManagementPayrollSystem\bin\Debug\net8.0\ExcelDataReader.dll
+C:\Users\MinhooMinh\source\repos\AttendanceManagementPayrollSystem\bin\Debug\net8.0\ExcelDataReader.DataSet.dll

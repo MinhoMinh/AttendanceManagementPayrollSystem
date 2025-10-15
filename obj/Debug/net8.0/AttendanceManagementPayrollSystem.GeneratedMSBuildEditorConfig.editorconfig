@@ -22,6 +22,14 @@ build_property._RazorSourceGeneratorDebug =
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xBcHAucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Users/MinhooMinh/source/repos/AttendanceManagementPayrollSystem/Components/DashboardButton.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xEYXNoYm9hcmRCdXR0b24ucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/MinhooMinh/source/repos/AttendanceManagementPayrollSystem/Components/DashboardButtonGroup.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xEYXNoYm9hcmRCdXR0b25Hcm91cC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/MinhooMinh/source/repos/AttendanceManagementPayrollSystem/Components/KpiComponentTable.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xLcGlDb21wb25lbnRUYWJsZS5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
@@ -30,24 +38,60 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xNb250aFllYXJQaWNrZXIucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Users/MinhooMinh/source/repos/AttendanceManagementPayrollSystem/Components/Pages/ClockinUpload.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xDbG9ja2luVXBsb2FkLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/MinhooMinh/source/repos/AttendanceManagementPayrollSystem/Components/Pages/Counter.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xDb3VudGVyLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/MinhooMinh/source/repos/AttendanceManagementPayrollSystem/Components/Pages/Dashboard.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xEYXNoYm9hcmQucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/MinhooMinh/source/repos/AttendanceManagementPayrollSystem/Components/Pages/Error.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xFcnJvci5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/MinhooMinh/source/repos/AttendanceManagementPayrollSystem/Components/Pages/Example.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xFeGFtcGxlLnJhem9y
+[C:/Users/MinhooMinh/source/repos/AttendanceManagementPayrollSystem/Components/Pages/KpiHead.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xLcGlIZWFkLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/MinhooMinh/source/repos/AttendanceManagementPayrollSystem/Components/Pages/KpiManager.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xLcGlNYW5hZ2VyLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/MinhooMinh/source/repos/AttendanceManagementPayrollSystem/Components/Pages/KpiSelf.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xLcGlTZWxmLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/MinhooMinh/source/repos/AttendanceManagementPayrollSystem/Components/Pages/Login.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xMb2dpbi5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Users/MinhooMinh/source/repos/AttendanceManagementPayrollSystem/Components/Pages/PayRunList.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xQYXlSdW5MaXN0LnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/MinhooMinh/source/repos/AttendanceManagementPayrollSystem/Components/Pages/PayRunView.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xQYXlSdW5WaWV3LnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/MinhooMinh/source/repos/AttendanceManagementPayrollSystem/Components/Pages/Weather.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xXZWF0aGVyLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/MinhooMinh/source/repos/AttendanceManagementPayrollSystem/Components/PayRunDetails.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYXlSdW5EZXRhaWxzLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/MinhooMinh/source/repos/AttendanceManagementPayrollSystem/Components/PayRunItemDetails.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYXlSdW5JdGVtRGV0YWlscy5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/MinhooMinh/source/repos/AttendanceManagementPayrollSystem/Components/PayRunItemList.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYXlSdW5JdGVtTGlzdC5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/MinhooMinh/source/repos/AttendanceManagementPayrollSystem/Components/Routes.razor]

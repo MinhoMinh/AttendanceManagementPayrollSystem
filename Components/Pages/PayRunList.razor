@@ -1,0 +1,81 @@
+﻿@page "/payruns"
+@using AttendanceManagementPayrollSystem.DTO
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+@inject IHttpClientFactory HttpFactory
+
+<h3>Pay Runs</h3>
+
+@if (PayRuns == null)
+
+{
+    <p>Loading...</p>
+}
+
+else if (PayRuns.Count == 0)
+
+{
+    <p>No pay runs found.</p>
+}
+
+else
+
+{
+    <div class="list-group">
+        @foreach (var run in PayRuns.OrderByDescending(r => r.CreatedDate))
+
+        {
+            <button class="list-group-item list-group-item-action"
+                    @onclick="() => GoToPayRun(run.PayrollRunId)">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>@run.Name</strong><br />
+                        <small>@($"{run.PeriodMonth}/{run.PeriodYear}")</small>
+                    </div>
+                    <span class="badge bg-secondary">@run.Status</span>
+                </div>
+            </button>
+        }
+    </div>
+}
+
+@code {
+
+    private List<PayRunBasicDto> PayRuns = new();
+
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        var client = HttpFactory.CreateClient("ApiClient");
+
+        var runs = await client.GetFromJsonAsync<IEnumerable<PayRunBasicDto>>("api/pay-run");
+
+        if (runs != null) PayRuns = runs.ToList();
+    }
+
+
+
+
+
+    // protected override void OnInitialized()
+    // {
+
+    //     //Mock data for testing
+    //     PayRuns = new List<PayRunBasicDto>
+    //     {
+    //         new() { PayrollRunId = 52, Name = "December Payroll", PeriodMonth = 12, PeriodYear = 2025, Status = "InProgress", CreatedDate = DateTime.Now.AddDays(-2) },
+    //         new() { PayrollRunId = 51, Name = "November Payroll", PeriodMonth = 11, PeriodYear = 2025, Status = "FinalApproved", CreatedDate = DateTime.Now.AddDays(-10) },
+    //         new() { PayrollRunId = 50, Name = "October Payroll", PeriodMonth = 10, PeriodYear = 2025, Status = "FinalApproved", CreatedDate = DateTime.Now.AddDays(-20) }
+    //     };
+
+    // }
+
+
+
+    private void GoToPayRun(int id)
+    {
+        Navigation.NavigateTo($"/payruns/{id}");
+    }
+
+}
