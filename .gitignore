@@ -398,3 +398,7 @@ yarn-error.log*
 .vs/ProjectEvaluation/attendancemanagementpayrollsystem.metadata.v9.bin
 .vs/ProjectEvaluation/attendancemanagementpayrollsystem.projects.v9.bin
 .vs/ProjectEvaluation/attendancemanagementpayrollsystem.strings.v9.bin
+bin/
+obj/
+wwwroot/
+
