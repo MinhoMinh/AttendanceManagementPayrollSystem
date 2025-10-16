@@ -390,3 +390,4 @@ yarn-error.log*
 /ClientApp/node_modules
 /ClientApp/node_modules/.cache
 /.vs
+/.vs
