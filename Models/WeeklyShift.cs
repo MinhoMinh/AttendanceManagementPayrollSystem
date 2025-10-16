@@ -11,21 +11,35 @@ public partial class WeeklyShift
 
     public string ShiftName { get; set; }
 
-    public int? MonDailyShiftIndex { get; set; }
+    public int? MonDailyShiftId { get; set; }
 
-    public int? TueDailyShiftIndex { get; set; }
+    public int? TueDailyShiftId { get; set; }
 
-    public int? WebDailyShiftIndex { get; set; }
+    public int? WedDailyShiftId { get; set; }
 
-    public int? ThuDailyShiftIndex { get; set; }
+    public int? ThuDailyShiftId { get; set; }
 
-    public int? FriDailyShiftIndex { get; set; }
+    public int? FriDailyShiftId { get; set; }
 
-    public int? SatDailyShiftIndex { get; set; }
+    public int? SatDailyShiftId { get; set; }
 
-    public int? SunDailyShiftIndex { get; set; }
+    public int? SunDailyShiftId { get; set; }
 
     public string ShiftDescription { get; set; }
 
     public virtual ICollection<DepartmentWeeklyShift> DepartmentWeeklyShifts { get; set; } = new List<DepartmentWeeklyShift>();
+
+    public virtual DailyShift FriDailyShift { get; set; }
+
+    public virtual DailyShift MonDailyShift { get; set; }
+
+    public virtual DailyShift SatDailyShift { get; set; }
+
+    public virtual DailyShift SunDailyShift { get; set; }
+
+    public virtual DailyShift ThuDailyShift { get; set; }
+
+    public virtual DailyShift TueDailyShift { get; set; }
+
+    public virtual DailyShift WedDailyShift { get; set; }
 }

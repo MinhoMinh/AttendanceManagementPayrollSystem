@@ -7,7 +7,7 @@ namespace AttendanceManagementPayrollSystem.Models;
 
 public partial class DailyShift
 {
-    public int ShiftIndex { get; set; }
+    public int ShiftId { get; set; }
 
     public string ShiftName { get; set; }
 
@@ -15,5 +15,19 @@ public partial class DailyShift
 
     public string ShiftDescription { get; set; }
 
-    public int? ShiftWorkhour { get; set; }
+    public decimal? ShiftWorkhour { get; set; }
+
+    public virtual ICollection<WeeklyShift> WeeklyShiftFriDailyShifts { get; set; } = new List<WeeklyShift>();
+
+    public virtual ICollection<WeeklyShift> WeeklyShiftMonDailyShifts { get; set; } = new List<WeeklyShift>();
+
+    public virtual ICollection<WeeklyShift> WeeklyShiftSatDailyShifts { get; set; } = new List<WeeklyShift>();
+
+    public virtual ICollection<WeeklyShift> WeeklyShiftSunDailyShifts { get; set; } = new List<WeeklyShift>();
+
+    public virtual ICollection<WeeklyShift> WeeklyShiftThuDailyShifts { get; set; } = new List<WeeklyShift>();
+
+    public virtual ICollection<WeeklyShift> WeeklyShiftTueDailyShifts { get; set; } = new List<WeeklyShift>();
+
+    public virtual ICollection<WeeklyShift> WeeklyShiftWedDailyShifts { get; set; } = new List<WeeklyShift>();
 }

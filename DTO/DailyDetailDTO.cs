@@ -5,7 +5,7 @@ namespace AttendanceManagementPayrollSystem.DTO
     {
         public int Day { get; set; } 
         public List<string> Logs { get; set; } = new(); // Giờ vào/ra trong ngày
-        public decimal Actual { get; set; }            // Tổng công thực tế
-        public decimal Scheduled { get; set; }         // Tổng công dự kiến
+        public List<decimal> Actual { get; set; } = new();         // Tổng công thực tế
+        public List<decimal> Scheduled { get; set; } = new();        // Tổng công dự kiến
     }
 }

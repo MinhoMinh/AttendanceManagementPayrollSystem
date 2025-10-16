@@ -1,5 +1,6 @@
 ﻿using AttendanceManagementPayrollSystem.DTO;
 using AttendanceManagementPayrollSystem.Models;
+using AttendanceManagementPayrollSystem.Services.Helper;
 using Microsoft.EntityFrameworkCore;
 
 namespace AttendanceManagementPayrollSystem.Services
@@ -40,7 +41,7 @@ namespace AttendanceManagementPayrollSystem.Services
                 PeriodYear = k.PeriodYear,
                 KpiRate = k.KpiRate,
                 AssignedBy = k.AssignedBy,
-                KpiMode = KPIAccessHelper.GetKpiMode(k.PeriodMonth, k.PeriodYear, role),
+                KpiMode = KpiAccessHelper.GetKpiMode(k.PeriodMonth, k.PeriodYear, role),
                 Components = k.Kpicomponents.Select(c => new KpiComponentDto
                 {
                     KpiComponentId = c.KpiCompId,
@@ -57,7 +58,7 @@ namespace AttendanceManagementPayrollSystem.Services
 
             if (kpi == null && role == "head")
             {
-                var mode = KPIAccessHelper.GetKpiMode(month, year, role);
+                var mode = KpiAccessHelper.GetKpiMode(month, year, role);
                 if (mode == "edit")
                 {
                     kpi = new KpiDto
@@ -221,7 +222,7 @@ namespace AttendanceManagementPayrollSystem.Services
 
         public async Task<List<EmployeeBasicDTO>> GetEmployeesWithKpiByHeadAsync(int headId, int month, int year)
         {
-            var mode = KPIAccessHelper.GetKpiMode(month, year, "head");
+            var mode = KpiAccessHelper.GetKpiMode(month, year, "head");
 
             var headDepId = await _context.Employees
                 .Where(h => h.EmpId == headId)

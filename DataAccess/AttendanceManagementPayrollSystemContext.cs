@@ -122,13 +122,14 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
 
         modelBuilder.Entity<DailyShift>(entity =>
         {
-            entity.HasKey(e => e.ShiftIndex).HasName("PK__DailyShi__1BC1E2CF1365459F");
+            entity.HasKey(e => e.ShiftId).HasName("PK__DailyShi__1BC1E2CF1365459F");
 
             entity.ToTable("DailyShift");
 
             entity.Property(e => e.ShiftDescription).HasMaxLength(100);
             entity.Property(e => e.ShiftName).HasMaxLength(100);
             entity.Property(e => e.ShiftString).HasMaxLength(200);
+            entity.Property(e => e.ShiftWorkhour).HasColumnType("decimal(4, 2)");
         });
 
         modelBuilder.Entity<Department>(entity =>
@@ -927,6 +928,34 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
             entity.Property(e => e.ShiftName)
                 .IsRequired()
                 .HasMaxLength(100);
+
+            entity.HasOne(d => d.FriDailyShift).WithMany(p => p.WeeklyShiftFriDailyShifts)
+                .HasForeignKey(d => d.FriDailyShiftId)
+                .HasConstraintName("FK_WeeklyShift_DailyShift_Fri");
+
+            entity.HasOne(d => d.MonDailyShift).WithMany(p => p.WeeklyShiftMonDailyShifts)
+                .HasForeignKey(d => d.MonDailyShiftId)
+                .HasConstraintName("FK_WeeklyShift_DailyShift_Mon");
+
+            entity.HasOne(d => d.SatDailyShift).WithMany(p => p.WeeklyShiftSatDailyShifts)
+                .HasForeignKey(d => d.SatDailyShiftId)
+                .HasConstraintName("FK_WeeklyShift_DailyShift_Sat");
+
+            entity.HasOne(d => d.SunDailyShift).WithMany(p => p.WeeklyShiftSunDailyShifts)
+                .HasForeignKey(d => d.SunDailyShiftId)
+                .HasConstraintName("FK_WeeklyShift_DailyShift_Sun");
+
+            entity.HasOne(d => d.ThuDailyShift).WithMany(p => p.WeeklyShiftThuDailyShifts)
+                .HasForeignKey(d => d.ThuDailyShiftId)
+                .HasConstraintName("FK_WeeklyShift_DailyShift_Thu");
+
+            entity.HasOne(d => d.TueDailyShift).WithMany(p => p.WeeklyShiftTueDailyShifts)
+                .HasForeignKey(d => d.TueDailyShiftId)
+                .HasConstraintName("FK_WeeklyShift_DailyShift_Tue");
+
+            entity.HasOne(d => d.WedDailyShift).WithMany(p => p.WeeklyShiftWedDailyShifts)
+                .HasForeignKey(d => d.WedDailyShiftId)
+                .HasConstraintName("FK_WeeklyShift_DailyShift_Wed");
         });
 
         OnModelCreatingPartial(modelBuilder);

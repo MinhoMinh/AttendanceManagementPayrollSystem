@@ -5,29 +5,40 @@
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
 
-<DashboardButtonGroup Buttons="@Group1" GroupName="Employee Service" />
-<DashboardButtonGroup Buttons="@Group2" GroupName="Department Head Service" />
+<DashboardButtonGroup Buttons="@EmployeeService" GroupName="Employee Service" />
+<DashboardButtonGroup Buttons="@DepartmentHeadService" GroupName="Department Head Service" />
+<DashboardButtonGroup Buttons="@DepartmentService" GroupName="Department Service" />
 
 @code {
     private EmployeeDTO? Employee;
 
-    private List<DashboardButton> Group1 = new();
-    private List<DashboardButton> Group2 = new();
+    private List<DashboardButton> EmployeeService = new();
+    private List<DashboardButton> DepartmentHeadService = new();
+    private List<DashboardButton> DepartmentService = new();
 
     private void BuildButtonGroups()
     {
         if (Employee == null) return;
 
-        Group1 = new List<DashboardButton>
+        EmployeeService = new List<DashboardButton>
         {
             new() { Label = "Attendance", OnClick = EventCallback.Factory.Create(this, NavigateAttendance), Visible = HasPermission("has_clockin") },
             new() { Label = "Self KPI", OnClick = EventCallback.Factory.Create(this, NavigateSelfKpi), Visible = HasPermission("has_kpi") },
+            new() { Label = "Shift", OnClick = EventCallback.Factory.Create(this, NavigateSelfShift), Visible = HasPermission("has_shift") },
+
+            //has_shift
         };
 
-        Group2 = new List<DashboardButton>
+        DepartmentHeadService = new List<DashboardButton>
         {
             new() { Label = "Dep KPI", OnClick = EventCallback.Factory.Create(this, NavigateDepKpi), Visible = HasPermission("assign_kpi") },
         };
+
+        DepartmentService = new List<DashboardButton>
+        {
+            new() { Label = "Upload Clockins", OnClick = EventCallback.Factory.Create(this, NavigateUploadClockins), Visible = HasPermission("upload_clockin") },
+        };
+
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -59,5 +70,9 @@
 
     private void NavigateAttendance() => Navigation.NavigateTo("/attendance");
     private void NavigateSelfKpi() => Navigation.NavigateTo("/kpi/self");
+    private void NavigateSelfShift() => Navigation.NavigateTo("/shift/self");
+
     private void NavigateDepKpi() => Navigation.NavigateTo("/kpi/head");
+
+    private void NavigateUploadClockins() => Navigation.NavigateTo("/xlsupload");
 }

@@ -33,6 +33,8 @@ builder.Services.AddScoped<PayRunService, PayRunServiceImpl>();
 builder.Services.AddScoped<KPIService, KPIServiceImpl>();
 builder.Services.AddScoped<ClockinService, ClockinServiceImpl>();
 builder.Services.AddScoped<AuthService, AuthServiceImpl>();
+builder.Services.AddScoped<ILeaveRequestService, LeaveRequestServiceImpl>();
+builder.Services.AddScoped<ShiftService, ShiftServiceImpl>();
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
@@ -40,11 +42,6 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
         options.JsonSerializerOptions.WriteIndented = true;
     });
-
-builder.Services.AddScoped<EmployeeRepository, EmployeeRepositoryImpl>(); // Đăng ký EmployeeRepositoryImpl
-builder.Services.AddScoped<AuthService, AuthServiceImpl>(); // Đăng ký AuthServiceImpl
-builder.Services.AddScoped<ILeaveRequestRepository, LeaveRequestRepositoryImpl>();
-builder.Services.AddScoped<ILeaveRequestService, LeaveRequestServiceImpl>();
 
 
 RepositoryManager.DoScoped(builder);
@@ -62,9 +59,6 @@ if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
     app.UseHsts();
 }
-
-
-
 
 app.UseHttpsRedirection();
 app.UseRouting();

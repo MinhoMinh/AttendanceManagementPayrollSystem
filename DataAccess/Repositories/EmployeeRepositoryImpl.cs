@@ -97,5 +97,12 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
                         .ThenInclude(rp => rp.Permissions)
                 .LoadAsync();
         }
+
+        public async Task<int> GetIdByClockId(int clockId)
+        {
+            var emp = await _context.Employees.FirstOrDefaultAsync(e => e.ClockinId == clockId);
+            if (emp == null) return -1;
+            else return emp.EmpId;
+        }
     }
 }

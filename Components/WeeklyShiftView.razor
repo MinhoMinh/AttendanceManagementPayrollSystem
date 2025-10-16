@@ -1,0 +1,57 @@
+﻿@using AttendanceManagementPayrollSystem.DTO
+
+@if (Shift == null)
+{
+    <p>No weekly shift assigned.</p>
+}
+else
+{
+    <div class="weekly-shift">
+        <h4>@Shift.ShiftName (@Shift.ShiftDescription)</h4>
+
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Day</th>
+                    <th>Shifts</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var day in Days)
+                {
+                    <tr>
+                        <td>@day.Key</td>
+                        <td>
+                            @if (day.Value?.ShiftDtos != null && day.Value.ShiftDtos.Count > 0)
+                            {
+                                @foreach (var s in day.Value.ShiftDtos)
+                                {
+                                    <div>@($"{s.StartTime:hh\\:mm} - {s.EndTime:hh\\:mm} ({s.Workhour})")</div>
+                                }
+                            }
+                            else
+                            {
+                                <div>—</div>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@code {
+    [Parameter] public WeeklyShiftDto? Shift { get; set; }
+
+    private Dictionary<string, DailyShiftDto?> Days => new()
+    {
+        { "Mon", Shift?.MonDailyShift },
+        { "Tue", Shift?.TueDailyShift },
+        { "Wed", Shift?.WedDailyShift },
+        { "Thu", Shift?.ThuDailyShift },
+        { "Fri", Shift?.FriDailyShift },
+        { "Sat", Shift?.SatDailyShift },
+        { "Sun", Shift?.SunDailyShift }
+    };
+}

@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using ExcelDataReader;
 using AttendanceManagementPayrollSystem.Services;
+using AttendanceManagementPayrollSystem.DTO;
+using Microsoft.EntityFrameworkCore;
 
 namespace AttendanceManagementPayrollSystem.Controllers
 {
@@ -16,19 +18,19 @@ namespace AttendanceManagementPayrollSystem.Controllers
             _clockinService = clockinService;
         }
 
-        [HttpGet("employee/{empId}")]
-        public async Task<IActionResult> GetClockinsByEmployee(int empId, int month, int year)
-        {
-            if (month < 1 || month > 12) return BadRequest("Tháng không hợp lệ.");
+        //[HttpGet("employee/{empId}")]
+        //public async Task<IActionResult> GetClockinsByEmployee(int empId, int month, int year)
+        //{
+        //    if (month < 1 || month > 12) return BadRequest("Tháng không hợp lệ.");
 
-            var data = await _clockinService.GetClockinsByEmployeeAsync(empId, month, year);
-            if (data == null || data.Count == 0) return NotFound("Không tìm thấy dữ liệu.");
+        //    var data = await _clockinService.GetClockinsByEmployeeAsync(empId, month, year);
+        //    if (data == null) return NotFound("Không tìm thấy dữ liệu.");
 
-            return Ok(data);
-        }
+        //    return Ok(data);
+        //}
 
         [HttpPost("uploadxls")]
-        public async Task<IActionResult> UploadXls()
+        public async Task<ActionResult<List<ClockinDTO>>> UploadXls()
         {
             if (Request.ContentLength == null || Request.ContentLength == 0)
                 return BadRequest("No file content received");
@@ -42,17 +44,35 @@ namespace AttendanceManagementPayrollSystem.Controllers
             var ds = reader.AsDataSet();
 
             if (ds.Tables.Count < 3) return BadRequest("Sheet 3 not found");
+            
+            var data = await _clockinService.ReadClockinData(ds.Tables[2]);
 
-            var sheet3 = ds.Tables[2];
+            if (data == null || data.Count == 0) return NotFound("Không tìm thấy dữ liệu.");
 
-            //.ProcessSheet3(sheet3);
-            foreach (DataRow row in sheet3.Rows)
+            return Ok(data);
+        }
+
+        [HttpPost("upload-clockin")]
+        public async Task<IActionResult> UploadClockins([FromBody] List<ClockinDTO> clockins)
+        {
+            if (clockins == null || clockins.Count == 0)
+                return BadRequest("No clock-in data received.");
+
+            try
             {
-                var rowText = string.Join(", ", row.ItemArray.Select(cell => cell?.ToString() ?? ""));
-                Console.WriteLine(rowText);
+                await _clockinService.SaveClockinData(clockins);
+                return Ok("Clockins saved");
             }
-
-            return Ok("Sheet 3 processed successfully");
+            catch (DbUpdateException ex)
+            {
+                //_logger.LogError(ex, "Database update failed");
+                return StatusCode(500, "Database error");
+            }
+            catch (Exception ex)
+            {
+                //_logger.LogError(ex, "Unexpected error");
+                return StatusCode(500, "Unexpected error");
+            }
         }
     }
 }

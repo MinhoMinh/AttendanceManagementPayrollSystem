@@ -1,6 +1,7 @@
-﻿@page "/"
-@page "/xlsupload"
-@using System.Net.Http.Headers
+﻿@page "/xlsupload"
+@using System.Net.Http.Json
+@using AttendanceManagementPayrollSystem.DTO
+@using AttendanceManagementPayrollSystem.Models
 @inject IHttpClientFactory ClientFactory
 
 <h3>Upload XLS</h3>
@@ -12,42 +13,151 @@
     <p>@Status</p>
 }
 
-@code {
-    private string Status;
+@if (Clockins != null && Clockins.Any())
+{
+    <div class="d-flex justify-content-end mb-2">
+        <button class="btn btn-primary btn-sm" @onclick="Generate">Generate</button>
+    </div>
 
-    const int MAX_FILESIZE = 5000 * 1024;
+    <h4>Processed Clockins</h4>
+
+    <table class="table table-sm table-bordered">
+        <thead>
+            <tr>
+                <th></th>
+                <th>EmpId</th>
+                <th>Date</th>
+                <th>WorkUnits</th>
+                <th>Scheduled</th>
+                <th>ClockLog</th>
+                <th>Work Breakdown</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var c in Clockins)
+            {
+                var isExpanded = expandedRows.Contains(c.EmpId);
+
+                <tr>
+                    <td>
+                        <button class="btn btn-sm btn-link" @onclick="() => ToggleRow(c.EmpId)">
+                            @(isExpanded ? "−" : "+")
+                        </button>
+                    </td>
+                    <td>@c.EmpId</td>
+                    <td>@c.Date.ToString("yyyy-MM-dd")</td>
+                    <td>@c.WorkUnits</td>
+                    <td>@c.ScheduledUnits</td>
+                    <td>@c.ClockLog</td>
+                    <td>@c.WorkUnitBreakdown</td>
+                </tr>
+
+                @if (isExpanded && c.DailyRecords != null && c.DailyRecords.Any())
+                {
+                    <tr>
+                        <td></td>
+                        <td colspan="6">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Day</th>
+                                        <th>Logs</th>
+                                        <th>Actual</th>
+                                        <th>Scheduled</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var d in c.DailyRecords)
+                                    {
+                                        <tr>
+                                            <td>@d.Day</td>
+                                            <td>@string.Join(", ", d.Logs)</td>
+                                            <td>@string.Join(", ", d.Actual.Select(a => a.ToString("F2")))</td>
+                                            <td>@string.Join(", ", d.Scheduled.Select(s => s.ToString("F2")))</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+}
+
+
+@code {
+    private string Status = "";
+    private List<ClockinDTO>? Clockins;
+
+    const int MAX_FILESIZE = 5_000 * 1024;
 
     public async Task UploadFile(InputFileChangeEventArgs e)
     {
-        var browserFile = e.File;
+        var file = e.File;
+        if (file == null) return;
 
-        if (browserFile != null)
+        try
         {
-            Status = browserFile.Name;
+            using var mem = new MemoryStream();
+            using var stream = file.OpenReadStream(MAX_FILESIZE);
+            await stream.CopyToAsync(mem);
+            mem.Position = 0;
 
-            try
+            using var client = ClientFactory.CreateClient("ApiClient");
+            using var content = new StreamContent(mem);
+            content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.ms-excel");
+
+            var response = await client.PostAsync("api/clockin/uploadxls", content);
+
+            if (response.IsSuccessStatusCode)
             {
-                // Read the file into memory
-                using var memoryStream = new MemoryStream();
-                using var fileStream = browserFile.OpenReadStream(MAX_FILESIZE);
-                await fileStream.CopyToAsync(memoryStream);
-                memoryStream.Position = 0;
-
-                // Send HTTP request
-                using var client = ClientFactory.CreateClient();
-                using var content = new StreamContent(memoryStream);
-                content.Headers.ContentType = new MediaTypeHeaderValue("application/vnd.ms-excel");
-
-                var response = await client.PostAsync("http://localhost:5038/api/clockin/uploadxls", content);
-
-                Status = response.IsSuccessStatusCode
-                    ? "File uploaded and processed"
-                    : $"Upload failed: {response.ReasonPhrase}";
+                Clockins = await response.Content.ReadFromJsonAsync<List<ClockinDTO>>();
+                Status = "File processed successfully";
             }
-            catch (Exception ex)
+            else
             {
-                Console.WriteLine(ex.Message);
+                Status = $"Upload failed: {response.StatusCode}";
             }
+        }
+        catch (Exception ex)
+        {
+            Status = ex.Message;
+        }
+    }
+
+    private HashSet<int> expandedRows = new();
+
+    private void ToggleRow(int empId)
+    {
+        if (expandedRows.Contains(empId))
+            expandedRows.Remove(empId);
+        else
+            expandedRows.Add(empId);
+    }
+
+    private async Task Generate()
+    {
+        if (Clockins == null || !Clockins.Any())
+        {
+            Status = "No clock-in data to upload.";
+            return;
+        }
+
+        try
+        {
+            using var client = ClientFactory.CreateClient("ApiClient");
+            var response = await client.PostAsJsonAsync("api/clockin/upload-clockin", Clockins);
+
+            if (response.IsSuccessStatusCode)
+                Status = "Clock-ins uploaded successfully.";
+            else
+                Status = $"Failed: {response.ReasonPhrase}";
+        }
+        catch (Exception ex)
+        {
+            Status = $"Error: {ex.Message}";
         }
     }
 }

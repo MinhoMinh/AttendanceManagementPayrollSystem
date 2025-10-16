@@ -17,26 +17,16 @@
   },
   {
     "ContainingType": "AttendanceManagementPayrollSystem.Controllers.ClockinController",
-    "Method": "GetClockinsByEmployee",
-    "RelativePath": "api/clockin/employee/{empId}",
-    "HttpMethod": "GET",
+    "Method": "UploadClockins",
+    "RelativePath": "api/clockin/upload-clockin",
+    "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,
     "Parameters": [
       {
-        "Name": "empId",
-        "Type": "System.Int32",
+        "Name": "clockins",
+        "Type": "System.Collections.Generic.List\u00601[[AttendanceManagementPayrollSystem.DTO.ClockinDTO, AttendanceManagementPayrollSystem, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
         "IsRequired": true
-      },
-      {
-        "Name": "month",
-        "Type": "System.Int32",
-        "IsRequired": false
-      },
-      {
-        "Name": "year",
-        "Type": "System.Int32",
-        "IsRequired": false
       }
     ],
     "ReturnTypes": []
@@ -49,7 +39,17 @@
     "IsController": true,
     "Order": 0,
     "Parameters": [],
-    "ReturnTypes": []
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.List\u00601[[AttendanceManagementPayrollSystem.DTO.ClockinDTO, AttendanceManagementPayrollSystem, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
   },
   {
     "ContainingType": "AttendanceManagementPayrollSystem.Controllers.EmployeesController",
@@ -316,6 +316,38 @@
     "ReturnTypes": []
   },
   {
+    "ContainingType": "AttendanceManagementPayrollSystem.Controllers.LeaveRequestController",
+    "Method": "Create",
+    "RelativePath": "api/LeaveRequest",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "AttendanceManagementPayrollSystem.DTOs.LeaveRequestDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "AttendanceManagementPayrollSystem.Controllers.LeaveRequestController",
+    "Method": "GetHistory",
+    "RelativePath": "api/LeaveRequest/history/{empId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "empId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "AttendanceManagementPayrollSystem.Controllers.PayRunController",
     "Method": "GetAll",
     "RelativePath": "api/pay-run",
@@ -439,6 +471,32 @@
       }
     ],
     "ReturnTypes": []
+  },
+  {
+    "ContainingType": "AttendanceManagementPayrollSystem.Controllers.ShiftController",
+    "Method": "GetShiftBySelf",
+    "RelativePath": "api/shift/self",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "empId",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "AttendanceManagementPayrollSystem.DTO.WeeklyShiftDto",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
   },
   {
     "ContainingType": "AttendanceManagementPayrollSystem.Controllers.ValuesController",

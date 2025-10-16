@@ -47,7 +47,7 @@
         try
         {
             var client = HttpFactory.CreateClient("ApiClient");
-            Kpi = await client.GetFromJsonAsync<KpiDto>($"api/kpi/self?empId=9&month={periodMonth}&year={periodYear}");
+            Kpi = await client.GetFromJsonAsync<KpiDto>($"api/kpi/self?empId={Employee.EmpId}&month={periodMonth}&year={periodYear}");
 
             //StateHasChanged();
         }

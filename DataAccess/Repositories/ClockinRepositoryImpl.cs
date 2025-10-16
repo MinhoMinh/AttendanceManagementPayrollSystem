@@ -77,14 +77,48 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
             }
         }
 
-        public async Task<IEnumerable<Clockin>> GetByEmployeeAndMonthAsync(int empId, int month, int year)
+        public async Task<Clockin?> GetByEmployeeAndMonthAsync(int empId, int month, int year)
         {
-            var start = new DateTime(year, month, 1);
-            var end = start.AddMonths(1).AddDays(-1);
+            //var start = new DateTime(year, month, 1);
+            //var end = start.AddMonths(1).AddDays(-1);
 
             return await _context.Clockins
-                .Where(c => c.EmpId == empId && c.Date >= start && c.Date <= end)
-                .ToListAsync();
+                .Where(c => c.EmpId == empId && c.Date.Month == month && c.Date.Year == year)
+                .FirstOrDefaultAsync();
+        }
+
+        public async Task SaveClockinData(IEnumerable<Clockin> clockins)
+        {
+            foreach (var clockin in clockins)
+            {
+                var existing = await _context.Clockins
+                    .FirstOrDefaultAsync(c => c.EmpId == clockin.EmpId && c.Date == clockin.Date);
+
+                if (existing != null)
+                {
+                    existing.WorkUnits = clockin.WorkUnits;
+                    existing.ScheduledUnits = clockin.ScheduledUnits;
+                    existing.ClockLog = clockin.ClockLog;
+                    existing.WorkUnitBreakdown = clockin.WorkUnitBreakdown;
+                    
+                    _context.Clockins.Update(existing);
+                }
+                else
+                {
+                    var newEntity = new Clockin
+                    {
+                        EmpId = clockin.EmpId,
+                        Date = clockin.Date,
+                        WorkUnits = clockin.WorkUnits,
+                        ScheduledUnits = clockin.ScheduledUnits,
+                        ClockLog = clockin.ClockLog,
+                        WorkUnitBreakdown = clockin.WorkUnitBreakdown
+                    };
+                    await _context.Clockins.AddAsync(newEntity);
+                }
+            }
+
+            await _context.SaveChangesAsync();
         }
     }
 }

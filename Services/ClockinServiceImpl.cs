@@ -1,117 +1,202 @@
 ﻿using AttendanceManagementPayrollSystem.DataAccess.Repositories;
 using AttendanceManagementPayrollSystem.DTO;
+using AttendanceManagementPayrollSystem.Models;
+using AttendanceManagementPayrollSystem.Services.Helper;
 using System;
+using System.Data;
+using System.Globalization;
+using System.Text;
+using static AttendanceManagementPayrollSystem.DTO.WeeklyShiftDto;
 
 namespace AttendanceManagementPayrollSystem.Services
 {
     public class ClockinServiceImpl : ClockinService
     {
+        private readonly EmployeeRepository _empRepo;
         private readonly ClockinRepository _clockinRepo;
+        private readonly ShiftService _shiftService;
 
-        public ClockinServiceImpl(ClockinRepository clockinRepo)
+        public ClockinServiceImpl(EmployeeRepository employeeRepo, ClockinRepository clockinRepo, ShiftService shiftService)
         {
+            _empRepo = employeeRepo;
             _clockinRepo = clockinRepo;
+            _shiftService = shiftService;
         }
 
-
-        // Parse WorkUnitBreakdown + ClockLog thành danh sách DailyDetailDTO
-        public List<DailyDetailDTO> ParseClockData(string clockLog, string breakdown)
+        public async Task<List<ClockinDTO>?> ReadClockinData(DataTable table)
         {
-            var result = new List<DailyDetailDTO>();
-
-            // ===== Parse WorkUnitBreakdown =====
-            var breakdownDict = new Dictionary<int, (decimal Actual, decimal Scheduled)>();
-            if (!string.IsNullOrWhiteSpace(breakdown))
+            // Parse month and year
+            DateTime startDate = DateTime.Now;
+            var cellValue = table.Rows[1][2]?.ToString()?.Trim(); // C2
+            if (!string.IsNullOrEmpty(cellValue))
             {
-                var parts = breakdown.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-                foreach (var p in parts)
+                var parts = cellValue.Split('~', StringSplitOptions.TrimEntries);
+                if (parts.Length == 2 &&
+                    DateTime.TryParseExact(parts[0], "dd-MM-yyyy", null, System.Globalization.DateTimeStyles.None, out startDate))
                 {
-                    var split = p.Split('#');
-                    if (split.Length != 2) continue;
 
-                    int day = int.Parse(split[0]);
-                    var pairs = split[1].Split(',', StringSplitOptions.RemoveEmptyEntries);
-                    decimal actual = 0, scheduled = 0;
+                    Console.WriteLine($"Month: {startDate.Month}, Year: {startDate.Year}");
+                }
+                else
+                {
+                    return null;
+                }
+            }
 
-                    foreach (var pair in pairs)
+            List<ClockinDTO> clokinList = new();
+
+
+            for (int index = 2; index < table.Rows.Count - 3; index += 4)
+            {
+                ClockinDTO clockin = new ClockinDTO();
+                StringBuilder clockLogBuilder = new StringBuilder();
+                clockin.Date = startDate;
+
+                var idCell = table.Rows[index][2]?.ToString();
+                if (!int.TryParse(idCell, out int clockId))
+                    continue;
+
+                var row1 = table.Rows[index + 1];
+                var row2 = table.Rows[index + 3];
+
+                // stop if row1 is blank (no data at all)
+                bool row1Empty = row1.ItemArray.All(c => string.IsNullOrWhiteSpace(c?.ToString()));
+                if (row1Empty)
+                    break;
+
+                Console.WriteLine($"Clock ID: {clockId}");
+
+
+                var empId = await _empRepo.GetIdByClockId(clockId);
+
+                if (empId == -1) continue;
+                else clockin.EmpId = empId;
+
+                int lastCol = 30; // AE = index 30
+
+                for (int col = 0; col <= lastCol && col < row1.ItemArray.Length; col++)
+                {
+                    DailyDetailDTO dayDTO = new DailyDetailDTO();
+
+                    var raw1 = row1[col]?.ToString() ?? "";
+                    var raw2 = row2[col]?.ToString() ?? "";
+
+                    string val1;
+                    if (int.TryParse(raw1, out int day))
                     {
-                        var vs = pair.Split('/');
-                        if (vs.Length == 2 &&
-                            decimal.TryParse(vs[0], out var a) &&
-                            decimal.TryParse(vs[1], out var s))
+                        dayDTO.Day = day;
+                        if (day > 1) clockLogBuilder.Append('|');
+                        clockLogBuilder.Append(day.ToString());
+                        clockLogBuilder.Append('#');
+                    }
+                    else
+                        break;
+
+                    var normalized = raw2.Replace("\r\n", ",").Replace("\n", ",");
+                    var tokens = normalized.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+                    var validTimes = new List<string>();
+                    var timeFormats = new[] { "hh\\:mm", "h\\:mm" };
+
+                    foreach (var t in tokens)
+                    {
+                        var tok = t.Trim();
+                        dayDTO.Logs.Add(tok);
+                        //if (TimeSpan.TryParseExact(tok, timeFormats, CultureInfo.InvariantCulture, out var _))
+                            validTimes.Add(tok);
+                    }
+
+                    string val2 = string.Join(",", validTimes);
+                    //clockLogBuilder.Append(val2);
+                    clockLogBuilder.Append(val2);
+
+                    Console.WriteLine($"Col {col}: Row+1={raw1}, Row+3={val2}");
+
+                    clockin.DailyRecords.Add(dayDTO);
+                }
+
+                clockin.ClockLog = clockLogBuilder.ToString();
+
+                clokinList.Add(clockin);
+                Console.WriteLine();
+            }
+
+            var shiftDictionary = await _shiftService.GetWeeklyShiftDtos(clokinList.Select(c => c.EmpId));
+
+
+            foreach (var clockin in clokinList) //an employee
+            {
+                var weeklyShift = shiftDictionary[clockin.EmpId]; //weekly shift of the emp
+
+                if (weeklyShift == null) continue;
+
+                StringBuilder workUnitBreakdownBuilder = new StringBuilder();
+
+                foreach (var dayDetail in clockin.DailyRecords) //loop through each day of clockin 
+                {
+                    DateTime date = new DateTime(clockin.Date.Year, clockin.Date.Month, dayDetail.Day);
+
+                    var dailyShift = weeklyShift.GetDailyShift(date.DayOfWeek); //get shift of that day
+
+                    if (dailyShift == null) continue;
+
+                    if (dayDetail.Day > 1) workUnitBreakdownBuilder.Append('|');
+                    workUnitBreakdownBuilder.Append(dayDetail.Day);
+                    workUnitBreakdownBuilder.Append('#');
+
+                    List<ShiftSection> sections = new();
+
+                    foreach (var shift in dailyShift.ShiftDtos)
+                        sections.Add(new ShiftSection(shift.StartTime, shift.EndTime, shift.Workhour));//convert to sec
+
+                    foreach (var log in dayDetail.Logs)
+                    {
+                        foreach (var section in sections)
                         {
-                            actual += a;
-                            scheduled += s;
+                            if (section.IsCheckInSection(TimeSpan.Parse(log)))
+                                break;
                         }
                     }
 
-                    breakdownDict[day] = (actual, scheduled);
+                    for (int i = 0; i < sections.Count; i++)
+                    {
+                        decimal actual = sections[i].CalculateWorkhour();
+                        decimal expected = sections[i].ExpectedWorkhour;
+                        dayDetail.Actual.Add(actual);
+                        dayDetail.Scheduled.Add(expected);
+
+                        clockin.WorkUnits ??= 0;
+                        clockin.WorkUnits += actual;
+                        clockin.ScheduledUnits ??= 0;
+                        clockin.ScheduledUnits += expected;
+
+                        if (i >= 1) { workUnitBreakdownBuilder.Append(','); }
+                        workUnitBreakdownBuilder.AppendFormat("{0:F2}/{1:F2}", actual, expected);
+                    }
                 }
+
+                clockin.WorkUnitBreakdown = workUnitBreakdownBuilder.ToString();
             }
 
-            // ===== Parse ClockLog =====
-            var clockDict = new Dictionary<int, List<string>>();
-            if (!string.IsNullOrWhiteSpace(clockLog))
-            {
-                var parts = clockLog.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-                foreach (var p in parts)
-                {
-                    var split = p.Split('#');
-                    if (split.Length != 2) continue;
-
-                    int day = int.Parse(split[0]);
-                    var times = split[1].Split(',', StringSplitOptions.RemoveEmptyEntries)
-                                        .Select(t => t.Trim())
-                                        .ToList();
-                    clockDict[day] = times;
-                }
-            }
-
-            // ===== Gộp lại theo ngày =====
-            var allDays = breakdownDict.Keys.Union(clockDict.Keys).OrderBy(d => d);
-            foreach (var day in allDays)
-            {
-                breakdownDict.TryGetValue(day, out var work);
-                clockDict.TryGetValue(day, out var times);
-
-                result.Add(new DailyDetailDTO
-                {
-                    Day = day,
-                    Actual = work.Actual,
-                    Scheduled = work.Scheduled,
-                    Logs = times ?? new List<string>()
-                });
-            }
-
-            return result;
+            return clokinList;
         }
 
-        // ===== Lấy toàn bộ clockin theo nhân viên, kèm dữ liệu DailyRecords =====
-        public async Task<List<ClockinDTO>> GetClockinsByEmployeeAsync(int empId, int month, int year)
+        public async Task SaveClockinData(List<ClockinDTO> dtos)
         {
-            var clockins = await _clockinRepo.GetByEmployeeAndMonthAsync(empId, month, year);
-            var list = new List<ClockinDTO>();
-
-            foreach (var c in clockins)
-            {
-                var dto = new ClockinDTO
-                {
-                    CloId = c.CloId,
-                    EmpId = c.EmpId,
-                    Date = c.Date,
-                    WorkUnits = c.WorkUnits,
-                    ScheduledUnits = c.ScheduledUnits,
-                    ClockLog = c.ClockLog,
-                    WorkUnitBreakdown = c.WorkUnitBreakdown,
-                    DailyRecords = ParseClockData(c.ClockLog, c.WorkUnitBreakdown)
-                };
-
-                list.Add(dto);
-            }
-
-            return list;
+            await _clockinRepo.SaveClockinData(dtos.Select(dto => ToModel(dto)));
         }
-    
-        
+
+        private Clockin ToModel(ClockinDTO dto) {
+            return new Clockin
+            {
+                CloId = dto.CloId,
+                EmpId = dto.EmpId,
+                Date = dto.Date,
+                WorkUnits = dto.WorkUnits,
+                ScheduledUnits = dto.ScheduledUnits,
+                ClockLog = dto.ClockLog,
+                WorkUnitBreakdown = dto.WorkUnitBreakdown
+            };
+        }
     }
 }

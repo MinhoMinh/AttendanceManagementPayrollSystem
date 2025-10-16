@@ -16,6 +16,7 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
         Task<Employee?> UpdateAsync(Employee emp);
         Task<Employee?> FindByUsernameAsync(string username); // ✅ Thêm mới
         Task LoadRoles(Employee employee);
+        Task <int> GetIdByClockId(int clockId);
 
     }
 }
