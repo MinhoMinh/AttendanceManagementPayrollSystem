@@ -56,7 +56,7 @@
                 await JS.InvokeVoidAsync("localStorage.setItem", "employee", employeeJson);
 
                 // Optional: console log in browser
-                await JS.InvokeVoidAsync("console.log", employeeDto.EmpName, employeeDto.EmpRole, employeeDto.Permissions);
+                await JS.InvokeVoidAsync("console.log", employeeDto.EmpId, employeeDto.EmpName, employeeDto.EmpRole, employeeDto.Permissions);
             }
 
             Navigation.NavigateTo("/dashboard");

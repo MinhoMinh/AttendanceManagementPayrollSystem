@@ -15,7 +15,6 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
             
         }
 
-
         public async Task<PayRun> AddAsync(PayRun run)
         {
             _context.PayRuns.Add(run);
@@ -70,7 +69,9 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
                 Type = entity.Type,
                 CreatedByName = GetName(entity.CreatedBy),
                 ApprovedFirstByName = GetName(entity.ApprovedFirstBy),
+                ApprovedFirstAt = entity.ApprovedFirstAt,
                 ApprovedFinalByName = GetName(entity.ApprovedFinalBy),
+                ApprovedFinalAt = entity.ApprovedFinalAt,
                 PayRunItems = entity.PayRunItems.Select(i => new PayRunItemDto
                 {
                     ItemId = i.PayRunItemId,
@@ -106,6 +107,32 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
         {
             _context.PayRuns.Update(run);
             await SaveChangesAsync();
+        }
+
+        public async Task<List<Employee>> GetEmployeesWithComponents(int month, int year)
+        {
+            var results = await _context.Employees
+                .Where(e => e.Clockins.Any(p => p.Date.Month == month && p.Date.Year == year)
+                    || e.KpiEmps.Any(k => k.PeriodMonth == month && k.PeriodYear == year))
+                .Include(e => e.Clockins
+                    .Where(p => p.Date.Month == month && p.Date.Year == year))
+                .Include(e => e.KpiEmps
+                    .Where(k => k.PeriodMonth == month && k.PeriodYear == year))
+                    .ThenInclude(k => k.Kpicomponents)
+                .ToListAsync();
+
+            return results;
+        }
+
+        public async Task<bool> ContainsValidPayRunInPeriod(int month, int year)
+        {
+            return await _context.PayRuns.AnyAsync(p => p.PeriodMonth == month && p.PeriodYear == year && p.Status != "Void");
+        }
+
+        public async Task SaveRegularPayRun(PayRun run)
+        {
+            await _context.PayRuns.AddAsync(run);
+            await _context.SaveChangesAsync();
         }
     }
 }

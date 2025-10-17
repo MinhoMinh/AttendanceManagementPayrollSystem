@@ -6,12 +6,19 @@ namespace AttendanceManagementPayrollSystem.Services
 {
     public interface PayRunService
     {
-        Task<PayrollRunDTO>  GeneratePayrollAsync(string name, int periodMonth, int periodYear, int createdBy);
+        Task<PayRunDto> GenerateRegularPayRun(string name, int month, int year, int createdBy);
 
-        Task<PayrollRunDTO> ApproveFirstAsync(int id, int approvedBy);
-        Task<PayrollRunDTO> ApproveFinalAsync(int id, int approvedBy);
-        Task<PayrollRunDTO> RejectAsync(int id, int rejectedBy);
+        Task SaveRegularPayRun(PayRunDto run);
+
         Task<IEnumerable<PayRunBasicDto>> GetAllAsync();
+
         Task<PayRunDto?> GetPayRunAsync(int id);
+
+        Task<bool> ContainsValidPayRunInPeriod(int month, int year);
+
+        Task<bool> ApproveFirst(int approverId, int payRunId);
+
+        Task<bool> ApproveFinal(int approverId, int payRunId);
+
     }
 }

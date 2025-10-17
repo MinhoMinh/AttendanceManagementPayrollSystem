@@ -1,5 +1,8 @@
 ﻿using AttendanceManagementPayrollSystem.DTO;
+using AttendanceManagementPayrollSystem.Models;
 using AttendanceManagementPayrollSystem.Services;
+using Azure.Core;
+using DocumentFormat.OpenXml.Office2016.Excel;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AttendanceManagementPayrollSystem.Controllers
@@ -15,32 +18,50 @@ namespace AttendanceManagementPayrollSystem.Controllers
             _service = service;
         }
 
+
         [HttpPost("generate")]
-        public async Task<IActionResult> Generate([FromBody] PayrollRequest request)
+        public async Task<ActionResult<PayRunDto>> GenerateRegularPayRun([FromBody] PayRunRequest request)
         {
-            var result = await _service.GeneratePayrollAsync(request.Name, request.PeriodMonth, request.PeriodYear, request.CreatedBy);
-            return Ok(result);
+            if (request == null || request.PeriodMonth < 1 || request.PeriodMonth > 12)
+                return BadRequest("Invalid period.");
+
+            var exists = await _service.ContainsValidPayRunInPeriod(request.PeriodMonth, request.PeriodYear);
+            if (exists)
+                return Conflict("Pay run for this period already exists.");
+
+            try {
+                var result = await _service.GenerateRegularPayRun(request.Name, request.PeriodMonth, request.PeriodYear, request.CreatedBy);
+
+                if (result == null)
+                    return NotFound();
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Exception: {ex.Message}");
+            }
+
+            return NotFound();
         }
 
-        [HttpPost("approve/first/{id}")]
-        public async Task<IActionResult> ApproveFirst(int id, [FromBody] ApproveRequest request)
+        [HttpPost("save")]
+        public async Task<IActionResult> SaveRegularPayRun([FromBody] PayRunDto payRunDto)
         {
-            var result = await _service.ApproveFirstAsync(id, request.ApprovedBy);
-            return Ok(result);
-        }
+            Console.Write("hell?");
+            if (payRunDto == null)
+                return BadRequest("Invalid pay run data.");
+            try
+            {
+                await _service.SaveRegularPayRun(payRunDto);
 
-        [HttpPost("approve/final/{id}")]
-        public async Task<IActionResult> ApproveFinal(int id, [FromBody] ApproveRequest request)
-        {
-            var result = await _service.ApproveFinalAsync(id, request.ApprovedBy);
-            return Ok(result);
-        }
-
-        [HttpPost("reject/{id}")]
-        public async Task<IActionResult> Reject(int id, [FromBody] ApproveRequest request)
-        {
-            var result = await _service.RejectAsync(id, request.ApprovedBy);
-            return Ok(result);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Exception: {ex.Message}");
+                return StatusCode(500, ex.Message);
+            }
         }
 
         [HttpGet]
@@ -63,5 +84,42 @@ namespace AttendanceManagementPayrollSystem.Controllers
             return Ok(result);
         }
 
+        [HttpPost("approve-first")]
+        public async Task<IActionResult> ApproveFirstPayRun([FromBody] ApproveRequest request)
+        {
+            if (request == null)
+                return BadRequest("Invalid request.");
+
+            try
+            {
+                await _service.ApproveFirst(request.ApproverId, request.PayRunId);
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Exception: {ex.Message}");
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        [HttpPost("approve-final")]
+        public async Task<IActionResult> ApproveFinalPayRun([FromBody] ApproveRequest request)
+        {
+            if (request == null)
+                return BadRequest("Invalid request.");
+
+            try
+            {
+                await _service.ApproveFinal(request.ApproverId, request.PayRunId);
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Exception: {ex.Message}");
+                return StatusCode(500, ex.Message);
+            }
+        }
     }
 }

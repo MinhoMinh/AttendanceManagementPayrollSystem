@@ -33,7 +33,6 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
         /// </summary>
         Task DeleteClockinAsync(int empId, DateTime date);
 
-
         Task<Clockin?> GetByEmployeeAndMonthAsync(int empId, int month, int year);
 
         Task SaveClockinData(IEnumerable<Clockin> clockins);

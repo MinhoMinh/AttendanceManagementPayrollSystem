@@ -7,14 +7,14 @@
 
 <DashboardButtonGroup Buttons="@EmployeeService" GroupName="Employee Service" />
 <DashboardButtonGroup Buttons="@DepartmentHeadService" GroupName="Department Head Service" />
-<DashboardButtonGroup Buttons="@DepartmentService" GroupName="Department Service" />
+<DashboardButtonGroup Buttons="@CompanyService" GroupName="Company Service" />
 
 @code {
     private EmployeeDTO? Employee;
 
     private List<DashboardButton> EmployeeService = new();
     private List<DashboardButton> DepartmentHeadService = new();
-    private List<DashboardButton> DepartmentService = new();
+    private List<DashboardButton> CompanyService = new();
 
     private void BuildButtonGroups()
     {
@@ -34,9 +34,11 @@
             new() { Label = "Dep KPI", OnClick = EventCallback.Factory.Create(this, NavigateDepKpi), Visible = HasPermission("assign_kpi") },
         };
 
-        DepartmentService = new List<DashboardButton>
+        CompanyService = new List<DashboardButton>
         {
             new() { Label = "Upload Clockins", OnClick = EventCallback.Factory.Create(this, NavigateUploadClockins), Visible = HasPermission("upload_clockin") },
+            new() { Label = "Pay Run", OnClick = EventCallback.Factory.Create(this, NavigatePayRun), Visible = HasPermission("view_payroll_run") },
+
         };
 
     }
@@ -75,4 +77,5 @@
     private void NavigateDepKpi() => Navigation.NavigateTo("/kpi/head");
 
     private void NavigateUploadClockins() => Navigation.NavigateTo("/xlsupload");
+    private void NavigatePayRun() => Navigation.NavigateTo("/payruns");
 }

@@ -41,6 +41,7 @@ else
                         <th>Description</th>
                         <th>Amount</th>
                         <th>Taxable</th>
+                        <th>Insurable</th>
                         <th>Created</th>
                     </tr>
                 </thead>
@@ -53,6 +54,7 @@ else
                             <td>@c.Description</td>
                             <td>@c.Amount.ToString("C", CultureInfo.CurrentCulture)</td>
                             <td>@(c.Taxable == true ? "Yes" : "No")</td>
+                            <td>@(c.Insurable == true ? "Yes" : "No")</td>
                             <td>@c.CreatedAt?.ToShortDateString()</td>
                         </tr>
                     }

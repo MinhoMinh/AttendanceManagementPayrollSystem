@@ -1,137 +1,133 @@
 ﻿using AttendanceManagementPayrollSystem.DataAccess.Repositories;
 using AttendanceManagementPayrollSystem.DTO;
 using AttendanceManagementPayrollSystem.Models;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace AttendanceManagementPayrollSystem.Services
 {
     public class PayRunServiceImpl : PayRunService
     {
+        private readonly PayRunRepository _payRunRepo;
         private readonly ClockinRepository _clockinRepo;
-        private readonly PayRunRepository _payrollRepo;
+        private readonly EmployeeRepository _employeeRepo;  
 
-        public PayRunServiceImpl(ClockinRepository clockinRepo, PayRunRepository payrollRepo)
+
+        public PayRunServiceImpl(ClockinRepository clockinRepo, PayRunRepository payrollRepo, EmployeeRepository empRepo)
         {
             _clockinRepo = clockinRepo;
-            _payrollRepo = payrollRepo;
+            _payRunRepo = payrollRepo;
+            _employeeRepo = empRepo;
         }
 
-        public async Task<PayrollRunDTO> GeneratePayrollAsync(string name, int periodMonth, int periodYear, int createdBy)
+        public async Task<PayRunDto> GenerateRegularPayRun(string name, int month, int year, int createdBy)
         {
-            var run = new PayRun
+            var createdByName = await _employeeRepo.GetByIdAsync(createdBy);
+
+            PayRunDto payRunDto = new PayRunDto
             {
                 Name = name,
-                PeriodMonth = periodMonth,
-                PeriodYear = periodYear,
-                CreatedBy = createdBy,
+                PeriodMonth = month,
+                PeriodYear = year,
                 CreatedDate = DateTime.Now,
+                CreatedBy = createdBy,
+                CreatedByName = createdByName == null ? "" : createdByName.EmpName,
                 Status = "Pending",
-                EmployeeSalaryPreviews = new List<EmployeeSalaryPreview>()
+                Type = "Monthly"
             };
 
-            var clockins = await _clockinRepo.GetByDateRangeAsync(periodMonth, periodYear);
+            var employees = await _payRunRepo.GetEmployeesWithComponents(month, year);
 
-            var policy = await _payrollRepo.GetActivePolicyAsync(periodMonth, periodYear);
-            if (policy == null)
-                throw new Exception("No active salary policy found for this period.");
-
-
-            foreach (var c in clockins)
+            foreach (var employee in employees)
             {
-
-                //decimal hourlyRate = emp.HourlyRate ?? 0;
-                decimal basePay = (c.WorkUnits ?? 0) * policy.WorkUnitValue;
-                //decimal deductions = 0; // maybe from Leave or Penalty tables
-                //decimal allowances = 0; // maybe from Bonus or Allowance tables
-                //decimal netPay = basePay + allowances - deductions;
-
-                run.EmployeeSalaryPreviews.Add( new EmployeeSalaryPreview
+                PayRunItemDto itemDto = new PayRunItemDto
                 {
-                    EmpId = c.EmpId,
-                    BaseSalary = basePay,
-                    GrossSalary = basePay,
-                    TotalDeductions = 0,
-                    NetSalary = basePay,
-                    CreatedBy = createdBy,
-                    InsuranceRateSetId = 1
-                });
+                    EmpId = employee.EmpId,
+                    EmpName = employee.EmpName,
+                    Notes = ""
+                };
+
+                var clockin = employee.Clockins.FirstOrDefault();
+                if (clockin != null)
+                {
+                    decimal actualClockinValue = (clockin.WorkUnits ??= 0) * 200000m;
+                    decimal expectedClockinValue = (clockin.ScheduledUnits ??= 0) * 200000m;
+                    if (actualClockinValue > 0)
+                    {
+                        var componentDto = new PayRunComponentDto
+                        {
+                            ComponentType = "Earning",
+                            ComponentCode = "BASIC",
+                            Description = $"Clockin: {clockin.WorkUnits} workhour",
+                            Amount = actualClockinValue,
+                            Taxable = true,
+                            Insurable = true
+                        };
+
+                        itemDto.Components.Add(componentDto);
+                        itemDto.GrossPay += actualClockinValue;
+                    }
+
+                    var kpi = employee.KpiEmps.FirstOrDefault();
+                    if (kpi != null)
+                    {
+                        decimal score = 0m;
+
+                        foreach (var kpiCom in kpi.Kpicomponents)
+                        {
+                            // score is on 0 - 10 scale. weight is on 0 - 100 scale
+                            score += kpiCom.AssignedScore ??= kpiCom.SelfScore ??= 0 * kpiCom.Weight * 0.001m;
+                        }
+                        decimal kpiValue = score * ((kpi.Prorate != null && kpi.Prorate == true) ? actualClockinValue : expectedClockinValue);
+
+                        if (kpiValue > 0)
+                        {
+                            var componentDto = new PayRunComponentDto
+                            {
+                                ComponentType = "Earning",
+                                ComponentCode = "BONUS",
+                                Description = "kpi",
+                                Amount = kpiValue,
+                                Taxable = true,
+                                Insurable = true
+                            };
+
+                            itemDto.Components.Add(componentDto);
+                            itemDto.GrossPay += actualClockinValue;
+                        }
+                    }
+                }
+
+                payRunDto.PayRunItems.Add(itemDto);
             }
 
-            var savedRun = await _payrollRepo.AddAsync(run);
-
-
-            return ToDTO(savedRun);
+            return payRunDto;
         }
 
-        public async Task<PayrollRunDTO> ApproveFirstAsync(int payrollId, int approvedBy)
+        public async Task<bool> ContainsValidPayRunInPeriod(int month, int year)
         {
-            var payroll = await _payrollRepo.FindAsync(payrollId);
-            if (payroll == null)
-                throw new Exception("Payroll not found.");
-
-            // Example logic
-            if (payroll.ApprovedFirstBy != null)
-                throw new Exception("Already first-approved.");
-
-            payroll.ApprovedFirstBy = approvedBy;
-            payroll.Status = "FirstApproved";
-            payroll.ApprovedFirstAt = DateTime.Now;
-
-
-            await _payrollRepo.Update(payroll);
-
-            return ToDTO(payroll);
+            return await _payRunRepo.ContainsValidPayRunInPeriod(month, year);
         }
 
-        public async Task<PayrollRunDTO> ApproveFinalAsync(int payrollId, int approvedBy)
+        public async Task SaveRegularPayRun(PayRunDto run)
         {
-            var payroll = await _payrollRepo.FindAsync(payrollId);
-            if (payroll == null)
-                throw new Exception("Payroll not found.");
-
-            // Example logic
-            if (payroll.ApprovedFinalBy != null)
-                throw new Exception("Already first-approved.");
-
-            payroll.ApprovedFinalBy = approvedBy;
-            payroll.Status = "FinalApproved";
-            payroll.ApprovedFinalAt = DateTime.Now;
-
-            await _payrollRepo.Update(payroll);
-
-            return ToDTO(payroll);
-        }
-
-        public async Task<PayrollRunDTO> RejectAsync(int payrollId, int rejectedBy)
-        {
-            var payroll = await _payrollRepo.FindAsync(payrollId);
-            if (payroll == null)
-                throw new Exception("Payroll not found.");
-
-            payroll.Status = "Rejected";
-            //payroll.RejectedBy = rejectedBy;
-            await _payrollRepo.Update(payroll);
-
-            return ToDTO(payroll);
+            await _payRunRepo.SaveRegularPayRun(ToModel(run));
         }
 
         public async Task<IEnumerable<PayRunBasicDto>> GetAllAsync()
         {
-            var runs = await _payrollRepo.GetAllAsync();
+            var runs = await _payRunRepo.GetAllAsync();
             return runs.Select(ToBasicDTO);
         }
 
         public async Task<PayRunDto?> GetPayRunAsync(int id)
         {
-            var run = await _payrollRepo.GetDtoAsync(id);
+            var run = await _payRunRepo.GetDtoAsync(id);
             return run;
         }
 
-        
 
         private PayRunBasicDto ToBasicDTO(PayRun run)
         {
-
-
             var dto = new PayRunBasicDto
             {
                 PayrollRunId = run.PayrollRunId,
@@ -145,64 +141,83 @@ namespace AttendanceManagementPayrollSystem.Services
             return dto;
         }
 
-        //private PayRunDto? ToPayRunDTO(PayRun run)
-        //{
-        //    if (run == null) return null;
-
-
-        //    var dto = new PayRunDto
-        //    {
-        //        PayrollRunId = run.PayrollRunId,
-        //        Name = run.Name,
-        //        PeriodMonth = run.PeriodMonth,
-        //        PeriodYear = run.PeriodYear,
-        //        Status = run.Status,
-        //        CreatedDate = run.CreatedDate,
-        //        ApprovedFirstBy = run.ApprovedFirstBy,
-        //        ApprovedFinalBy = run.ApprovedFinalBy,
-        //        Previews = run.EmployeeSalaryPreviews
-        //    .Select(p => new EmployeeSalaryPreviewDTO
-        //    {
-        //        EmpId = p.EmpId,
-        //        BaseSalary = p.BaseSalary,
-        //        GrossSalary = p.GrossSalary,
-        //        TotalDeductions = p.TotalDeductions,
-        //        NetSalary = p.NetSalary
-        //    }).ToList()
-        //    };
-
-        //    return dto;
-        //}
-
-
-        private PayrollRunDTO ToDTO(PayRun run)
+        private PayRun ToModel(PayRunDto dto)
         {
-            var dto = new PayrollRunDTO
+            var model = new PayRun
             {
-                PayrollRunId = run.PayrollRunId,
-                Name = run.Name,
-                PeriodMonth = run.PeriodMonth,
-                PeriodYear = run.PeriodYear,
-                Status = run.Status,
-                CreatedDate = run.CreatedDate,
-                ApprovedFirstBy = run.ApprovedFirstBy,
-                ApprovedFinalBy = run.ApprovedFinalBy,
-                Previews = run.EmployeeSalaryPreviews
-            .Select(p => new EmployeeSalaryPreviewDTO
-            {
-                EmpId = p.EmpId,
-                BaseSalary = p.BaseSalary,
-                GrossSalary = p.GrossSalary,
-                TotalDeductions = p.TotalDeductions,
-                NetSalary = p.NetSalary
-            }).ToList()
+                PayrollRunId = dto.PayrollRunId,
+                Name = dto.Name,
+                PeriodMonth = dto.PeriodMonth,
+                PeriodYear = dto.PeriodYear,
+                Status = dto.Status,
+                CreatedBy = dto.CreatedBy,
+                CreatedDate = dto.CreatedDate,
+                ApprovedFirstBy = dto.ApprovedFirstBy,
+                ApprovedFirstAt = dto.ApprovedFirstAt,
+                ApprovedFinalBy = dto.ApprovedFinalBy,
+                ApprovedFinalAt = dto.ApprovedFinalAt,
+                Type = dto.Type,
+                PayRunItems = dto.PayRunItems?.Select(i => new PayRunItem
+                {
+                    PayRunItemId = i.ItemId,
+                    EmpId = i.EmpId,
+                    GrossPay = i.GrossPay,
+                    Deductions = i.Deductions,
+                    NetPay = i.NetPay,
+                    Notes = i.Notes,
+                    PayRunComponents = i.Components?.Select(c => new PayRunComponent
+                    {
+                        PayRunComponentId = c.ComponentId,
+                        ComponentType = c.ComponentType,
+                        ComponentCode = c.ComponentCode,
+                        Description = c.Description,
+                        Amount = c.Amount,
+                        Taxable = c.Taxable,
+                        Insurable = c.Insurable,
+                        CreatedAt = c.CreatedAt
+                    }).ToList() ?? new List<PayRunComponent>()
+                }).ToList() ?? new List<PayRunItem>()
             };
 
-            return dto;
+            return model;
         }
 
+        public async Task<bool> ApproveFirst(int approverId, int payRunId)
+        {
+            var approver = await _employeeRepo.GetByIdAsync(approverId);
 
+            if (approver == null) { throw new Exception("Approver cannot be found!"); }
 
-        
+            var payRun = await _payRunRepo.FindAsync(payRunId);
+
+            if (payRun == null) { throw new Exception("Pay run cannot be found!"); }
+
+            payRun.ApprovedFirstBy = approverId;
+            payRun.ApprovedFirstAt = DateTime.UtcNow;
+            payRun.Status = "FirstApproved";
+
+            await _payRunRepo.Update(payRun);
+
+            return true;
+        }
+
+        public async Task<bool> ApproveFinal(int approverId, int payRunId)
+        {
+            var approver = await _employeeRepo.GetByIdAsync(approverId);
+
+            if (approver == null) { throw new Exception("Approver cannot be found!"); }
+
+            var payRun = await _payRunRepo.FindAsync(payRunId);
+
+            if (payRun == null) { throw new Exception("Pay run cannot be found!"); }
+
+            payRun.ApprovedFinalBy = approverId;
+            payRun.ApprovedFinalAt = DateTime.UtcNow;
+            payRun.Status = "FinalApproved";
+
+            await _payRunRepo.Update(payRun);
+
+            return true;
+        }
     }
 }

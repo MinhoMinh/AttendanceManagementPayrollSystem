@@ -1,0 +1,131 @@
+﻿
+@page "/payruns/generate"
+@using AttendanceManagementPayrollSystem.DTO
+@inject IHttpClientFactory HttpFactory
+
+<div class="mb-3">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <div class="d-flex align-items-center gap-2">
+            <MonthYearPicker @bind-SelectedMonth="periodMonth" @bind-SelectedYear="periodYear" />
+            <button class="btn btn-primary" @onclick="Generate">Generate</button>
+        </div>
+
+        @if (payRun != null)
+        {
+            <button class="btn btn-success" @onclick="Confirm" disabled="@isConfirming">@confirmButtonText</button>
+        }
+    </div>
+
+    @if (!string.IsNullOrEmpty(statusMessage))
+    {
+        <div class="alert alert-info mt-2">@statusMessage</div>
+    }
+</div>
+
+@if (payRun != null)
+{
+    <div class="row">
+        <div class="col-2">
+            <PayRunDetails PayRun="@payRun" />
+        </div>
+
+        <div class="col-8">
+            <PayRunItemList Items="@payRun.PayRunItems" OnItemSelected="@SelectItem" />
+        </div>
+
+        <div class="col-2">
+            <PayRunItemDetails Item="@selectedItem" />
+        </div>
+    </div>
+}
+else
+{
+    <p>No pay run loaded.</p>
+}
+
+
+
+@code {
+    private string statusMessage = string.Empty;
+    private bool isConfirming = false;
+    private string confirmButtonText = "Confirm";
+    private int periodMonth = DateTime.Now.AddMonths(-1).Month;
+    private int periodYear = DateTime.Now.AddMonths(-1).Year;
+
+
+    private PayRunDto? payRun;
+
+    private PayRunItemDto? selectedItem;
+
+
+    private async Task Generate()
+    {
+        try
+        {
+            var client = HttpFactory.CreateClient("ApiClient");
+
+            var response = await client.PostAsJsonAsync("api/pay-run/generate", new PayRunRequest
+                {
+                    Name = "Pay Run test",
+                    PeriodMonth = periodMonth,
+                    PeriodYear = periodYear,
+                    CreatedBy = 3
+                });
+            if (response.IsSuccessStatusCode)
+            {
+                payRun = await response.Content.ReadFromJsonAsync<PayRunDto>();
+            }
+            else
+            {
+                payRun = null;
+                Console.WriteLine($"Error: {response.StatusCode}");
+            }
+        }
+        catch (Exception ex)
+        {
+            payRun = null;
+            Console.WriteLine($"Exception: {ex.Message}");
+        }
+    }
+
+    private async Task Confirm()
+    {
+        if (payRun == null) return;
+
+        isConfirming = true;
+        confirmButtonText = "Confirming...";
+        statusMessage = string.Empty;
+
+        try
+        {
+
+            var client = HttpFactory.CreateClient("ApiClient");
+            var response = await client.PostAsJsonAsync("api/pay-run/save", payRun);
+
+            if (response.IsSuccessStatusCode)
+            {
+                statusMessage = "Pay run confirmed successfully.";
+                confirmButtonText = "Confirmed";
+            }
+            else
+            {
+                var errorDetails = await response.Content.ReadAsStringAsync();
+                statusMessage = $"Error: {response.StatusCode} - {errorDetails}";
+                isConfirming = false;
+                confirmButtonText = "Confirm";
+            }
+        }
+        catch (Exception ex)
+        {
+            statusMessage = $"Exception: {ex.Message}";
+            isConfirming = false;
+            confirmButtonText = "Confirm";
+        }
+    }
+
+
+    private void SelectItem(PayRunItemDto item)
+    {
+        selectedItem = item;
+    }
+}
