@@ -96,11 +96,11 @@ namespace AttendanceManagementPayrollSystem.Services
                 EndDatetime = h.EndDatetime,
                 CreatedAt = h.CreatedAt,
                 // Nếu bạn có DTO cho Department thì có thể map thêm:
-                Deps = h.Deps?.Select(d => new DepartmentDTO
-                {
-                    DepartmentId = d.DepId,
-                    DepartmentName = d.DepName
-                }).ToList()
+                //Deps = h.Deps?.Select(d => new DepartmentDTO
+                //{
+                //    DepartmentId = d.DepId,
+                //    DepartmentName = d.DepName
+                //}).ToList()
             };
         }
     }

@@ -1,0 +1,184 @@
+﻿@page "/holiday-calendar"
+@using AttendanceManagementPayrollSystem.DTO
+@inject IHttpClientFactory HttpFactory
+@inject IJSRuntime JS
+
+<h3 class="mb-3">📅 Danh sách Ngày Nghỉ Lễ</h3>
+
+@if (holidays == null)
+{
+    <p><em>Đang tải dữ liệu...</em></p>
+}
+else
+{
+    <div class="mb-3 text-end">
+        <button class="btn btn-primary" @onclick="ShowAddModal">+ Thêm Ngày Nghỉ</button>
+    </div>
+
+    <table class="table table-bordered table-striped">
+        <thead class="table-light">
+            <tr>
+                <th>ID</th>
+                <th>Tên Ngày Nghỉ</th>
+                <th>Bắt đầu</th>
+                <th>Kết thúc</th>
+                <th>Ngày tạo</th>
+                <th>Hành động</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var h in holidays)
+            {
+                <tr>
+                    <td>@h.HolidayId</td>
+                    <td>@h.HolidayName</td>
+                    <td>@h.StartDatetime.ToString("dd/MM/yyyy")</td>
+                    <td>@h.EndDatetime.ToString("dd/MM/yyyy")</td>
+                    <td>@(h.CreatedAt?.ToString("dd/MM/yyyy HH:mm") ?? "-")</td>
+                    <td>
+                        <button class="btn btn-sm btn-warning me-2" @onclick="() => EditHoliday(h)">Sửa</button>
+                        <button class="btn btn-sm btn-danger" @onclick="() => DeleteHoliday(h.HolidayId)">Xóa</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<!-- Modal thêm/sửa -->
+@if (showModal)
+{
+    <div class="modal fade show d-block" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content p-3">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        @((editingHoliday.HolidayId == 0) ? "Thêm Ngày Nghỉ" : "Cập Nhật Ngày Nghỉ")
+                    </h5>
+                    <button type="button" class="btn-close" @onclick="CloseModal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="mb-2">
+                        <label class="form-label">Tên Ngày Nghỉ</label>
+                        <input class="form-control" @bind="editingHoliday.HolidayName" />
+                    </div>
+
+                    <div class="mb-2">
+                        <label class="form-label">Ngày Bắt Đầu</label>
+                        <input type="date" class="form-control"
+                               @bind="editingHoliday.StartDatetime"
+                               @bind:format="yyyy-MM-dd" />
+                    </div>
+
+                    <div class="mb-2">
+                        <label class="form-label">Ngày Kết Thúc</label>
+                        <input type="date" class="form-control"
+                               @bind="editingHoliday.EndDatetime"
+                               @bind:format="yyyy-MM-dd" />
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="CloseModal">Hủy</button>
+                    <button class="btn btn-success" @onclick="SaveHoliday">Lưu</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private HttpClient Http;
+    private List<HolidayCalendarDTO>? holidays;
+    private HolidayCalendarDTO editingHoliday = new();
+    private bool showModal = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Http = HttpFactory.CreateClient("ApiClient");
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        holidays = await Http.GetFromJsonAsync<List<HolidayCalendarDTO>>("api/holidaycalendar");
+    }
+
+    private void ShowAddModal()
+    {
+        editingHoliday = new HolidayCalendarDTO
+        {
+            StartDatetime = DateTime.Now,
+            EndDatetime = DateTime.Now
+        };
+        showModal = true;
+    }
+
+    private void EditHoliday(HolidayCalendarDTO h)
+    {
+        editingHoliday = new HolidayCalendarDTO
+        {
+            HolidayId = h.HolidayId,
+            HolidayName = h.HolidayName,
+            StartDatetime = h.StartDatetime,
+            EndDatetime = h.EndDatetime,
+            CreatedAt = h.CreatedAt
+        };
+        showModal = true;
+    }
+
+    private void CloseModal()
+    {
+        showModal = false;
+    }
+
+    private async Task SaveHoliday()
+    {
+        if (string.IsNullOrWhiteSpace(editingHoliday.HolidayName))
+        {
+            await JS.InvokeVoidAsync("alert", "Tên ngày nghỉ không được để trống!");
+            return;
+        }
+
+        try
+        {
+            HttpResponseMessage response;
+
+            if (editingHoliday.HolidayId == 0)
+                response = await Http.PostAsJsonAsync("api/holidaycalendar", editingHoliday);
+            else
+                response = await Http.PutAsJsonAsync($"api/holidaycalendar/{editingHoliday.HolidayId}", editingHoliday);
+
+            if (response.IsSuccessStatusCode)
+            {
+                await LoadData();
+                showModal = false;
+            }
+            else
+            {
+                var msg = await response.Content.ReadAsStringAsync();
+                await JS.InvokeVoidAsync("alert", $"Lỗi khi lưu dữ liệu: {msg}");
+            }
+        }
+        catch (Exception ex)
+        {
+            await JS.InvokeVoidAsync("alert", $"Lỗi: {ex.Message}");
+        }
+    }
+
+    private async Task DeleteHoliday(int id)
+    {
+        bool confirm = await JS.InvokeAsync<bool>("confirm", "Bạn có chắc muốn xóa ngày nghỉ này?");
+        if (confirm)
+        {
+            var response = await Http.DeleteAsync($"api/holidaycalendar/{id}");
+            if (!response.IsSuccessStatusCode)
+            {
+                var msg = await response.Content.ReadAsStringAsync();
+                await JS.InvokeVoidAsync("alert", $"Không thể xóa: {msg}");
+            }
+            await LoadData();
+        }
+    }
+}

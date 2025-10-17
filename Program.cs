@@ -33,6 +33,7 @@ builder.Services.AddScoped<PayrollService, PayrollServiceImpl>();
 builder.Services.AddScoped<KPIService, KPIServiceImpl>();
 builder.Services.AddScoped<ClockinService, ClockinServiceImpl>();
 builder.Services.AddScoped<AuthService, AuthServiceImpl>();
+builder.Services.AddScoped<HolidayCalendarService, HolidayCalendarServiceImpl>();
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
