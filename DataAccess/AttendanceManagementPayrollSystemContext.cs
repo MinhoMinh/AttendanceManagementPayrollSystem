@@ -21,6 +21,8 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
 
     public virtual DbSet<Department> Departments { get; set; }
 
+    public virtual DbSet<DepartmentHolidayCalender> DepartmentHolidayCalenders { get; set; }
+
     public virtual DbSet<DepartmentWeeklyShift> DepartmentWeeklyShifts { get; set; }
 
     public virtual DbSet<Employee> Employees { get; set; }
@@ -142,25 +144,31 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
             entity.Property(e => e.DepName)
                 .HasMaxLength(50)
                 .HasColumnName("dep_name");
+        });
 
-            entity.HasMany(d => d.Holidays).WithMany(p => p.Deps)
-                .UsingEntity<Dictionary<string, object>>(
-                    "DepartmentHolidayCalender",
-                    r => r.HasOne<HolidayCalendar>().WithMany()
-                        .HasForeignKey("HolidayId")
-                        .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("FK_DepartmentHolidayCalender_HolidayCalendar"),
-                    l => l.HasOne<Department>().WithMany()
-                        .HasForeignKey("DepId")
-                        .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("FK_DepartmentHolidayCalender_Department"),
-                    j =>
-                    {
-                        j.HasKey("DepId", "HolidayId");
-                        j.ToTable("DepartmentHolidayCalender");
-                        j.IndexerProperty<int>("DepId").HasColumnName("dep_id");
-                        j.IndexerProperty<int>("HolidayId").HasColumnName("holiday_id");
-                    });
+        modelBuilder.Entity<DepartmentHolidayCalender>(entity =>
+        {
+            entity.HasKey(e => e.DepHolidayCalenderId);
+
+            entity.ToTable("DepartmentHolidayCalender");
+
+            entity.Property(e => e.DepHolidayCalenderId).HasColumnName("dep_holiday_calender_id");
+            entity.Property(e => e.DepId).HasColumnName("dep_id");
+            entity.Property(e => e.EndDate)
+                .HasColumnType("datetime")
+                .HasColumnName("end_date");
+            entity.Property(e => e.HolidayId).HasColumnName("holiday_id");
+            entity.Property(e => e.StartDate)
+                .HasColumnType("datetime")
+                .HasColumnName("start_date");
+
+            entity.HasOne(d => d.Dep).WithMany(p => p.DepartmentHolidayCalenders)
+                .HasForeignKey(d => d.DepId)
+                .HasConstraintName("FK_DepartmentHolidayCalender_Department");
+
+            entity.HasOne(d => d.Holiday).WithMany(p => p.DepartmentHolidayCalenders)
+                .HasForeignKey(d => d.HolidayId)
+                .HasConstraintName("FK_DepartmentHolidayCalender_HolidayCalendar");
         });
 
         modelBuilder.Entity<DepartmentWeeklyShift>(entity =>
@@ -482,16 +490,13 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
             entity.Property(e => e.CreatedAt)
                 .HasColumnType("datetime")
                 .HasColumnName("created_at");
-            entity.Property(e => e.EndDatetime)
-                .HasColumnType("datetime")
-                .HasColumnName("end_datetime");
             entity.Property(e => e.HolidayName)
                 .IsRequired()
                 .HasMaxLength(100)
                 .HasColumnName("holiday_name");
-            entity.Property(e => e.StartDatetime)
+            entity.Property(e => e.PeriodYear)
                 .HasColumnType("datetime")
-                .HasColumnName("start_datetime");
+                .HasColumnName("period_year");
         });
 
         modelBuilder.Entity<InsuranceRateSet>(entity =>

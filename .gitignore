@@ -393,3 +393,4 @@ yarn-error.log*
 /.vs
 /bin
 /bin
+/obj
