@@ -1,4 +1,5 @@
-﻿using AttendanceManagementPayrollSystem.Models;
+﻿using AttendanceManagementPayrollSystem.DTO;
+using AttendanceManagementPayrollSystem.Models;
 
 namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
 {
@@ -33,6 +34,8 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
         Task DeleteClockinAsync(int empId, DateTime date);
 
 
-        Task<IEnumerable<Clockin>> GetByEmployeeAndMonthAsync(int empId, int month, int year);
+        Task<Clockin?> GetByEmployeeAndMonthAsync(int empId, int month, int year);
+
+        Task SaveClockinData(IEnumerable<Clockin> clockins);
     }
 }

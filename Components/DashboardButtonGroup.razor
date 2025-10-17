@@ -1,0 +1,20 @@
+﻿@if (Buttons.Any(b => b.Visible))
+{
+    <div class="button-group-container">
+        @if (!string.IsNullOrEmpty(GroupName))
+        {
+            <h3>@GroupName</h3>
+        }
+        <div class="button-group">
+            @foreach (var btn in Buttons)
+            {
+                <DashboardButton Label="@btn.Label" OnClick="@btn.OnClick" Visible="@btn.Visible" />
+            }
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public string GroupName { get; set; }
+    [Parameter] public List<DashboardButton> Buttons { get; set; } = new();
+}

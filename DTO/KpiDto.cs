@@ -13,6 +13,7 @@
         public int PeriodYear { get; set; }
         public int PeriodMonth { get; set; }
         public int KpiRate { get; set; }
+        public int? AssignedBy { get; set; }
         public string KpiMode { get; set; } = "view";
         public List<KpiComponentDto> Components { get; set; } = new();
     }

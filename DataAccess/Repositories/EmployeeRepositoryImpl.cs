@@ -80,7 +80,7 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
             return existing;
         }
 
-        // ✅ Find by username + password (for login)
+        // ✅ Find by username (for login)
         public async Task<Employee?> FindByUsernameAsync(string username)
         {
             return await _context.Employees
@@ -96,6 +96,13 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
                     //.ThenInclude(r => r.RolePermissions)
                         .ThenInclude(rp => rp.Permissions)
                 .LoadAsync();
+        }
+
+        public async Task<int> GetIdByClockId(int clockId)
+        {
+            var emp = await _context.Employees.FirstOrDefaultAsync(e => e.ClockinId == clockId);
+            if (emp == null) return -1;
+            else return emp.EmpId;
         }
     }
 }

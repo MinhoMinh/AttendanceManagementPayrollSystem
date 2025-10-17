@@ -1,4 +1,5 @@
 ﻿@page "/"
+
 @page "/login"
 
 @using AttendanceManagementPayrollSystem.DTO
@@ -58,7 +59,9 @@
                 await JS.InvokeVoidAsync("console.log", employeeDto.EmpName, employeeDto.EmpRole, employeeDto.Permissions);
             }
 
-            Navigation.NavigateTo("/kpi/self");
+            Navigation.NavigateTo("/dashboard");
+            //Navigation.NavigateTo("/payruns");
+            
         }
         catch (Exception ex)
         {

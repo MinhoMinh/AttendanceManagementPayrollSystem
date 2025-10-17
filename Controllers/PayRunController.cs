@@ -5,12 +5,12 @@ using Microsoft.AspNetCore.Mvc;
 namespace AttendanceManagementPayrollSystem.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
-    public class PayrollController : ControllerBase
+    [Route("api/pay-run")]
+    public class PayRunController : ControllerBase
     {
-        private readonly PayrollService _service;
+        private readonly PayRunService _service;
 
-        public PayrollController(PayrollService service)
+        public PayRunController(PayRunService service)
         {
             _service = service;
         }
@@ -44,9 +44,22 @@ namespace AttendanceManagementPayrollSystem.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<ActionResult<List<PayRunBasicDto>>> GetAll()
         {
             var result = await _service.GetAllAsync();
+            if (result == null)
+                return NotFound();
+
+            return Ok(result);
+        }
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<PayRunDto>> GetPayRun(int id)
+        {
+            var result = await _service.GetPayRunAsync(id);
+            if (result == null)
+                return NotFound();
+
             return Ok(result);
         }
 

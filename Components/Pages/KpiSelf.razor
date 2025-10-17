@@ -1,0 +1,93 @@
+﻿@page "/kpi/self"
+@using AttendanceManagementPayrollSystem.DTO
+@using System.Text.Json
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+@inject IHttpClientFactory HttpFactory
+
+<h3>My KPI</h3>
+
+@if (!string.IsNullOrEmpty(ErrorMessage))
+{
+    <div style="color:red">@ErrorMessage</div>
+}
+
+<div class="d-flex align-items-center gap-2 mb-3">
+    <MonthYearPicker @bind-SelectedMonth="periodMonth" @bind-SelectedYear="periodYear" />
+    <button class="btn btn-primary" @onclick="ApplyPeriod">Apply</button>
+</div>
+
+<KpiComponentTable Kpi="@Kpi" OnSave="HandleSave" />
+
+
+@code {
+    private int periodYear = DateTime.Now.Year;
+    private int periodMonth = DateTime.Now.Month;
+    private KpiDto? Kpi;
+
+    private EmployeeDTO? Employee;
+    private string ErrorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var empJson = await JS.InvokeAsync<string>("localStorage.getItem", "employee");
+        if (string.IsNullOrWhiteSpace(empJson)) return;
+
+        Employee = JsonSerializer.Deserialize<EmployeeDTO>(empJson);
+        if (Employee == null) return;
+    }
+
+    private async Task ApplyPeriod()
+    {
+        if (Employee != null) await LoadData(Employee.EmpId, periodMonth, periodYear);
+    }
+
+    private async Task LoadData(int empId, int periodMonth, int periodYear)
+    {
+        try
+        {
+            var client = HttpFactory.CreateClient("ApiClient");
+            Kpi = await client.GetFromJsonAsync<KpiDto>($"api/kpi/self?empId={Employee.EmpId}&month={periodMonth}&year={periodYear}");
+
+            //StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error fetching KPI: {ex.Message}");
+            ErrorMessage = ex.Message;
+
+            Kpi = null;
+        }
+    }
+
+    private async Task HandleSave()
+    {
+        if (Employee == null) return;
+        try
+        {
+            var client = HttpFactory.CreateClient("ApiClient");
+
+            // Debug info
+            Console.WriteLine($"Saving KPI for employee {Employee.EmpId}");
+
+            // Send POST request to API with empId in URL
+            var response = await client.PostAsJsonAsync($"api/kpi/self/{Employee.EmpId}/score", Kpi);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                ErrorMessage = await response.Content.ReadAsStringAsync() ?? "Failed to save KPI";
+                return;
+            }
+
+            // Optionally get updated KPI from response
+            // var updatedKpi = await response.Content.ReadFromJsonAsync<KpiDto>();
+
+            await JS.InvokeVoidAsync("console.log", "KPI saved");
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = "Error saving KPI: " + ex.Message;
+        }
+
+    }
+}

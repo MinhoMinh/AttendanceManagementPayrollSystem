@@ -29,11 +29,13 @@ builder.Services.AddCors(options =>
 
 
 // Register services
-builder.Services.AddScoped<PayrollService, PayrollServiceImpl>();
+builder.Services.AddScoped<PayRunService, PayRunServiceImpl>();
 builder.Services.AddScoped<KPIService, KPIServiceImpl>();
 builder.Services.AddScoped<ClockinService, ClockinServiceImpl>();
 builder.Services.AddScoped<AuthService, AuthServiceImpl>();
 builder.Services.AddScoped<HolidayCalendarService, HolidayCalendarServiceImpl>();
+builder.Services.AddScoped<ILeaveRequestService, LeaveRequestServiceImpl>();
+builder.Services.AddScoped<ShiftService, ShiftServiceImpl>();
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
@@ -41,6 +43,7 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
         options.JsonSerializerOptions.WriteIndented = true;
     });
+
 
 RepositoryManager.DoScoped(builder);
 

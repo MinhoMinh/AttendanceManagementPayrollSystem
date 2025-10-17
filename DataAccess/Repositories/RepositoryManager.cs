@@ -12,8 +12,10 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
             );
             builder.Services.AddScoped<EmployeeRepository, EmployeeRepositoryImpl>();
             builder.Services.AddScoped<ClockinRepository, ClockinRepositoryImpl>();
-            builder.Services.AddScoped<PayrollRepository, PayrollRepositoryImpl>();
-            builder.Services.AddScoped<HolidayCalendarRepository, HolidayCalendarRepositoryImpl>();
+            builder.Services.AddScoped<PayRunRepository, PayRunRepositoryImpl>();
+            builder.Services.AddScoped<ILeaveRequestRepository, LeaveRequestRepositoryImpl>();
+            builder.Services.AddScoped<ShiftRepository, ShiftRepositoryImpl>();
+
         }
 
     }

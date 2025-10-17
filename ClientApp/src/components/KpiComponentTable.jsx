@@ -152,4 +152,3 @@ export default function KpiComponentTable({ components, mode = "view", onSave })
         </div>
     );
 }
-

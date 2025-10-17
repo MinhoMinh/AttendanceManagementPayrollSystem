@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace AttendanceManagementPayrollSystem.Models;
 
-public partial class PayrollRun
+public partial class PayRun
 {
     public int PayrollRunId { get; set; }
 
@@ -29,6 +29,8 @@ public partial class PayrollRun
 
     public DateTime? ApprovedFinalAt { get; set; }
 
+    public string Type { get; set; }
+
     public virtual Employee ApprovedFinalByNavigation { get; set; }
 
     public virtual Employee ApprovedFirstByNavigation { get; set; }
@@ -38,4 +40,6 @@ public partial class PayrollRun
     public virtual ICollection<EmployeeSalaryPreview> EmployeeSalaryPreviews { get; set; } = new List<EmployeeSalaryPreview>();
 
     public virtual ICollection<OvertimeRequest> OvertimeRequests { get; set; } = new List<OvertimeRequest>();
+
+    public virtual ICollection<PayRunItem> PayRunItems { get; set; } = new List<PayRunItem>();
 }

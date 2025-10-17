@@ -1,0 +1,28 @@
+﻿@using AttendanceManagementPayrollSystem.DTO
+
+@code {
+    [Parameter] public PayRunDto? PayRun { get; set; }
+}
+
+@if (PayRun == null)
+{
+    <p>No pay run data.</p>
+}
+else
+{
+    <div class="card p-3">
+        <h4>@PayRun.Name</h4>
+        <table class="table table-sm">
+            <tr><th>ID</th><td>@PayRun.PayrollRunId</td></tr>
+            <tr><th>Period</th><td>@($"{PayRun.PeriodMonth:D2}/{PayRun.PeriodYear}")</td></tr>
+            <tr><th>Status</th><td>@PayRun.Status</td></tr>
+            <tr><th>Type</th><td>@PayRun.Type</td></tr>
+            <tr><th>Created By</th><td>@PayRun.CreatedByName</td></tr>
+            <tr><th>Created Date</th><td>@PayRun.CreatedDate.ToShortDateString()</td></tr>
+            <tr><th>Approved 1st By</th><td>@PayRun.ApprovedFirstByName</td></tr>
+            <tr><th>Approved 1st At</th><td>@PayRun.ApprovedFirstAt?.ToShortDateString()</td></tr>
+            <tr><th>Approved Final By</th><td>@PayRun.ApprovedFinalByName</td></tr>
+            <tr><th>Approved Final At</th><td>@PayRun.ApprovedFinalAt?.ToShortDateString()</td></tr>
+        </table>
+    </div>
+}

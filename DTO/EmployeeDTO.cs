@@ -8,4 +8,9 @@ namespace AttendanceManagementPayrollSystem.DTO
 		public List<string> Permissions { get; set; } = new List<string>();
 	}
 
+	public class EmployeeBasicDTO
+	{
+        public int EmpId { get; set; }
+        public string EmpName { get; set; }
+    }
 }

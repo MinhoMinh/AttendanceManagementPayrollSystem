@@ -1,0 +1,78 @@
+﻿@page "/dashboard"
+
+@using AttendanceManagementPayrollSystem.DTO
+@using System.Text.Json
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+
+<DashboardButtonGroup Buttons="@EmployeeService" GroupName="Employee Service" />
+<DashboardButtonGroup Buttons="@DepartmentHeadService" GroupName="Department Head Service" />
+<DashboardButtonGroup Buttons="@DepartmentService" GroupName="Department Service" />
+
+@code {
+    private EmployeeDTO? Employee;
+
+    private List<DashboardButton> EmployeeService = new();
+    private List<DashboardButton> DepartmentHeadService = new();
+    private List<DashboardButton> DepartmentService = new();
+
+    private void BuildButtonGroups()
+    {
+        if (Employee == null) return;
+
+        EmployeeService = new List<DashboardButton>
+        {
+            new() { Label = "Attendance", OnClick = EventCallback.Factory.Create(this, NavigateAttendance), Visible = HasPermission("has_clockin") },
+            new() { Label = "Self KPI", OnClick = EventCallback.Factory.Create(this, NavigateSelfKpi), Visible = HasPermission("has_kpi") },
+            new() { Label = "Shift", OnClick = EventCallback.Factory.Create(this, NavigateSelfShift), Visible = HasPermission("has_shift") },
+
+            //has_shift
+        };
+
+        DepartmentHeadService = new List<DashboardButton>
+        {
+            new() { Label = "Dep KPI", OnClick = EventCallback.Factory.Create(this, NavigateDepKpi), Visible = HasPermission("assign_kpi") },
+        };
+
+        DepartmentService = new List<DashboardButton>
+        {
+            new() { Label = "Upload Clockins", OnClick = EventCallback.Factory.Create(this, NavigateUploadClockins), Visible = HasPermission("upload_clockin") },
+        };
+
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+
+        try
+        {
+            var empJson = await JS.InvokeAsync<string>("localStorage.getItem", "employee");
+            if (!string.IsNullOrWhiteSpace(empJson))
+            {
+                Employee = JsonSerializer.Deserialize<EmployeeDTO>(empJson);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+        }
+
+        BuildButtonGroups();
+        StateHasChanged();
+    }
+
+    private bool HasPermission(string task)
+    {
+        if (Employee?.Permissions == null) return false;
+        return Employee.Permissions.Contains(task);
+    }
+
+    private void NavigateAttendance() => Navigation.NavigateTo("/attendance");
+    private void NavigateSelfKpi() => Navigation.NavigateTo("/kpi/self");
+    private void NavigateSelfShift() => Navigation.NavigateTo("/shift/self");
+
+    private void NavigateDepKpi() => Navigation.NavigateTo("/kpi/head");
+
+    private void NavigateUploadClockins() => Navigation.NavigateTo("/xlsupload");
+}

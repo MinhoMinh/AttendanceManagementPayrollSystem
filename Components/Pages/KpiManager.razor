@@ -1,0 +1,88 @@
+﻿@page "/kpi/manager"
+@using AttendanceManagementPayrollSystem.DTO
+@using System.Text.Json
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+@inject IHttpClientFactory HttpFactory
+
+<h3>Company KPI</h3>
+
+<div class="d-flex align-items-center gap-2 mb-3">
+    <MonthYearPicker @bind-SelectedMonth="periodMonth" @bind-SelectedYear="periodYear" />
+    <button class="btn btn-primary" @onclick="LoadEmployees">Apply</button>
+</div>
+
+<div class="d-flex" style="height:500px;">
+    <!-- Left: Employee list -->
+    <div class="flex-shrink-0" style="width:250px; border-right:1px solid #ccc; overflow:auto;">
+        <h5>Employees</h5>
+        @if (employees is null)
+        {
+            <p>No data loaded</p>
+        }
+        else
+        @if (employees.Count == 0)
+        {
+            <p>No employee found</p>
+        }
+        else
+        {
+            <ul class="list-group">
+                @foreach (var emp in employees)
+                {
+                    <li class="list-group-item @(selectedEmployee == emp ? "active" : "")"
+                        @onclick="() => SelectEmployee(emp)">
+                        @emp.EmpName
+                    </li>
+                }
+            </ul>
+        }
+    </div>
+
+    <!-- Right: KPI components table -->
+    <div class="flex-grow-1 p-3" style="overflow:auto;">
+        <h5>KPI Components</h5>
+        @if (selectedEmployee == null)
+        {
+            <p>Select an employee to view KPI components.</p>
+        }
+        else
+        {
+            <KpiComponentTable Kpi="@selectedEmployeeKpi" />
+        }
+    </div>
+</div>
+
+
+@code {
+    private int periodYear = DateTime.Now.Year;
+    private int periodMonth = DateTime.Now.Month;
+
+    private List<EmployeeBasicDTO>? employees;
+    private EmployeeBasicDTO? selectedEmployee;
+    private KpiDto? selectedEmployeeKpi;
+
+
+    private async Task LoadEmployees()
+    {
+        var client = HttpFactory.CreateClient("ApiClient");
+
+        // Call your API to get employees with KPI for selected month/year
+        employees = await client.GetFromJsonAsync<List<EmployeeBasicDTO>>(
+            $"http://localhost:5038/api/kpi/manager?month={periodMonth}&year={periodYear}");
+
+        selectedEmployee = null;
+        selectedEmployeeKpi = null;
+    }
+
+    private async Task SelectEmployee(EmployeeBasicDTO emp)
+    {
+        selectedEmployee = emp;
+
+        var client = HttpFactory.CreateClient("ApiClient");
+
+        selectedEmployeeKpi = await client.GetFromJsonAsync<KpiDto>(
+            $"http://localhost:5038/api/kpi/manager/kpi?empId={selectedEmployee.EmpId}&month={periodMonth}&year={periodYear}");
+    }
+}
+

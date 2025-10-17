@@ -100,7 +100,15 @@
          "ObjectType": 0
       },
       {
-         "Name": "[dbo].[PayrollRun]",
+         "Name": "[dbo].[PayRun]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[PayRunComponent]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[PayRunItem]",
          "ObjectType": 0
       },
       {

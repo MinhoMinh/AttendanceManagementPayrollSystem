@@ -37,7 +37,7 @@ public partial class OvertimeRequest
 
     public virtual Employee Emp { get; set; }
 
-    public virtual PayrollRun LinkedPayrollRun { get; set; }
+    public virtual PayRun LinkedPayrollRun { get; set; }
 
     public virtual OvertimeRate OvertimeTypeNavigation { get; set; }
 }

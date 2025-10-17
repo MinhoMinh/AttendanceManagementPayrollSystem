@@ -11,11 +11,9 @@ public partial class HolidayCalendar
 
     public string HolidayName { get; set; }
 
-    public DateTime StartDatetime { get; set; }
-
-    public DateTime EndDatetime { get; set; }
-
     public DateTime? CreatedAt { get; set; }
 
-    public virtual ICollection<Department> Deps { get; set; } = new List<Department>();
+    public DateTime? PeriodYear { get; set; }
+
+    public virtual ICollection<DepartmentHolidayCalender> DepartmentHolidayCalenders { get; set; } = new List<DepartmentHolidayCalender>();
 }

@@ -21,6 +21,8 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
 
     public virtual DbSet<Department> Departments { get; set; }
 
+    public virtual DbSet<DepartmentHolidayCalender> DepartmentHolidayCalenders { get; set; }
+
     public virtual DbSet<DepartmentWeeklyShift> DepartmentWeeklyShifts { get; set; }
 
     public virtual DbSet<Employee> Employees { get; set; }
@@ -53,7 +55,11 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
 
     public virtual DbSet<OvertimeRequest> OvertimeRequests { get; set; }
 
-    public virtual DbSet<PayrollRun> PayrollRuns { get; set; }
+    public virtual DbSet<PayRun> PayRuns { get; set; }
+
+    public virtual DbSet<PayRunComponent> PayRunComponents { get; set; }
+
+    public virtual DbSet<PayRunItem> PayRunItems { get; set; }
 
     public virtual DbSet<Permission> Permissions { get; set; }
 
@@ -120,13 +126,14 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
 
         modelBuilder.Entity<DailyShift>(entity =>
         {
-            entity.HasKey(e => e.ShiftIndex).HasName("PK__DailyShi__1BC1E2CF1365459F");
+            entity.HasKey(e => e.ShiftId).HasName("PK__DailyShi__1BC1E2CF1365459F");
 
             entity.ToTable("DailyShift");
 
             entity.Property(e => e.ShiftDescription).HasMaxLength(100);
             entity.Property(e => e.ShiftName).HasMaxLength(100);
             entity.Property(e => e.ShiftString).HasMaxLength(200);
+            entity.Property(e => e.ShiftWorkhour).HasColumnType("decimal(4, 2)");
         });
 
         modelBuilder.Entity<Department>(entity =>
@@ -139,25 +146,31 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
             entity.Property(e => e.DepName)
                 .HasMaxLength(50)
                 .HasColumnName("dep_name");
+        });
 
-            entity.HasMany(d => d.Holidays).WithMany(p => p.Deps)
-                .UsingEntity<Dictionary<string, object>>(
-                    "DepartmentHolidayCalender",
-                    r => r.HasOne<HolidayCalendar>().WithMany()
-                        .HasForeignKey("HolidayId")
-                        .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("FK_DepartmentHolidayCalender_HolidayCalendar"),
-                    l => l.HasOne<Department>().WithMany()
-                        .HasForeignKey("DepId")
-                        .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("FK_DepartmentHolidayCalender_Department"),
-                    j =>
-                    {
-                        j.HasKey("DepId", "HolidayId");
-                        j.ToTable("DepartmentHolidayCalender");
-                        j.IndexerProperty<int>("DepId").HasColumnName("dep_id");
-                        j.IndexerProperty<int>("HolidayId").HasColumnName("holiday_id");
-                    });
+        modelBuilder.Entity<DepartmentHolidayCalender>(entity =>
+        {
+            entity.HasKey(e => e.DepHolidayCalenderId);
+
+            entity.ToTable("DepartmentHolidayCalender");
+
+            entity.Property(e => e.DepHolidayCalenderId).HasColumnName("dep_holiday_calender_id");
+            entity.Property(e => e.DepId).HasColumnName("dep_id");
+            entity.Property(e => e.EndDate)
+                .HasColumnType("datetime")
+                .HasColumnName("end_date");
+            entity.Property(e => e.HolidayId).HasColumnName("holiday_id");
+            entity.Property(e => e.StartDate)
+                .HasColumnType("datetime")
+                .HasColumnName("start_date");
+
+            entity.HasOne(d => d.Dep).WithMany(p => p.DepartmentHolidayCalenders)
+                .HasForeignKey(d => d.DepId)
+                .HasConstraintName("FK_DepartmentHolidayCalender_Department");
+
+            entity.HasOne(d => d.Holiday).WithMany(p => p.DepartmentHolidayCalenders)
+                .HasForeignKey(d => d.HolidayId)
+                .HasConstraintName("FK_DepartmentHolidayCalender_HolidayCalendar");
         });
 
         modelBuilder.Entity<DepartmentWeeklyShift>(entity =>
@@ -479,16 +492,13 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
             entity.Property(e => e.CreatedAt)
                 .HasColumnType("datetime")
                 .HasColumnName("created_at");
-            entity.Property(e => e.EndDatetime)
-                .HasColumnType("datetime")
-                .HasColumnName("end_datetime");
             entity.Property(e => e.HolidayName)
                 .IsRequired()
                 .HasMaxLength(100)
                 .HasColumnName("holiday_name");
-            entity.Property(e => e.StartDatetime)
+            entity.Property(e => e.PeriodYear)
                 .HasColumnType("datetime")
-                .HasColumnName("start_datetime");
+                .HasColumnName("period_year");
         });
 
         modelBuilder.Entity<InsuranceRateSet>(entity =>
@@ -718,11 +728,11 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
                 .HasConstraintName("FK_OvertimeRequest_OvertimeRate");
         });
 
-        modelBuilder.Entity<PayrollRun>(entity =>
+        modelBuilder.Entity<PayRun>(entity =>
         {
             entity.HasKey(e => e.PayrollRunId).HasName("PK__PayrollR__042B3F66A4356420");
 
-            entity.ToTable("PayrollRun");
+            entity.ToTable("PayRun");
 
             entity.Property(e => e.PayrollRunId).HasColumnName("payroll_run_id");
             entity.Property(e => e.ApprovedFinalAt)
@@ -735,6 +745,7 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
             entity.Property(e => e.ApprovedFirstBy).HasColumnName("approved_first_by");
             entity.Property(e => e.CreatedBy).HasColumnName("created_by");
             entity.Property(e => e.CreatedDate)
+                .HasAnnotation("Relational:DefaultConstraintName", "DF__PayrollRu__creat__7C4F7684")
                 .HasColumnType("datetime")
                 .HasColumnName("created_date");
             entity.Property(e => e.Name)
@@ -748,18 +759,91 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
                 .HasMaxLength(20)
                 .HasAnnotation("Relational:DefaultConstraintName", "DF_PayrollRun_status")
                 .HasColumnName("status");
+            entity.Property(e => e.Type)
+                .IsRequired()
+                .HasMaxLength(50)
+                .HasAnnotation("Relational:DefaultConstraintName", "DF_PayRun_type")
+                .HasColumnName("type");
 
-            entity.HasOne(d => d.ApprovedFinalByNavigation).WithMany(p => p.PayrollRunApprovedFinalByNavigations)
+            entity.HasOne(d => d.ApprovedFinalByNavigation).WithMany(p => p.PayRunApprovedFinalByNavigations)
                 .HasForeignKey(d => d.ApprovedFinalBy)
                 .HasConstraintName("FK_PayrollRun_Employee");
 
-            entity.HasOne(d => d.ApprovedFirstByNavigation).WithMany(p => p.PayrollRunApprovedFirstByNavigations)
+            entity.HasOne(d => d.ApprovedFirstByNavigation).WithMany(p => p.PayRunApprovedFirstByNavigations)
                 .HasForeignKey(d => d.ApprovedFirstBy)
                 .HasConstraintName("FK__PayrollRu__appro__44CA3770");
 
-            entity.HasOne(d => d.CreatedByNavigation).WithMany(p => p.PayrollRunCreatedByNavigations)
+            entity.HasOne(d => d.CreatedByNavigation).WithMany(p => p.PayRunCreatedByNavigations)
                 .HasForeignKey(d => d.CreatedBy)
                 .HasConstraintName("FK__PayrollRu__creat__42E1EEFE");
+        });
+
+        modelBuilder.Entity<PayRunComponent>(entity =>
+        {
+            entity.ToTable("PayRunComponent");
+
+            entity.Property(e => e.PayRunComponentId).HasColumnName("pay_run_component_id");
+            entity.Property(e => e.Amount)
+                .HasAnnotation("Relational:DefaultConstraintName", "DF_PayRunComponent_amount")
+                .HasColumnType("decimal(12, 2)")
+                .HasColumnName("amount");
+            entity.Property(e => e.ComponentCode)
+                .HasMaxLength(20)
+                .HasAnnotation("Relational:DefaultConstraintName", "DF_PayRunComponent_component_code")
+                .HasColumnName("component_code");
+            entity.Property(e => e.ComponentType)
+                .IsRequired()
+                .HasMaxLength(20)
+                .HasColumnName("component_type");
+            entity.Property(e => e.CreatedAt)
+                .HasAnnotation("Relational:DefaultConstraintName", "DF_PayRunComponent_created_at")
+                .HasColumnType("datetime")
+                .HasColumnName("created_at");
+            entity.Property(e => e.Description)
+                .HasMaxLength(50)
+                .HasColumnName("description");
+            entity.Property(e => e.PayRunItemId).HasColumnName("pay_run_item_id");
+            entity.Property(e => e.Taxable).HasColumnName("taxable");
+
+            entity.HasOne(d => d.PayRunItem).WithMany(p => p.PayRunComponents)
+                .HasForeignKey(d => d.PayRunItemId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_PayRunComponent_PayRunItem");
+        });
+
+        modelBuilder.Entity<PayRunItem>(entity =>
+        {
+            entity.HasKey(e => e.PayRunItemId).HasName("PK_PayRunItems");
+
+            entity.ToTable("PayRunItem");
+
+            entity.Property(e => e.PayRunItemId).HasColumnName("pay_run_item_id");
+            entity.Property(e => e.Deductions)
+                .HasAnnotation("Relational:DefaultConstraintName", "DF_PayRunItems_deductions")
+                .HasColumnType("decimal(12, 2)")
+                .HasColumnName("deductions");
+            entity.Property(e => e.EmpId).HasColumnName("emp_id");
+            entity.Property(e => e.GrossPay)
+                .HasAnnotation("Relational:DefaultConstraintName", "DF_PayRunItems_gross_pay")
+                .HasColumnType("decimal(12, 2)")
+                .HasColumnName("gross_pay");
+            entity.Property(e => e.NetPay)
+                .HasColumnType("decimal(12, 2)")
+                .HasColumnName("net_pay");
+            entity.Property(e => e.Notes)
+                .HasMaxLength(100)
+                .HasColumnName("notes");
+            entity.Property(e => e.PayRunId).HasColumnName("pay_run_id");
+
+            entity.HasOne(d => d.Emp).WithMany(p => p.PayRunItems)
+                .HasForeignKey(d => d.EmpId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_PayRunItem_Employee");
+
+            entity.HasOne(d => d.PayRun).WithMany(p => p.PayRunItems)
+                .HasForeignKey(d => d.PayRunId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_PayRunItem_PayRun");
         });
 
         modelBuilder.Entity<Permission>(entity =>
@@ -851,6 +935,34 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
             entity.Property(e => e.ShiftName)
                 .IsRequired()
                 .HasMaxLength(100);
+
+            entity.HasOne(d => d.FriDailyShift).WithMany(p => p.WeeklyShiftFriDailyShifts)
+                .HasForeignKey(d => d.FriDailyShiftId)
+                .HasConstraintName("FK_WeeklyShift_DailyShift_Fri");
+
+            entity.HasOne(d => d.MonDailyShift).WithMany(p => p.WeeklyShiftMonDailyShifts)
+                .HasForeignKey(d => d.MonDailyShiftId)
+                .HasConstraintName("FK_WeeklyShift_DailyShift_Mon");
+
+            entity.HasOne(d => d.SatDailyShift).WithMany(p => p.WeeklyShiftSatDailyShifts)
+                .HasForeignKey(d => d.SatDailyShiftId)
+                .HasConstraintName("FK_WeeklyShift_DailyShift_Sat");
+
+            entity.HasOne(d => d.SunDailyShift).WithMany(p => p.WeeklyShiftSunDailyShifts)
+                .HasForeignKey(d => d.SunDailyShiftId)
+                .HasConstraintName("FK_WeeklyShift_DailyShift_Sun");
+
+            entity.HasOne(d => d.ThuDailyShift).WithMany(p => p.WeeklyShiftThuDailyShifts)
+                .HasForeignKey(d => d.ThuDailyShiftId)
+                .HasConstraintName("FK_WeeklyShift_DailyShift_Thu");
+
+            entity.HasOne(d => d.TueDailyShift).WithMany(p => p.WeeklyShiftTueDailyShifts)
+                .HasForeignKey(d => d.TueDailyShiftId)
+                .HasConstraintName("FK_WeeklyShift_DailyShift_Tue");
+
+            entity.HasOne(d => d.WedDailyShift).WithMany(p => p.WeeklyShiftWedDailyShifts)
+                .HasForeignKey(d => d.WedDailyShiftId)
+                .HasConstraintName("FK_WeeklyShift_DailyShift_Wed");
         });
 
         OnModelCreatingPartial(modelBuilder);
