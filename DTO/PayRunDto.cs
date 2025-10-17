@@ -40,7 +40,8 @@
         public string ComponentCode { get; set; }
         public string Description { get; set; }
         public decimal Amount { get; set; }
-        public bool? Taxable { get; set; }
+        public bool Taxable { get; set; }
+        public bool Insurable { get; set; }
         public DateTime? CreatedAt { get; set; }
     }
 

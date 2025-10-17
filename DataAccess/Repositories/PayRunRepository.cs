@@ -16,5 +16,11 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
         Task<PayRunDto?> GetDtoAsync(int payrollId);
 
         Task Update(PayRun run);
+
+        Task<List<Employee>> GetEmployeesWithComponents(int month, int year);
+
+        Task<bool> ContainsValidPayRunInPeriod(int month, int year);
+
+        Task SaveRegularPayRun(PayRun run);
     }
 }

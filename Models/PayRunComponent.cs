@@ -19,9 +19,11 @@ public partial class PayRunComponent
 
     public decimal Amount { get; set; }
 
-    public bool? Taxable { get; set; }
+    public bool Taxable { get; set; }
 
     public DateTime? CreatedAt { get; set; }
+
+    public bool Insurable { get; set; }
 
     public virtual PayRunItem PayRunItem { get; set; }
 }

@@ -802,8 +802,13 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
             entity.Property(e => e.Description)
                 .HasMaxLength(50)
                 .HasColumnName("description");
+            entity.Property(e => e.Insurable)
+                .HasAnnotation("Relational:DefaultConstraintName", "DF_PayRunComponent_insurable")
+                .HasColumnName("insurable");
             entity.Property(e => e.PayRunItemId).HasColumnName("pay_run_item_id");
-            entity.Property(e => e.Taxable).HasColumnName("taxable");
+            entity.Property(e => e.Taxable)
+                .HasAnnotation("Relational:DefaultConstraintName", "DF_PayRunComponent_taxable")
+                .HasColumnName("taxable");
 
             entity.HasOne(d => d.PayRunItem).WithMany(p => p.PayRunComponents)
                 .HasForeignKey(d => d.PayRunItemId)

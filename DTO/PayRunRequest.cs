@@ -1,6 +1,6 @@
 ﻿namespace AttendanceManagementPayrollSystem.DTO
 {
-    public class PayrollRequest
+    public class PayRunRequest
     {
         public string Name { get; set; }
         public int PeriodMonth { get; set; }

@@ -1,6 +1,7 @@
 ﻿@page "/payruns/{id:int}"
 @using AttendanceManagementPayrollSystem.DTO
-@inject NavigationManager Navigation
+@using System.Text.Json
+@inject NavigationManager NavigationManager
 @inject IJSRuntime JS
 @inject IHttpClientFactory HttpFactory
 
@@ -20,17 +21,45 @@ else if (payRun is null)
 }
 else
 {
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4>Pay Run Details</h4>
+        @if (canApproveFirst || canApproveFinal)
+        {
+            <button class="btn btn-success" @onclick="ShowConfirmModal">Confirm</button>
+        }
+    </div>
+
     <div class="row">
         <div class="col-2">
             <PayRunDetails PayRun="@payRun" />
         </div>
 
-        <div class="col-8">
+        <div class="col-6">
             <PayRunItemList Items="@payRun.PayRunItems" OnItemSelected="@SelectItem" />
         </div>
 
-        <div class="col-2">
+        <div class="col-4">
             <PayRunItemDetails Item="@selectedItem" />
+        </div>
+    </div>
+}
+
+@if (showConfirmModal)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirm Pay Run</h5>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to confirm this pay run?</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="CancelConfirm">Cancel</button>
+                    <button class="btn btn-success" @onclick="ConfirmPayRun">Yes, Confirm</button>
+                </div>
+            </div>
         </div>
     </div>
 }
@@ -42,28 +71,25 @@ else
     private PayRunItemDto? selectedItem;
     private bool isLoading = true;
     private bool loadError = false;
+    private EmployeeDTO? employee;
 
-    private void SelectItem(PayRunItemDto item)
-    {
-        selectedItem = item;
-    }
+    private bool showConfirmModal = false;
+    private bool canApproveFirst = false;
+    private bool canApproveFinal = false;
+
+    private void SelectItem(PayRunItemDto item) => selectedItem = item;
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
             var client = HttpFactory.CreateClient("ApiClient");
-
             var response = await client.GetAsync($"api/pay-run/{Id}");
 
             if (response.IsSuccessStatusCode)
-            {
                 payRun = await response.Content.ReadFromJsonAsync<PayRunDto>();
-            }
             else
-            {
                 loadError = true;
-            }
         }
         catch (Exception ex)
         {
@@ -73,6 +99,84 @@ else
         finally
         {
             isLoading = false;
+            await CheckPermissions(); // 🔹 check permissions right after payRun is loaded
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+
+        try
+        {
+            var empJson = await JS.InvokeAsync<string>("localStorage.getItem", "employee");
+
+            if (!string.IsNullOrWhiteSpace(empJson))
+            {
+                employee = JsonSerializer.Deserialize<EmployeeDTO>(empJson);
+                await CheckPermissions(); // 🔹 also check permissions after employee is loaded
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Permission check error: {ex.Message}");
+        }
+    }
+
+    private async Task CheckPermissions()
+    {
+        if (employee == null || payRun == null) return;
+
+        if (employee.Permissions.Contains("approve_payroll_run_first") && payRun.Status == "Pending")
+            canApproveFirst = true;
+        else if (employee.Permissions.Contains("approve_payroll_run_final") && payRun.Status == "FirstApproved")
+            canApproveFinal = true;
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private void ShowConfirmModal() => showConfirmModal = true;
+
+    private void CancelConfirm() => showConfirmModal = false;
+
+    private async Task ConfirmPayRun()
+    {
+        showConfirmModal = false;
+
+        if (employee == null || payRun == null)
+        {
+            await JS.InvokeVoidAsync("alert", "Missing employee or pay run data.");
+            return;
+        }
+
+        try
+        {
+            string apiUrl = canApproveFirst ? "api/pay-run/approve-first" : canApproveFinal ? "api/pay-run/approve-final" : string.Empty;
+            if (string.IsNullOrEmpty(apiUrl))
+            {
+                await JS.InvokeVoidAsync("alert", "You do not have permission to approve this pay run.");
+                return;
+            }
+            
+            var client = HttpFactory.CreateClient("ApiClient");
+            var request = new { ApproverId = employee.EmpId, PayRunId = payRun.PayrollRunId };
+
+            var response = await client.PostAsJsonAsync(apiUrl, request);
+
+            if (response.IsSuccessStatusCode)
+            {
+                await JS.InvokeVoidAsync("alert", "Pay run approved successfully.");
+                NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
+            }
+            else
+            {
+                var details = await response.Content.ReadAsStringAsync();
+                await JS.InvokeVoidAsync("alert", $"Error: {response.StatusCode} - {details}");
+            }
+        }
+        catch (Exception ex)
+        {
+            await JS.InvokeVoidAsync("alert", $"Exception: {ex.Message}");
         }
     }
 }

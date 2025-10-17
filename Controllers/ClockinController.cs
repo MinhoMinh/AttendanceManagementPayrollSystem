@@ -63,12 +63,12 @@ namespace AttendanceManagementPayrollSystem.Controllers
                 await _clockinService.SaveClockinData(clockins);
                 return Ok("Clockins saved");
             }
-            catch (DbUpdateException ex)
+            catch (DbUpdateException)
             {
                 //_logger.LogError(ex, "Database update failed");
                 return StatusCode(500, "Database error");
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 //_logger.LogError(ex, "Unexpected error");
                 return StatusCode(500, "Unexpected error");

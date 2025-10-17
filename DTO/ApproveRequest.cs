@@ -2,6 +2,8 @@
 {
     public class ApproveRequest
     {
-        public int ApprovedBy { get; set; }
+        public int ApproverId { get; set; }
+        public int PayRunId { get; set; }
+
     }
 }
