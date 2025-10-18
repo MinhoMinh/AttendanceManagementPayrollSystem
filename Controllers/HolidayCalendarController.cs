@@ -39,16 +39,6 @@ namespace AttendanceManagementPayrollSystem.Controllers
         }
 
         /// <summary>
-        /// Lấy danh sách ngày nghỉ lễ theo tháng và năm.
-        /// </summary>
-        [HttpGet("month/{month}/year/{year}")]
-        public async Task<IActionResult> GetByMonth(int month, int year)
-        {
-            var result = await _service.GetByMonthAsync(month, year);
-            return Ok(result);
-        }
-
-        /// <summary>
         /// Lấy danh sách ngày nghỉ lễ áp dụng cho một phòng ban cụ thể.
         /// </summary>
         [HttpGet("department/{depId}")]
@@ -85,22 +75,12 @@ namespace AttendanceManagementPayrollSystem.Controllers
         }
 
         /// <summary>
-        /// Xóa ngày nghỉ lễ khỏi hệ thống.
-        /// </summary>
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int id)
-        {
-            await _service.DeleteAsync(id);
-            return Ok(new { message = "Deleted successfully." });
-        }
-
-        /// <summary>
         /// Gán ngày nghỉ lễ cho một phòng ban.
         /// </summary>
         [HttpPost("{holidayId}/assign/{depId}")]
-        public async Task<IActionResult> AssignToDepartment(int holidayId, int depId)
+        public async Task<IActionResult> AssignToDepartment(int holidayId, int depId, DateTime startDate, DateTime endDate)
         {
-            await _service.AssignHolidayToDepartmentAsync(holidayId, depId);
+            await _service.AssignHolidayToDepartmentAsync(holidayId, depId, startDate, endDate);
             return Ok(new { message = "Assigned successfully." });
         }
 

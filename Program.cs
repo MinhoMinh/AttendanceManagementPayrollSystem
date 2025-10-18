@@ -36,6 +36,10 @@ builder.Services.AddScoped<AuthService, AuthServiceImpl>();
 builder.Services.AddScoped<HolidayCalendarService, HolidayCalendarServiceImpl>();
 builder.Services.AddScoped<ILeaveRequestService, LeaveRequestServiceImpl>();
 builder.Services.AddScoped<ShiftService, ShiftServiceImpl>();
+builder.Services.AddScoped<HolidayCalendarService, HolidayCalendarServiceImpl>();
+builder.Services.AddScoped<DepartmentService, DepartmentServiceImpl>();
+
+
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>

@@ -1,0 +1,159 @@
+﻿@page "/department-holiday"
+@using AttendanceManagementPayrollSystem.DTO
+@inject IHttpClientFactory HttpFactory
+@inject IJSRuntime JS
+
+<h3 class="mb-3">Quản lý Ngày Nghỉ Theo Phòng Ban</h3>
+
+@if (records == null)
+{
+    <p><em>Đang tải dữ liệu...</em></p>
+}
+else
+{
+    <div class="mb-3 text-end">
+        <button class="btn btn-primary" @onclick="ShowAddModal">+ Gán Ngày Nghỉ</button>
+    </div>
+
+    <table class="table table-bordered table-striped">
+        <thead class="table-light">
+            <tr>
+                <th>#</th>
+                <th>Phòng Ban</th>
+                <th>Ngày Nghỉ</th>
+                <th>Bắt đầu</th>
+                <th>Kết thúc</th>
+                <th>Hành động</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var r in records)
+            {
+                <tr>
+                    <td>@r.DepHolidayCalendarId</td>
+                    <td>@r.DepName</td>
+                    <td>@r.HolidayName</td>
+                    <td>@r.StartDate.ToString("dd/MM/yyyy")</td>
+                    <td>@r.EndDate.ToString("dd/MM/yyyy")</td>
+                    <td>
+                        <button class="btn btn-sm btn-danger" @onclick="() => DeleteRecord(r.DepHolidayCalendarId)">Xóa</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@if (showModal)
+{
+    <div class="modal fade show d-block" style="background-color:rgba(0,0,0,0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content p-3">
+                <div class="modal-header">
+                    <h5 class="modal-title">Gán Ngày Nghỉ Cho Phòng Ban</h5>
+                    <button type="button" class="btn-close" @onclick="CloseModal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-2">
+                        <label>Phòng ban</label>
+                        <select class="form-select" @bind="newRecord.DepId">
+                            <option value="">-- Chọn phòng ban --</option>
+                            @foreach (var d in departments)
+                            {
+                                <option value="@d.DepId">@d.DepName</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-2">
+                        <label>Ngày nghỉ</label>
+                        <select class="form-select" @bind="newRecord.HolidayId">
+                            <option value="">-- Chọn ngày nghỉ --</option>
+                            @foreach (var h in holidays)
+                            {
+                                <option value="@h.HolidayId">@h.HolidayName</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-2">
+                        <label>Bắt đầu</label>
+                        <input type="date" class="form-control" @bind="newRecord.StartDate" />
+                    </div>
+                    <div class="mb-2">
+                        <label>Kết thúc</label>
+                        <input type="date" class="form-control" @bind="newRecord.EndDate" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="CloseModal">Hủy</button>
+                    <button class="btn btn-success" @onclick="SaveRecord">Lưu</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private HttpClient Http;
+    private List<DepartmentHolidayCalendarDTO>? records;
+    private List<DepartmentDTO>? departments;
+    private List<HolidayCalendarDTO>? holidays;
+    private DepartmentHolidayCalendarDTO newRecord = new();
+    private bool showModal = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Http = HttpFactory.CreateClient("ApiClient");
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        records = await Http.GetFromJsonAsync<List<DepartmentHolidayCalendarDTO>>("api/departmentholidaycalendar");
+        departments = await Http.GetFromJsonAsync<List<DepartmentDTO>>("api/department");
+        holidays = await Http.GetFromJsonAsync<List<HolidayCalendarDTO>>("api/holidaycalendar");
+    }
+
+    private void ShowAddModal()
+    {
+        newRecord = new DepartmentHolidayCalendarDTO
+        {
+            StartDate = DateTime.Now,
+            EndDate = DateTime.Now
+        };
+        showModal = true;
+    }
+
+    private void CloseModal() => showModal = false;
+
+    private async Task SaveRecord()
+    {
+        if (newRecord.DepId == 0 || newRecord.HolidayId == 0)
+        {
+            await JS.InvokeVoidAsync("alert", "Vui lòng chọn đầy đủ thông tin.");
+            return;
+        }
+
+        var response = await Http.PostAsJsonAsync("api/departmentholidaycalendar", newRecord);
+        if (response.IsSuccessStatusCode)
+        {
+            await LoadData();
+            showModal = false;
+        }
+        else
+        {
+            var msg = await response.Content.ReadAsStringAsync();
+            await JS.InvokeVoidAsync("alert", $"Lỗi khi lưu: {msg}");
+        }
+    }
+
+    private async Task DeleteRecord(int id)
+    {
+        bool confirm = await JS.InvokeAsync<bool>("confirm", "Xóa bản ghi này?");
+        if (confirm)
+        {
+            var response = await Http.DeleteAsync($"api/departmentholidaycalendar/{id}");
+            if (response.IsSuccessStatusCode)
+                await LoadData();
+        }
+    }
+}

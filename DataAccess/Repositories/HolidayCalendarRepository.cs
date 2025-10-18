@@ -13,9 +13,9 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
         Task<IEnumerable<HolidayCalendar>> GetAllAsync();
 
         /// <summary>
-        /// Lấy danh sách ngày nghỉ lễ theo tháng và năm.
+        /// Lấy danh sách ngày nghỉ lễ theo năm (nếu muốn lọc theo PeriodYear).
         /// </summary>
-        Task<IEnumerable<HolidayCalendar>> GetByMonthAsync(int month, int year);
+        Task<IEnumerable<HolidayCalendar>> GetByYearAsync(int year);
 
         /// <summary>
         /// Lấy thông tin chi tiết ngày nghỉ lễ theo ID.
@@ -43,9 +43,10 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
         Task DeleteAsync(int holidayId);
 
         /// <summary>
-        /// Gán ngày nghỉ lễ cho một phòng ban.
+        /// Gán ngày nghỉ lễ cho một phòng ban (thêm bản ghi vào DepartmentHolidayCalender).
+        /// Bổ sung startDate/endDate để lưu khoảng áp dụng cho phòng ban đó.
         /// </summary>
-        Task AssignHolidayToDepartmentAsync(int holidayId, int depId);
+        Task AssignHolidayToDepartmentAsync(int holidayId, int depId, DateTime startDate, DateTime endDate);
 
         /// <summary>
         /// Xóa ngày nghỉ lễ khỏi một phòng ban.

@@ -150,11 +150,11 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
 
         modelBuilder.Entity<DepartmentHolidayCalender>(entity =>
         {
-            entity.HasKey(e => e.DepHolidayCalenderId);
+            entity.HasKey(e => e.DepHolidayCalendarId);
 
             entity.ToTable("DepartmentHolidayCalender");
 
-            entity.Property(e => e.DepHolidayCalenderId).HasColumnName("dep_holiday_calender_id");
+            entity.Property(e => e.DepHolidayCalendarId).HasColumnName("dep_holiday_calendar_id").ValueGeneratedOnAdd();
             entity.Property(e => e.DepId).HasColumnName("dep_id");
             entity.Property(e => e.EndDate)
                 .HasColumnType("datetime")

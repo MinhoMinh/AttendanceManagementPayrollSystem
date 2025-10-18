@@ -25,12 +25,6 @@ namespace AttendanceManagementPayrollSystem.Services
             return holiday == null ? null : ToDTO(holiday);
         }
 
-        public async Task<IEnumerable<HolidayCalendarDTO>> GetByMonthAsync(int month, int year)
-        {
-            var holidays = await _holidayRepo.GetByMonthAsync(month, year);
-            return holidays.Select(ToDTO);
-        }
-
         public async Task<IEnumerable<HolidayCalendarDTO>> GetByDepartmentAsync(int depId)
         {
             var holidays = await _holidayRepo.GetByDepartmentAsync(depId);
@@ -42,16 +36,14 @@ namespace AttendanceManagementPayrollSystem.Services
             var entity = new HolidayCalendar
             {
                 HolidayName = dto.HolidayName,
-                StartDatetime = dto.StartDatetime,
-                EndDatetime = dto.EndDatetime
+                PeriodYear = dto.PeriodYear
             };
 
             await _holidayRepo.AddAsync(entity);
 
-            // cập nhật lại các giá trị sinh ra từ DB
+            // cập nhật lại DTO theo dữ liệu từ DB
             dto.HolidayId = entity.HolidayId;
             dto.CreatedAt = entity.CreatedAt;
-
             return dto;
         }
 
@@ -61,8 +53,7 @@ namespace AttendanceManagementPayrollSystem.Services
             {
                 HolidayId = dto.HolidayId,
                 HolidayName = dto.HolidayName,
-                StartDatetime = dto.StartDatetime,
-                EndDatetime = dto.EndDatetime,
+                PeriodYear = dto.PeriodYear,
                 CreatedAt = dto.CreatedAt
             };
 
@@ -70,14 +61,9 @@ namespace AttendanceManagementPayrollSystem.Services
             return dto;
         }
 
-        public async Task DeleteAsync(int id)
+        public async Task AssignHolidayToDepartmentAsync(int holidayId, int depId, DateTime startDate, DateTime endDate)
         {
-            await _holidayRepo.DeleteAsync(id);
-        }
-
-        public async Task AssignHolidayToDepartmentAsync(int holidayId, int depId)
-        {
-            await _holidayRepo.AssignHolidayToDepartmentAsync(holidayId, depId);
+            await _holidayRepo.AssignHolidayToDepartmentAsync(holidayId, depId, startDate, endDate);
         }
 
         public async Task RemoveHolidayFromDepartmentAsync(int holidayId, int depId)
@@ -85,22 +71,15 @@ namespace AttendanceManagementPayrollSystem.Services
             await _holidayRepo.RemoveHolidayFromDepartmentAsync(holidayId, depId);
         }
 
-        // Helper method: map entity → DTO
+        // Helper: map entity → DTO
         private HolidayCalendarDTO ToDTO(HolidayCalendar h)
         {
             return new HolidayCalendarDTO
             {
                 HolidayId = h.HolidayId,
                 HolidayName = h.HolidayName,
-                StartDatetime = h.StartDatetime,
-                EndDatetime = h.EndDatetime,
-                CreatedAt = h.CreatedAt,
-                // Nếu bạn có DTO cho Department thì có thể map thêm:
-                //Deps = h.Deps?.Select(d => new DepartmentDTO
-                //{
-                //    DepartmentId = d.DepId,
-                //    DepartmentName = d.DepName
-                //}).ToList()
+                PeriodYear = h.PeriodYear,
+                CreatedAt = h.CreatedAt
             };
         }
     }
