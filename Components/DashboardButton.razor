@@ -1,6 +1,11 @@
-﻿<button class="dashboard-btn" @onclick="OnClick" hidden="@(!Visible)">
-    @Label
-</button>
+﻿<div class="dashboard-btn-wrapper" hidden="@(!Visible)">
+    <div class="dashboard-btn" @onclick="OnClick">
+        <div class="icon-slot">
+            <!-- Nếu sau này có icon SVG hoặc hình ảnh thì chèn vào đây -->
+        </div>
+    </div>
+    <div class="btn-label">@Label</div>
+</div>
 
 @code {
     [Parameter] public string Label { get; set; }

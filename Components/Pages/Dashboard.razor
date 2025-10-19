@@ -5,9 +5,21 @@
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
 
-<DashboardButtonGroup Buttons="@EmployeeService" GroupName="Employee Service" />
-<DashboardButtonGroup Buttons="@DepartmentHeadService" GroupName="Department Head Service" />
-<DashboardButtonGroup Buttons="@CompanyService" GroupName="Company Service" />
+<div class="dashboard-page">
+    <h1 class="dashboard-title">Dashboard</h1>
+
+    <section class="dashboard-section">
+        <DashboardButtonGroup Buttons="@EmployeeService" GroupName="Employee Service"  />
+    </section>
+
+    <section class="dashboard-section">
+        <DashboardButtonGroup Buttons="@DepartmentHeadService" GroupName="Department Head Service"  />
+    </section>
+
+    <section class="dashboard-section">
+        <DashboardButtonGroup Buttons="@CompanyService" GroupName="Company Service"  />
+    </section>
+</div>
 
 @code {
     private EmployeeDTO? Employee;
@@ -20,27 +32,23 @@
     {
         if (Employee == null) return;
 
-        EmployeeService = new List<DashboardButton>
+        EmployeeService = new()
         {
             new() { Label = "Attendance", OnClick = EventCallback.Factory.Create(this, NavigateAttendance), Visible = HasPermission("has_clockin") },
             new() { Label = "Self KPI", OnClick = EventCallback.Factory.Create(this, NavigateSelfKpi), Visible = HasPermission("has_kpi") },
             new() { Label = "Shift", OnClick = EventCallback.Factory.Create(this, NavigateSelfShift), Visible = HasPermission("has_shift") },
-
-            //has_shift
         };
 
-        DepartmentHeadService = new List<DashboardButton>
+        DepartmentHeadService = new()
         {
             new() { Label = "Dep KPI", OnClick = EventCallback.Factory.Create(this, NavigateDepKpi), Visible = HasPermission("assign_kpi") },
         };
 
-        CompanyService = new List<DashboardButton>
+        CompanyService = new()
         {
             new() { Label = "Upload Clockins", OnClick = EventCallback.Factory.Create(this, NavigateUploadClockins), Visible = HasPermission("upload_clockin") },
             new() { Label = "Pay Run", OnClick = EventCallback.Factory.Create(this, NavigatePayRun), Visible = HasPermission("view_payroll_run") },
-
         };
-
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -73,9 +81,7 @@
     private void NavigateAttendance() => Navigation.NavigateTo("/attendance");
     private void NavigateSelfKpi() => Navigation.NavigateTo("/kpi/self");
     private void NavigateSelfShift() => Navigation.NavigateTo("/shift/self");
-
     private void NavigateDepKpi() => Navigation.NavigateTo("/kpi/head");
-
     private void NavigateUploadClockins() => Navigation.NavigateTo("/xlsupload");
     private void NavigatePayRun() => Navigation.NavigateTo("/payruns");
 }

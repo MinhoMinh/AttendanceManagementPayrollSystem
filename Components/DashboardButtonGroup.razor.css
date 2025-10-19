@@ -1,0 +1,10 @@
+﻿/* Container chứa tất cả các nút */
+.button-group {
+    display: flex;
+    flex-direction: row; /* sắp xếp theo hàng ngang */
+    justify-content: flex-start; /* canh trái */
+    align-items: flex-start;
+    gap: 80px; /* khoảng cách giữa các nút */
+    flex-wrap: wrap; /* tự động xuống hàng nếu không đủ chỗ */
+    padding: 10px 0;
+}
