@@ -1,0 +1,68 @@
+﻿@using AttendanceManagementPayrollSystem.DTO
+
+<Card Class="mb-3 shadow-sm">
+    <CardHeader>
+        <strong>Ca làm</strong>
+    </CardHeader>
+
+    <CardBody>
+        <Field>
+            <FieldLabel>Tình trạng</FieldLabel>
+            <FieldBody>
+                @if (!string.IsNullOrWhiteSpace(Component.Description))
+                {
+                    bool isFull = Component.Description.Trim() == "Đủ giờ";
+                    <Badge Color="@(isFull ? Color.Success : Color.Danger)">
+                        @Component.Description
+                    </Badge>
+                }
+                else
+                {
+                    <Badge Color="Color.Secondary">Không có dữ liệu</Badge>
+                }
+            </FieldBody>
+        </Field>
+
+        <Field>
+            <FieldLabel>Giờ làm</FieldLabel>
+            <FieldBody>
+                @($"{(Component.WorkHours ?? 0m):F2}/{(Component.ScheduledHours ?? 0m):F2}")
+            </FieldBody>
+        </Field>
+
+        <Field>
+            <FieldLabel>Công làm</FieldLabel>
+            <FieldBody>
+                @($"{(Component.WorkUnits ?? 0m):F2}/{(Component.ScheduledUnits ?? 0m):F2}")
+            </FieldBody>
+        </Field>
+
+        <Field>
+            <FieldLabel>Giờ vào / Giờ ra</FieldLabel>
+            <FieldBody>
+                <div class="d-flex flex-row gap-3">
+                    <span>@(Component.CheckIn?.ToString("HH:mm") ?? "--:--")</span>
+                    <span>@(Component.CheckOut?.ToString("HH:mm") ?? "--:--")</span>
+                </div>
+            </FieldBody>
+        </Field>
+
+        <Field>
+            <FieldLabel>Bảng ghi</FieldLabel>
+            <FieldBody>
+                @if (!string.IsNullOrWhiteSpace(Component.ClockinLog))
+                {
+                    <pre class="mb-0">@Component.ClockinLog</pre>
+                }
+                else
+                {
+                    <span>Không có dữ liệu</span>
+                }
+            </FieldBody>
+        </Field>
+    </CardBody>
+</Card>
+
+@code {
+    [Parameter] public ClockinComponentDto Component { get; set; }
+}

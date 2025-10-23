@@ -71,7 +71,7 @@
 
                 <CalendarContainer DisplayedView="SelectedView" FirstDate="@SelectedDate" TasksList="@MonthlyTasks.ToArray()">
                     <AnnualView Months="@MonthsToDisplay" />
-                    <MonthlyView DayClick="ViewDay" />
+                    <MonthlyView TaskClick="ViewDay" />
                 </CalendarContainer>
             </CardBody>
         </Card>
@@ -80,18 +80,31 @@
     <!-- Right: Day details -->
     <div class="col-md-2 col-12 mt-2 mt-md-0">
         <Card>
-            <CardHeader>Details</CardHeader>
+            <CardHeader>Chi tiết chấm công</CardHeader>
             <CardBody>
                 @if (SelectedDay != null)
                 {
                     <div>
-                        <p><strong>Date:</strong> @SelectedDay.Value.ToString("dd/MM/yyyy")</p>
-                        <p>Tasks / Clock-ins go here...</p>
+                        <p><strong>Ngày:</strong> @SelectedDay.Value.ToString("dd/MM/yyyy")</p>
+
+                        @if (DayClockins != null && DayClockins.Any())
+                        {
+                            <div class="d-flex flex-column gap-2">
+                                @foreach (var comp in DayClockins.Take(3))
+                                {
+                                    <ClockinDayView Component="@comp" />
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <p>Không có dữ liệu chấm công</p>
+                        }
                     </div>
                 }
                 else
                 {
-                    <p>Select a day to see details</p>
+                    <p>Chọn một ngày để xem chi tiết</p>
                 }
             </CardBody>
         </Card>
@@ -274,10 +287,19 @@
         // }
     }
 
-    private async Task ViewDay(ClickEmptyDayParameter clickParams)
-    {
-        if (Employee == null) return;
+    private List<ClockinComponentDto> DayClockins = new();
 
+    private async Task ViewDay(ClickTaskParameter taskParams)
+    {
+        if (MonthlyClockin == null) return;
+        SelectedDay = taskParams.Day;
+
+        DayClockins = MonthlyClockin.Components
+            .Where(c => c.Date.HasValue && c.Date.Value.Date == SelectedDay.Value.Date)
+            .Take(3)
+            .ToList();
+
+        await InvokeAsync(StateHasChanged);
     }
 
 }

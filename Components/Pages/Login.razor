@@ -1,39 +1,65 @@
 ﻿@page "/"
 @page "/login"
 
+@using Components.Layout
+@layout NoHeaderLayout
+
 @using AttendanceManagementPayrollSystem.DTO
 @inject IHttpClientFactory HttpFactory
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
 
-<h2>Đăng nhập</h2>
+<PageTitle>Đăng nhập</PageTitle>
 
-@if (!string.IsNullOrEmpty(ErrorMessage))
-{
-    <div style="color:red">@ErrorMessage</div>
-}
+<Layout>
+    <Container class="mt-5 d-flex justify-content-center">
+        <Card Style="width:400px;">
+            <CardHeader>
+                <h4 class="text-center mb-0">Đăng nhập</h4>
+            </CardHeader>
 
-<EditForm Model="loginRequest" OnValidSubmit="HandleLogin" FormName="LoginForm">
-    <InputText @bind-Value="loginRequest.Username" placeholder="Tên đăng nhập" />
-    <InputText @bind-Value="loginRequest.Password" type="password" placeholder="Mật khẩu" />
-    <button type="submit">Đăng nhập</button>
-</EditForm>
+            <CardBody>
+                @if (!string.IsNullOrEmpty(ErrorMessage))
+                {
+                    <Alert Color="Color.Danger" Visible="true">
+                        @ErrorMessage
+                    </Alert>
+                }
+
+                <EditForm Model="loginRequest" OnValidSubmit="HandleLogin">
+                    <DataAnnotationsValidator />
+
+                    <Field>
+                        <Label for="username">Tên đăng nhập</Label>
+                        <TextEdit @bind-Text="loginRequest.Username" Placeholder="Nhập tên đăng nhập" />
+                    </Field>
+
+                    <Field>
+                        <Label for="password">Mật khẩu</Label>
+                        <TextEdit @bind-Text="loginRequest.Password" Placeholder="Nhập mật khẩu" TextRole="TextRole.Password" />
+                    </Field>
+
+                    <div class="d-flex justify-content-end mt-3">
+                        <Button Color="Color.Primary" Type="ButtonType.Submit" Size="Size.Large" FullWidth="true">
+                            Đăng nhập
+                        </Button>
+                    </div>
+                </EditForm>
+            </CardBody>
+        </Card>
+    </Container>
+</Layout>
 
 @code {
     private LoginRequest loginRequest = new();
     private string ErrorMessage;
 
-    private async Task HandleLogin()
+    private async Task HandleLogin(EditContext context)
     {
         try
         {
             var client = HttpFactory.CreateClient();
-
-            Console.WriteLine($"username: {loginRequest.Username}");
-            Console.WriteLine($"Password: {loginRequest.Password}");
-
-            var response = await client.PostAsJsonAsync(
-                "http://localhost:5038/api/auth/login", loginRequest);
+            var response = await client.PostAsJsonAsync("http://localhost:5038/api/auth/login", loginRequest);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -41,26 +67,16 @@
                 return;
             }
 
-            // Deserialize directly to EmployeeDTO
             var employeeDto = await response.Content.ReadFromJsonAsync<EmployeeDTO>();
-
-            // if (employeeDto?.Token != null)
-            // {
-            //     await JS.InvokeVoidAsync("localStorage.setItem", "token", employeeDto.Token);
-            // }
 
             if (employeeDto?.EmpId != null)
             {
                 var employeeJson = System.Text.Json.JsonSerializer.Serialize(employeeDto);
                 await JS.InvokeVoidAsync("localStorage.setItem", "employee", employeeJson);
-
-                // Optional: console log in browser
                 await JS.InvokeVoidAsync("console.log", employeeDto.EmpId, employeeDto.EmpName, employeeDto.EmpRole, employeeDto.Permissions);
             }
 
             Navigation.NavigateTo("/dashboard");
-            //Navigation.NavigateTo("/payruns");
-            
         }
         catch (Exception ex)
         {
