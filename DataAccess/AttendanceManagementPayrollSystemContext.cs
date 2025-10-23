@@ -17,6 +17,8 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
 
     public virtual DbSet<Clockin> Clockins { get; set; }
 
+    public virtual DbSet<ClockinComponent> ClockinComponents { get; set; }
+
     public virtual DbSet<DailyShift> DailyShifts { get; set; }
 
     public virtual DbSet<Department> Departments { get; set; }
@@ -29,15 +31,13 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
 
     public virtual DbSet<EmployeeAllowance> EmployeeAllowances { get; set; }
 
+    public virtual DbSet<EmployeeBalance> EmployeeBalances { get; set; }
+
     public virtual DbSet<EmployeeDependent> EmployeeDependents { get; set; }
 
     public virtual DbSet<EmployeePermission> EmployeePermissions { get; set; }
 
     public virtual DbSet<EmployeeRole> EmployeeRoles { get; set; }
-
-    public virtual DbSet<EmployeeSalaryPreview> EmployeeSalaryPreviews { get; set; }
-
-    public virtual DbSet<EmployeeSalarySlip> EmployeeSalarySlips { get; set; }
 
     public virtual DbSet<HolidayCalendar> HolidayCalendars { get; set; }
 
@@ -100,26 +100,71 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
 
         modelBuilder.Entity<Clockin>(entity =>
         {
-            entity.HasKey(e => new { e.EmpId, e.Date });
+            entity.HasKey(e => e.CloId);
 
             entity.ToTable("Clockin");
 
-            entity.Property(e => e.EmpId).HasColumnName("emp_id");
+            entity.HasIndex(e => e.CloId, "constraint_name").IsUnique();
+
+            entity.Property(e => e.CloId).HasColumnName("clo_id");
+            entity.Property(e => e.ClockLog).HasMaxLength(1000);
             entity.Property(e => e.Date)
                 .HasColumnType("datetime")
                 .HasColumnName("date");
-            entity.Property(e => e.CloId)
-                .ValueGeneratedOnAdd()
-                .HasColumnName("clo_id");
-            entity.Property(e => e.ClockLog).HasMaxLength(200);
-            entity.Property(e => e.ScheduledUnits).HasColumnType("decimal(3, 2)");
-            entity.Property(e => e.WorkUnitBreakdown).HasMaxLength(200);
-            entity.Property(e => e.WorkUnits).HasColumnType("decimal(3, 2)");
+            entity.Property(e => e.EmpId).HasColumnName("emp_id");
+            entity.Property(e => e.ScheduledHours).HasColumnType("decimal(5, 2)");
+            entity.Property(e => e.ScheduledUnits).HasColumnType("decimal(5, 2)");
+            entity.Property(e => e.WorkHourBreakdown).HasMaxLength(1000);
+            entity.Property(e => e.WorkHours).HasColumnType("decimal(5, 2)");
+            entity.Property(e => e.WorkUnitBreakdown).HasMaxLength(1000);
+            entity.Property(e => e.WorkUnits).HasColumnType("decimal(5, 2)");
 
             entity.HasOne(d => d.Emp).WithMany(p => p.Clockins)
                 .HasForeignKey(d => d.EmpId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Clockin_Employee");
+        });
+
+        modelBuilder.Entity<ClockinComponent>(entity =>
+        {
+            entity.ToTable("ClockinComponent");
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.CheckIn)
+                .HasColumnType("datetime")
+                .HasColumnName("check_in");
+            entity.Property(e => e.CheckOut)
+                .HasColumnType("datetime")
+                .HasColumnName("check_out");
+            entity.Property(e => e.CloId).HasColumnName("clo_id");
+            entity.Property(e => e.ClockinLog)
+                .HasMaxLength(50)
+                .HasColumnName("clockin_log");
+            entity.Property(e => e.Date)
+                .HasColumnType("datetime")
+                .HasColumnName("date");
+            entity.Property(e => e.Description)
+                .HasMaxLength(50)
+                .HasColumnName("description");
+            entity.Property(e => e.ScheduledHours)
+                .HasColumnType("decimal(5, 2)")
+                .HasColumnName("scheduled_hours");
+            entity.Property(e => e.ScheduledUnits)
+                .HasColumnType("decimal(5, 2)")
+                .HasColumnName("scheduled_units");
+            entity.Property(e => e.Shift)
+                .HasMaxLength(50)
+                .HasColumnName("shift");
+            entity.Property(e => e.WorkHours)
+                .HasColumnType("decimal(5, 2)")
+                .HasColumnName("work_hours");
+            entity.Property(e => e.WorkUnits)
+                .HasColumnType("decimal(5, 2)")
+                .HasColumnName("work_units");
+
+            entity.HasOne(d => d.Clo).WithMany(p => p.ClockinComponents)
+                .HasForeignKey(d => d.CloId)
+                .HasConstraintName("FK_ClockinComponent_ClockinComponent");
         });
 
         modelBuilder.Entity<DailyShift>(entity =>
@@ -129,9 +174,10 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
             entity.ToTable("DailyShift");
 
             entity.Property(e => e.ShiftDescription).HasMaxLength(100);
+            entity.Property(e => e.ShiftHours).HasMaxLength(100);
             entity.Property(e => e.ShiftName).HasMaxLength(100);
             entity.Property(e => e.ShiftString).HasMaxLength(200);
-            entity.Property(e => e.ShiftWorkhour).HasColumnType("decimal(4, 2)");
+            entity.Property(e => e.ShiftWorkUnit).HasColumnType("decimal(4, 2)");
         });
 
         modelBuilder.Entity<Department>(entity =>
@@ -144,6 +190,12 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
             entity.Property(e => e.DepName)
                 .HasMaxLength(50)
                 .HasColumnName("dep_name");
+            entity.Property(e => e.DepType)
+                .HasMaxLength(50)
+                .HasColumnName("dep_type");
+            entity.Property(e => e.DepUnactive)
+                .HasAnnotation("Relational:DefaultConstraintName", "DF_Department_dep_unactive")
+                .HasColumnName("dep_unactive");
         });
 
         modelBuilder.Entity<DepartmentHolidayCalender>(entity =>
@@ -264,6 +316,41 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
                 .HasConstraintName("FK_EmployeeAllowance_AllowanceType");
         });
 
+        modelBuilder.Entity<EmployeeBalance>(entity =>
+        {
+            entity.ToTable("EmployeeBalance");
+
+            entity.Property(e => e.EmpId).HasColumnName("emp_id");
+            entity.Property(e => e.LastUpdated)
+                .HasColumnType("datetime")
+                .HasColumnName("last_updated");
+            entity.Property(e => e.Overtime)
+                .IsRequired()
+                .HasMaxLength(50)
+                .HasAnnotation("Relational:DefaultConstraintName", "DF_EmployeeBalance_overtime")
+                .HasColumnName("overtime");
+            entity.Property(e => e.Pto)
+                .IsRequired()
+                .HasMaxLength(50)
+                .HasAnnotation("Relational:DefaultConstraintName", "DF_Table_1_leave")
+                .HasColumnName("pto");
+            entity.Property(e => e.Sick)
+                .IsRequired()
+                .HasMaxLength(50)
+                .HasAnnotation("Relational:DefaultConstraintName", "DF_EmployeeBalance_sick")
+                .HasColumnName("sick");
+            entity.Property(e => e.Vacation)
+                .IsRequired()
+                .HasMaxLength(50)
+                .HasAnnotation("Relational:DefaultConstraintName", "DF_EmployeeBalance_vacation")
+                .HasColumnName("vacation");
+
+            entity.HasOne(d => d.Emp).WithMany(p => p.EmployeeBalances)
+                .HasForeignKey(d => d.EmpId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_EmployeeBalance_Employee");
+        });
+
         modelBuilder.Entity<EmployeeDependent>(entity =>
         {
             entity.HasKey(e => e.DependentId).HasName("PK__Employee__9BC67C117C53E9F4");
@@ -283,6 +370,7 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
             entity.Property(e => e.NationalId)
                 .HasMaxLength(50)
                 .HasColumnName("NationalID");
+            entity.Property(e => e.Proof).HasMaxLength(50);
             entity.Property(e => e.Relationship)
                 .IsRequired()
                 .HasMaxLength(50);
@@ -334,150 +422,6 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
                 .HasForeignKey(d => d.RoleId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__EmployeeR__RoleI__0D7A0286");
-        });
-
-        modelBuilder.Entity<EmployeeSalaryPreview>(entity =>
-        {
-            entity.HasKey(e => e.PreviewId).HasName("PK__Employee__1BFB3493EAC411DF");
-
-            entity.ToTable("EmployeeSalaryPreview");
-
-            entity.Property(e => e.PreviewId).HasColumnName("preview_id");
-            entity.Property(e => e.Allowance)
-                .HasColumnType("decimal(12, 2)")
-                .HasColumnName("allowance");
-            entity.Property(e => e.BaseSalary)
-                .HasColumnType("decimal(12, 2)")
-                .HasColumnName("base_salary");
-            entity.Property(e => e.Bonus)
-                .HasColumnType("decimal(12, 2)")
-                .HasColumnName("bonus");
-            entity.Property(e => e.CreatedAt)
-                .HasAnnotation("Relational:DefaultConstraintName", "DF_EmployeeSalaryPreview_created_at")
-                .HasColumnType("datetime")
-                .HasColumnName("created_at");
-            entity.Property(e => e.CreatedBy).HasColumnName("created_by");
-            entity.Property(e => e.EmpId).HasColumnName("emp_id");
-            entity.Property(e => e.GrossSalary)
-                .HasColumnType("decimal(12, 2)")
-                .HasColumnName("gross_salary");
-            entity.Property(e => e.HealthInsurance)
-                .HasColumnType("decimal(12, 2)")
-                .HasColumnName("health_insurance");
-            entity.Property(e => e.InsuranceRateSetId).HasColumnName("InsuranceRateSetID");
-            entity.Property(e => e.NetSalary)
-                .HasColumnType("decimal(12, 2)")
-                .HasColumnName("net_salary");
-            entity.Property(e => e.Overtime)
-                .HasColumnType("decimal(12, 2)")
-                .HasColumnName("overtime");
-            entity.Property(e => e.PayrollRunId).HasColumnName("payroll_run_id");
-            entity.Property(e => e.PersonalIncomeTax)
-                .HasColumnType("decimal(12, 2)")
-                .HasColumnName("personal_income_tax");
-            entity.Property(e => e.SocialInsurance)
-                .HasColumnType("decimal(12, 2)")
-                .HasColumnName("social_insurance");
-            entity.Property(e => e.TotalDeductions)
-                .HasColumnType("decimal(12, 2)")
-                .HasColumnName("total_deductions");
-            entity.Property(e => e.UnemploymentInsurance)
-                .HasColumnType("decimal(12, 2)")
-                .HasColumnName("unemployment_insurance");
-
-            entity.HasOne(d => d.CreatedByNavigation).WithMany(p => p.EmployeeSalaryPreviewCreatedByNavigations)
-                .HasForeignKey(d => d.CreatedBy)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_EmployeeSalaryPreview_Employee1");
-
-            entity.HasOne(d => d.Emp).WithMany(p => p.EmployeeSalaryPreviewEmps)
-                .HasForeignKey(d => d.EmpId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_EmployeeSalaryPreview_Employee");
-
-            entity.HasOne(d => d.InsuranceRateSet).WithMany(p => p.EmployeeSalaryPreviews)
-                .HasForeignKey(d => d.InsuranceRateSetId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_EmployeeSalaryPreview_InsuranceRateSet");
-
-            entity.HasOne(d => d.PayrollRun).WithMany(p => p.EmployeeSalaryPreviews)
-                .HasForeignKey(d => d.PayrollRunId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_EmployeeSalaryPreview_PayrollRun");
-        });
-
-        modelBuilder.Entity<EmployeeSalarySlip>(entity =>
-        {
-            entity.HasKey(e => e.SlipId).HasName("PK__Employee__43C71422CA2C18CE");
-
-            entity.ToTable("EmployeeSalarySlip");
-
-            entity.Property(e => e.SlipId).HasColumnName("slip_id");
-            entity.Property(e => e.Allowance)
-                .HasColumnType("decimal(12, 2)")
-                .HasColumnName("allowance");
-            entity.Property(e => e.ApprovedAt)
-                .HasColumnType("datetime")
-                .HasColumnName("approved_at");
-            entity.Property(e => e.ApprovedBy).HasColumnName("approved_by");
-            entity.Property(e => e.BaseSalary)
-                .HasColumnType("decimal(12, 2)")
-                .HasColumnName("base_salary");
-            entity.Property(e => e.Bonus)
-                .HasColumnType("decimal(12, 2)")
-                .HasColumnName("bonus");
-            entity.Property(e => e.CreatedAt)
-                .HasAnnotation("Relational:DefaultConstraintName", "DF_EmployeeSalarySlip_created_at")
-                .HasColumnType("datetime")
-                .HasColumnName("created_at");
-            entity.Property(e => e.CreatedBy).HasColumnName("created_by");
-            entity.Property(e => e.EmpId).HasColumnName("emp_id");
-            entity.Property(e => e.GrossSalary)
-                .HasColumnType("decimal(12, 2)")
-                .HasColumnName("gross_salary");
-            entity.Property(e => e.HealthInsurance)
-                .HasColumnType("decimal(12, 2)")
-                .HasColumnName("health_insurance");
-            entity.Property(e => e.InsuranceRateSetId).HasColumnName("InsuranceRateSetID");
-            entity.Property(e => e.NetSalary)
-                .HasColumnType("decimal(12, 2)")
-                .HasColumnName("net_salary");
-            entity.Property(e => e.Overtime)
-                .HasColumnType("decimal(12, 2)")
-                .HasColumnName("overtime");
-            entity.Property(e => e.PayrollRunId).HasColumnName("payroll_run_id");
-            entity.Property(e => e.PersonalIncomeTax)
-                .HasColumnType("decimal(12, 2)")
-                .HasColumnName("personal_income_tax");
-            entity.Property(e => e.SocialInsurance)
-                .HasColumnType("decimal(12, 2)")
-                .HasColumnName("social_insurance");
-            entity.Property(e => e.TotalDeductions)
-                .HasColumnType("decimal(12, 2)")
-                .HasColumnName("total_deductions");
-            entity.Property(e => e.UnemploymentInsurance)
-                .HasColumnType("decimal(12, 2)")
-                .HasColumnName("unemployment_insurance");
-
-            entity.HasOne(d => d.ApprovedByNavigation).WithMany(p => p.EmployeeSalarySlipApprovedByNavigations)
-                .HasForeignKey(d => d.ApprovedBy)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_EmployeeSalarySlip_Employee");
-
-            entity.HasOne(d => d.CreatedByNavigation).WithMany(p => p.EmployeeSalarySlipCreatedByNavigations)
-                .HasForeignKey(d => d.CreatedBy)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_EmployeeSalarySlip_Employee1");
-
-            entity.HasOne(d => d.Emp).WithMany(p => p.EmployeeSalarySlipEmps)
-                .HasForeignKey(d => d.EmpId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__EmployeeS__emp_i__540C7B00");
-
-            entity.HasOne(d => d.InsuranceRateSet).WithMany(p => p.EmployeeSalarySlips)
-                .HasForeignKey(d => d.InsuranceRateSetId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_EmployeeSalarySlip_InsuranceRateSet");
         });
 
         modelBuilder.Entity<HolidayCalendar>(entity =>
@@ -752,6 +696,10 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
                 .HasColumnName("name");
             entity.Property(e => e.PeriodMonth).HasColumnName("period_month");
             entity.Property(e => e.PeriodYear).HasColumnName("period_year");
+            entity.Property(e => e.RejectedAt)
+                .HasColumnType("datetime")
+                .HasColumnName("rejected_at");
+            entity.Property(e => e.RejectedBy).HasColumnName("rejected_by");
             entity.Property(e => e.Status)
                 .IsRequired()
                 .HasMaxLength(20)
@@ -774,6 +722,10 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
             entity.HasOne(d => d.CreatedByNavigation).WithMany(p => p.PayRunCreatedByNavigations)
                 .HasForeignKey(d => d.CreatedBy)
                 .HasConstraintName("FK__PayrollRu__creat__42E1EEFE");
+
+            entity.HasOne(d => d.RejectedByNavigation).WithMany(p => p.PayRunRejectedByNavigations)
+                .HasForeignKey(d => d.RejectedBy)
+                .HasConstraintName("FK_PayRun_Employee");
         });
 
         modelBuilder.Entity<PayRunComponent>(entity =>

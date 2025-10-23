@@ -80,7 +80,6 @@
 
         var client = HttpFactory.CreateClient("ApiClient");
 
-        // Call your API to get employees with KPI for selected month/year
         employees = await client.GetFromJsonAsync<List<EmployeeBasicDTO>>(
             $"http://localhost:5038/api/kpi/head?headId={Head.EmpId}&month={periodMonth}&year={periodYear}");
 
@@ -156,32 +155,4 @@
         }
     }
 
-    // private async Task HandleSave()
-    // {
-    //     if (Head == null || selectedEmployee == null || selectedEmployeeKpi == null) return;
-
-    //     selectedEmployeeKpi.AssignedBy = Head.EmpId;
-
-    //     var client = HttpFactory.CreateClient("ApiClient");
-
-
-    //     HttpResponseMessage response = null;
-
-    //     if (selectedEmployeeKpi.KpiMode == "edit")
-    //     {
-    //         response  = await client.PostAsJsonAsync($"api/kpi/head/{selectedEmployee.EmpId}/edit", selectedEmployeeKpi);
-    //     }
-    //     else if (selectedEmployeeKpi.KpiMode == "assign")
-    //     {
-    //         response = await client.PostAsJsonAsync($"api/kpi/head/{selectedEmployee.EmpId}/assign", selectedEmployeeKpi);
-    //     }
-
-    //     if (!response.IsSuccessStatusCode)
-    //     {
-    //         ErrorMessage = await response.Content.ReadAsStringAsync() ?? "Failed to save KPI";
-    //         return;
-    //     }
-
-    //     await JS.InvokeVoidAsync("console.log", "KPI saved");
-    // }
 }

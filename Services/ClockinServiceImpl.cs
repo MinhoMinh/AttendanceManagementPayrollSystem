@@ -2,6 +2,7 @@
 using AttendanceManagementPayrollSystem.DTO;
 using AttendanceManagementPayrollSystem.Models;
 using AttendanceManagementPayrollSystem.Services.Helper;
+using AttendanceManagementPayrollSystem.Services.Mapper;
 using System;
 using System.Data;
 using System.Globalization;
@@ -21,6 +22,22 @@ namespace AttendanceManagementPayrollSystem.Services
             _empRepo = employeeRepo;
             _clockinRepo = clockinRepo;
             _shiftService = shiftService;
+        }
+
+        public async Task<IEnumerable<ClockinDTO>> GetByEmployeeAsync(int empId, DateTime startDate, int months)
+        {
+            var clockin = await _clockinRepo.GetByEmployeeAsync(empId, startDate, months);
+
+            if (clockin == null) return null;
+            else return clockin.Select(c => ClockinMapper.ToDto(c));
+        }
+
+        public async Task<ClockinDTO?> GetClockinsByEmployeeAsync(int empId, int month, int year)
+        {
+            var clockin = await _clockinRepo.GetByEmployeeAndMonthAsync(empId, month, year);
+
+            if (clockin == null) return null;
+            else return ClockinMapper.ToDto(clockin);
         }
 
         public async Task<List<ClockinDTO>?> ReadClockinData(DataTable table)
@@ -110,8 +127,6 @@ namespace AttendanceManagementPayrollSystem.Services
                     //clockLogBuilder.Append(val2);
                     clockLogBuilder.Append(val2);
 
-                    Console.WriteLine($"Col {col}: Row+1={raw1}, Row+3={val2}");
-
                     clockin.DailyRecords.Add(dayDTO);
                 }
 
@@ -145,9 +160,17 @@ namespace AttendanceManagementPayrollSystem.Services
                     workUnitBreakdownBuilder.Append('#');
 
                     List<ShiftSection> sections = new();
+                    List<ClockinComponentDto> components = new();
 
                     foreach (var shift in dailyShift.ShiftDtos)
-                        sections.Add(new ShiftSection(shift.StartTime, shift.EndTime, shift.Workhour));//convert to sec
+                    {
+                        sections.Add(new ShiftSection(shift.StartTime, shift.EndTime, shift.WorkUnits, shift.WorkHours));//convert to section
+                        components.Add(new ClockinComponentDto 
+                        { 
+                            Date = date,
+                            Shift = shift.ToString()
+                        });
+                    }
 
                     foreach (var log in dayDetail.Logs)
                     {
@@ -160,19 +183,53 @@ namespace AttendanceManagementPayrollSystem.Services
 
                     for (int i = 0; i < sections.Count; i++)
                     {
-                        decimal actual = sections[i].CalculateWorkhour();
-                        decimal expected = sections[i].ExpectedWorkhour;
-                        dayDetail.Actual.Add(actual);
-                        dayDetail.Scheduled.Add(expected);
+                        decimal actualWorkUnits = Math.Round(sections[i].CalculateWorkUnits(), 2);
+                        decimal expectedWorkUnits = Math.Round(sections[i].ExpectedWorkUnits, 2);
+                        decimal actualWorkHours = Math.Round(sections[i].CalculateWorkHours(), 2);
+                        decimal expectedWorkHours = Math.Round(sections[i].ExpectedWorkHours, 2);
+
+                        dayDetail.ActualUnit = (dayDetail.ActualUnit ?? 0m) + actualWorkUnits;
+                        dayDetail.ScheduledUnit = (dayDetail.ScheduledUnit ?? 0m) + expectedWorkUnits;
+                        dayDetail.ActualHour = (dayDetail.ActualHour ?? 0m) + actualWorkHours;
+                        dayDetail.ScheduledHour = (dayDetail.ScheduledHour ?? 0m) + expectedWorkUnits;
 
                         clockin.WorkUnits ??= 0;
-                        clockin.WorkUnits += actual;
+                        clockin.WorkUnits += actualWorkUnits;
                         clockin.ScheduledUnits ??= 0;
-                        clockin.ScheduledUnits += expected;
+                        clockin.ScheduledUnits += expectedWorkUnits;
+                        clockin.WorkHours ??= 0;
+                        clockin.WorkHours += actualWorkHours;
+                        clockin.ScheduledHours ??= 0;
+                        clockin.ScheduledHours += expectedWorkHours;
 
                         if (i >= 1) { workUnitBreakdownBuilder.Append(','); }
-                        workUnitBreakdownBuilder.AppendFormat("{0:F2}/{1:F2}", actual, expected);
+                        workUnitBreakdownBuilder.AppendFormat("{0:F2}/{1:F2}", actualWorkUnits, expectedWorkUnits);
+
+                        var span = sections[i].GetCheckIn();
+                        if (span != TimeSpan.FromHours(-20))
+                        {
+                            components[i].CheckIn = new DateTime(date.Year, date.Month, date.Day, span.Hours, span.Minutes, 0);
+                        }
+
+                        var span2 = sections[i].GetCheckOut();
+                        if (span2 != TimeSpan.FromHours(-20))
+                        {
+                            components[i].CheckOut = new DateTime(date.Year, date.Month, date.Day, span2.Hours, span2.Minutes, 0);
+                        }
+                        components[i].WorkUnits = actualWorkUnits;
+                        components[i].ScheduledUnits = expectedWorkUnits;
+                        components[i].WorkHours = sections[i].CalculateWorkHours();
+                        components[i].ScheduledHours = sections[i].ExpectedWorkHours;
+                        components[i].ClockinLog = sections[i].ToLogString();
+                        components[i].Description = sections[i].GetDescription();
+
                     }
+
+                    Console.WriteLine($"daily {dayDetail.Day} check {dayDetail.ActualUnit} + {dayDetail.ScheduledUnit}");
+                    Console.WriteLine($"daily {dayDetail.Day} check {dayDetail.ActualHour} + {dayDetail.ScheduledHour}");
+
+                    clockin.Components.AddRange(components);
+
                 }
 
                 clockin.WorkUnitBreakdown = workUnitBreakdownBuilder.ToString();
@@ -183,7 +240,7 @@ namespace AttendanceManagementPayrollSystem.Services
 
         public async Task SaveClockinData(List<ClockinDTO> dtos)
         {
-            await _clockinRepo.SaveClockinData(dtos.Select(dto => ToModel(dto)));
+            await _clockinRepo.SaveClockinData(dtos);
         }
 
         private Clockin ToModel(ClockinDTO dto) {

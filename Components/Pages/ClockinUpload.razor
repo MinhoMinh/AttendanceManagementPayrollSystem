@@ -72,8 +72,8 @@
                                         <tr>
                                             <td>@d.Day</td>
                                             <td>@string.Join(", ", d.Logs)</td>
-                                            <td>@string.Join(", ", d.Actual.Select(a => a.ToString("F2")))</td>
-                                            <td>@string.Join(", ", d.Scheduled.Select(s => s.ToString("F2")))</td>
+                                            <td>@(d.ActualUnit ?? 0m).ToString("F2")</td>
+                                            <td>@(d.ScheduledUnit ?? 0m).ToString("F2")</td>
                                         </tr>
                                     }
                                 </tbody>

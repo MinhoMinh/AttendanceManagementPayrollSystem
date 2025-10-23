@@ -1,0 +1,118 @@
+﻿@using System.Globalization
+@using Microsoft.AspNetCore.Components
+
+@inherits ComponentBase
+
+<div class="calendar-root">
+    <div class="calendar-header">
+        @foreach (var name in DayNames)
+
+        {
+            <div class="weekday">@name</div>
+        }
+    </div>
+
+
+    <div class="calendar-grid">
+        @for (int cell = 0; cell < TotalCells; cell++)
+        {
+            if (cell < LeadingBlankCount || cell >= LeadingBlankCount + DaysInMonth)
+            {
+                <div class="day-cell empty"></div>
+            }
+            else
+            {
+                var dayIndex = cell - LeadingBlankCount + 1;
+
+                var date = new DateTime(Year, Month, dayIndex);
+
+                object data = null;
+
+                DayData?.TryGetValue(date.Date, out data);
+
+                var ctx = new CalendarDayContext { Date = date, Data = data };
+                <div class="day-cell">
+                    <div class="date-number">@date.Day</div>
+                    <div class="day-content">
+                        @if (DayTemplate != null)
+                        {
+                            @DayTemplate(ctx)
+                        }
+                        else if (data != null)
+                        {
+                            <div class="default-data">@data</div>
+                        }
+                    </div>
+                </div>
+            }
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter]
+
+    public int Year { get; set; } = DateTime.Today.Year;
+
+    [Parameter]
+
+    public int Month { get; set; } = DateTime.Today.Month;
+
+    [Parameter]
+
+    public IDictionary<DateTime, object> DayData { get; set; }
+
+    [Parameter]
+
+    public RenderFragment<CalendarDayContext> DayTemplate { get; set; }
+
+    [Parameter]
+
+    public DayOfWeek FirstDayOfWeek { get; set; } = DayOfWeek.Sunday;
+
+    private string[] DayNames => BuildDayNames();
+
+    private int DaysInMonth => DateTime.DaysInMonth(Year, Month);
+
+    private int LeadingBlankCount => CalculateLeadingBlanks();
+
+    private int TotalCells => ((LeadingBlankCount + DaysInMonth + 6) / 7) * 7;
+
+    private string[] BuildDayNames()
+    {
+        var names = CultureInfo.CurrentCulture.DateTimeFormat.AbbreviatedDayNames;
+
+        var ordered = new List<string>(7);
+
+        for (int i = 0; i < 7; i++)
+
+        {
+
+            var idx = ((int)FirstDayOfWeek + i) % 7;
+
+            ordered.Add(names[idx]);
+
+        }
+
+        return ordered.ToArray();
+
+    }
+
+    private int CalculateLeadingBlanks()
+    {
+        var firstOfMonth = new DateTime(Year, Month, 1);
+
+        int offset = ((int)firstOfMonth.DayOfWeek - (int)FirstDayOfWeek + 7) % 7;
+
+        return offset;
+    }
+
+    public class CalendarDayContext
+    {
+
+        public DateTime Date { get; set; }
+
+        public object Data { get; set; }
+
+    }
+}

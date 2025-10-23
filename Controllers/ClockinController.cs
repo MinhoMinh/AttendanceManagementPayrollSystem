@@ -4,6 +4,7 @@ using ExcelDataReader;
 using AttendanceManagementPayrollSystem.Services;
 using AttendanceManagementPayrollSystem.DTO;
 using Microsoft.EntityFrameworkCore;
+using DocumentFormat.OpenXml.InkML;
 
 namespace AttendanceManagementPayrollSystem.Controllers
 {
@@ -18,16 +19,30 @@ namespace AttendanceManagementPayrollSystem.Controllers
             _clockinService = clockinService;
         }
 
-        //[HttpGet("employee/{empId}")]
-        //public async Task<IActionResult> GetClockinsByEmployee(int empId, int month, int year)
-        //{
-        //    if (month < 1 || month > 12) return BadRequest("Tháng không hợp lệ.");
+        [HttpGet("employee")]
+        public async Task<IActionResult> GetClockinsByEmployee([FromQuery] int empId, [FromQuery] int month, [FromQuery] int year)
+        {
+            if (month < 1 || month > 12) return BadRequest("Tháng không hợp lệ.");
 
-        //    var data = await _clockinService.GetClockinsByEmployeeAsync(empId, month, year);
-        //    if (data == null) return NotFound("Không tìm thấy dữ liệu.");
+            var data = await _clockinService.GetClockinsByEmployeeAsync(empId, month, year);
+            if (data == null) return NotFound("Không tìm thấy dữ liệu.");
 
-        //    return Ok(data);
-        //}
+            return Ok(data);
+        }
+
+        [HttpGet("employee/period")]
+        public async Task<ActionResult<IEnumerable<ClockinDTO>>> GetClockIns(
+            [FromQuery] int employeeId,
+            [FromQuery] DateTime startDate,
+            [FromQuery] int months)
+        {
+            if (months <= 0)
+                return BadRequest("Months must be greater than 0.");
+
+            var result = await _clockinService.GetByEmployeeAsync(employeeId, startDate, months);
+            if (result == null) return NotFound();
+            return Ok(result);
+        }
 
         [HttpPost("uploadxls")]
         public async Task<ActionResult<List<ClockinDTO>>> UploadXls()
@@ -63,13 +78,21 @@ namespace AttendanceManagementPayrollSystem.Controllers
                 await _clockinService.SaveClockinData(clockins);
                 return Ok("Clockins saved");
             }
-            catch (DbUpdateException)
+            catch (DbUpdateException ex)
             {
+                Console.WriteLine(ex.Message);
+                Console.WriteLine(ex.StackTrace);
+                if (ex.InnerException != null)
+                    Console.WriteLine(ex.InnerException.Message);
                 //_logger.LogError(ex, "Database update failed");
                 return StatusCode(500, "Database error");
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Console.WriteLine(ex.Message);
+                Console.WriteLine(ex.StackTrace);
+                if (ex.InnerException != null)
+                    Console.WriteLine(ex.InnerException.Message);
                 //_logger.LogError(ex, "Unexpected error");
                 return StatusCode(500, "Unexpected error");
             }

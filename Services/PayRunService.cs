@@ -20,5 +20,7 @@ namespace AttendanceManagementPayrollSystem.Services
 
         Task<bool> ApproveFinal(int approverId, int payRunId);
 
+        Task<bool> Reject(int approverId, int payRunId);
+
     }
 }

@@ -1,6 +1,7 @@
 ﻿using AttendanceManagementPayrollSystem.DataAccess.Repositories;
 using AttendanceManagementPayrollSystem.DTO;
 using AttendanceManagementPayrollSystem.Models;
+using AttendanceManagementPayrollSystem.Services.Helper;
 using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace AttendanceManagementPayrollSystem.Services
@@ -39,65 +40,7 @@ namespace AttendanceManagementPayrollSystem.Services
 
             foreach (var employee in employees)
             {
-                PayRunItemDto itemDto = new PayRunItemDto
-                {
-                    EmpId = employee.EmpId,
-                    EmpName = employee.EmpName,
-                    Notes = ""
-                };
-
-                var clockin = employee.Clockins.FirstOrDefault();
-                if (clockin != null)
-                {
-                    decimal actualClockinValue = (clockin.WorkUnits ??= 0) * 200000m;
-                    decimal expectedClockinValue = (clockin.ScheduledUnits ??= 0) * 200000m;
-                    if (actualClockinValue > 0)
-                    {
-                        var componentDto = new PayRunComponentDto
-                        {
-                            ComponentType = "Earning",
-                            ComponentCode = "BASIC",
-                            Description = $"Clockin: {clockin.WorkUnits} workhour",
-                            Amount = actualClockinValue,
-                            Taxable = true,
-                            Insurable = true
-                        };
-
-                        itemDto.Components.Add(componentDto);
-                        itemDto.GrossPay += actualClockinValue;
-                    }
-
-                    var kpi = employee.KpiEmps.FirstOrDefault();
-                    if (kpi != null)
-                    {
-                        decimal score = 0m;
-
-                        foreach (var kpiCom in kpi.Kpicomponents)
-                        {
-                            // score is on 0 - 10 scale. weight is on 0 - 100 scale
-                            score += kpiCom.AssignedScore ??= kpiCom.SelfScore ??= 0 * kpiCom.Weight * 0.001m;
-                        }
-                        decimal kpiValue = score * ((kpi.Prorate != null && kpi.Prorate == true) ? actualClockinValue : expectedClockinValue);
-
-                        if (kpiValue > 0)
-                        {
-                            var componentDto = new PayRunComponentDto
-                            {
-                                ComponentType = "Earning",
-                                ComponentCode = "BONUS",
-                                Description = "kpi",
-                                Amount = kpiValue,
-                                Taxable = true,
-                                Insurable = true
-                            };
-
-                            itemDto.Components.Add(componentDto);
-                            itemDto.GrossPay += actualClockinValue;
-                        }
-                    }
-                }
-
-                payRunDto.PayRunItems.Add(itemDto);
+                payRunDto.PayRunItems.Add(PayRunCalculator.CalculatePay(employee));
             }
 
             return payRunDto;
@@ -156,6 +99,8 @@ namespace AttendanceManagementPayrollSystem.Services
                 ApprovedFirstAt = dto.ApprovedFirstAt,
                 ApprovedFinalBy = dto.ApprovedFinalBy,
                 ApprovedFinalAt = dto.ApprovedFinalAt,
+                RejectedBy = dto.RejectedBy,
+                RejectedAt = dto.RejectedAt,
                 Type = dto.Type,
                 PayRunItems = dto.PayRunItems?.Select(i => new PayRunItem
                 {
@@ -214,6 +159,25 @@ namespace AttendanceManagementPayrollSystem.Services
             payRun.ApprovedFinalBy = approverId;
             payRun.ApprovedFinalAt = DateTime.UtcNow;
             payRun.Status = "FinalApproved";
+
+            await _payRunRepo.Update(payRun);
+
+            return true;
+        }
+
+        public async Task<bool> Reject(int approverId, int payRunId)
+        {
+            var approver = await _employeeRepo.GetByIdAsync(approverId);
+
+            if (approver == null) { throw new Exception("Approver cannot be found!"); }
+
+            var payRun = await _payRunRepo.FindAsync(payRunId);
+
+            if (payRun == null) { throw new Exception("Pay run cannot be found!"); }
+
+            payRun.RejectedBy = approverId;
+            payRun.RejectedAt = DateTime.UtcNow;
+            payRun.Status = "Void";
 
             await _payRunRepo.Update(payRun);
 

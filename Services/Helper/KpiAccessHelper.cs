@@ -1,45 +1,39 @@
 ﻿namespace AttendanceManagementPayrollSystem.Services.Helper
 {
-    public class KpiAccessHelper
+
+    public static class KpiAccessHelper
     {
-        public static string GetKpiMode(int month, int year, string role)
+        public static string GetKpiMode(int month, int year, string role, TimeProvider? timeProvider = null)
         {
-            var today = DateTime.UtcNow.Date;
+            var provider = timeProvider ?? new SystemTimeProvider();
+            var today = provider.UtcNow.Date;
             var kpiMonth = new DateTime(year, month, 1);
 
-            var startSelf = kpiMonth.AddMonths(1);           // 1st of next month
-            var endSelf = startSelf.AddDays(2);              // 3 days for self-scoring
-            var endAssign = endSelf.AddDays(3);              // 3 days for assigning
+            Console.WriteLine(today);
+            Console.WriteLine(kpiMonth);
+
+
+            var startSelf = kpiMonth.AddMonths(1);   
+            var endSelf = startSelf.AddDays(2);     
+            var endAssign = endSelf.AddDays(3);      
+            var startEdit = kpiMonth.AddDays(-3);    
             var endEdit = kpiMonth.AddDays(-1);
-            var startEdit = endEdit.AddDays(-2);
 
+            Console.WriteLine(startEdit);
 
-            if (role == "employee")
+            return role switch
             {
-                if (today >= startSelf && today < endSelf)
-                    return "self";
-                return "view";
-                //return "self";
-            }
+                "employee" when today >= startSelf && today < endSelf => "self",
+                "employee" => "view",
 
-            if (role == "head")
-            {
-                if (today >= endSelf && today < endAssign)
-                    return "assign";
-                else if (today >= startEdit && today <= endEdit)
-                    return "edit";
-                return "view";
-                //return "assign";
-            }
+                "head" when today >= endSelf && today < endAssign => "assign",
+                "head" when today >= startEdit && today <= endEdit => "edit",
+                "head" => "view",
 
-            if (role == "manager")
-            {
-                return "view";
-            }
-
-            return "view";
+                "manager" => "view",
+                _ => "view"
+            };
         }
-
-
     }
+
 }

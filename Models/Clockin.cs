@@ -21,5 +21,13 @@ public partial class Clockin
 
     public string WorkUnitBreakdown { get; set; }
 
+    public string WorkHourBreakdown { get; set; }
+
+    public decimal? WorkHours { get; set; }
+
+    public decimal? ScheduledHours { get; set; }
+
+    public virtual ICollection<ClockinComponent> ClockinComponents { get; set; } = new List<ClockinComponent>();
+
     public virtual Employee Emp { get; set; }
 }

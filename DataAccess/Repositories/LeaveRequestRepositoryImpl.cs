@@ -4,14 +4,10 @@ using System.Threading.Tasks;
 
 namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
 {
-    public class LeaveRequestRepositoryImpl : ILeaveRequestRepository
+    public class LeaveRequestRepositoryImpl : BaseRepositoryImpl, ILeaveRequestRepository
     {
-        private readonly AttendanceManagementPayrollSystemContext _context;
 
-        public LeaveRequestRepositoryImpl(AttendanceManagementPayrollSystemContext context)
-        {
-            _context = context;
-        }
+        public LeaveRequestRepositoryImpl(AttendanceManagementPayrollSystemContext context) : base(context) { }
 
         public async Task<LeaveRequest> AddAsync(LeaveRequest request)
         {

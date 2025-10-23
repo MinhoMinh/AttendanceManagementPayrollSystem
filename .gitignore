@@ -394,3 +394,4 @@ yarn-error.log*
 /bin
 /bin
 /obj
+/ClientApp

@@ -34,7 +34,6 @@
         if (string.IsNullOrWhiteSpace(empJson)) return;
 
         Employee = JsonSerializer.Deserialize<EmployeeDTO>(empJson);
-        if (Employee == null) return;
     }
 
     private async Task ApplyPeriod()

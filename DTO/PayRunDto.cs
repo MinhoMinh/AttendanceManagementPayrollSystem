@@ -16,6 +16,9 @@
         public int? ApprovedFinalBy { get; set; }
         public string? ApprovedFinalByName { get; set; }
         public DateTime? ApprovedFinalAt { get; set; }
+        public int? RejectedBy { get; set; }
+        public string? RejectedByName { get; set; }
+        public DateTime? RejectedAt { get; set; }
         public string Type { get; set; }
 
         public List<PayRunItemDto> PayRunItems { get; set; } = new();

@@ -31,6 +31,11 @@ namespace AttendanceManagementPayrollSystem.Services
 
         private async Task<KpiDto?> GetKpiAsync(int empId, int month, int year, string role)
         {
+            var editTime = new FixedTimeProvider(new DateTime(2025, 8, 29));
+            var inTime = new FixedTimeProvider(new DateTime(2025, 9, 15));
+            var selfTime = new FixedTimeProvider(new DateTime(2025, 10, 2));
+            var assignTime = new FixedTimeProvider(new DateTime(2025, 10, 4));
+
             var kpi = await _context.Kpis
             .Include(k => k.Kpicomponents)
             .Where(k => k.EmpId == empId && k.PeriodMonth == month && k.PeriodYear == year)
@@ -41,7 +46,7 @@ namespace AttendanceManagementPayrollSystem.Services
                 PeriodYear = k.PeriodYear,
                 KpiRate = k.KpiRate,
                 AssignedBy = k.AssignedBy,
-                KpiMode = KpiAccessHelper.GetKpiMode(k.PeriodMonth, k.PeriodYear, role),
+                KpiMode = KpiAccessHelper.GetKpiMode(k.PeriodMonth, k.PeriodYear, role, null),
                 Components = k.Kpicomponents.Select(c => new KpiComponentDto
                 {
                     KpiComponentId = c.KpiCompId,
@@ -58,7 +63,7 @@ namespace AttendanceManagementPayrollSystem.Services
 
             if (kpi == null && role == "head")
             {
-                var mode = KpiAccessHelper.GetKpiMode(month, year, role);
+                var mode = KpiAccessHelper.GetKpiMode(month, year, role, null);
                 if (mode == "edit")
                 {
                     kpi = new KpiDto
@@ -222,7 +227,12 @@ namespace AttendanceManagementPayrollSystem.Services
 
         public async Task<List<EmployeeBasicDTO>> GetEmployeesWithKpiByHeadAsync(int headId, int month, int year)
         {
-            var mode = KpiAccessHelper.GetKpiMode(month, year, "head");
+            var editTime = new FixedTimeProvider(new DateTime(2025, 8, 29));
+            var inTime = new FixedTimeProvider(new DateTime(2025, 9, 15));
+            var selfTime = new FixedTimeProvider(new DateTime(2025, 10, 2));
+            var assignTime = new FixedTimeProvider(new DateTime(2025, 10, 4));
+
+            var mode = KpiAccessHelper.GetKpiMode(month, year, "head", null);
 
             var headDepId = await _context.Employees
                 .Where(h => h.EmpId == headId)

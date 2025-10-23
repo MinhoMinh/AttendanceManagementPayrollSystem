@@ -11,7 +11,7 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
         /// <summary>
         /// Lấy toàn bộ bản ghi chấm công của một nhân viên trong khoảng thời gian.
         /// </summary>
-        Task<IEnumerable<Clockin>> GetByEmployeeAsync(int empId, DateTime startDate, DateTime endDate);
+        Task<IEnumerable<Clockin>> GetByEmployeeAsync(int empId, DateTime startDate, int months);
 
         /// <summary>
         /// Lấy bản ghi chấm công của một nhân viên trong một ngày cụ thể.
@@ -23,18 +23,9 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
         /// </summary>
         Task<decimal> GetTotalWorkUnitsAsync(int month, int year);
 
-        /// <summary>
-        /// Cập nhật thông tin chấm công (ví dụ: WorkUnits, ClockLog...).
-        /// </summary>
-        Task UpdateClockinAsync(Clockin clockin);
-
-        /// <summary>
-        /// Xóa bản ghi chấm công (nếu cần chỉnh sửa hoặc nhập sai).
-        /// </summary>
-        Task DeleteClockinAsync(int empId, DateTime date);
 
         Task<Clockin?> GetByEmployeeAndMonthAsync(int empId, int month, int year);
 
-        Task SaveClockinData(IEnumerable<Clockin> clockins);
+        Task SaveClockinData(IEnumerable<ClockinDTO> clockins);
     }
 }

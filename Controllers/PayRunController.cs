@@ -121,5 +121,24 @@ namespace AttendanceManagementPayrollSystem.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
+
+        [HttpPost("reject")]
+        public async Task<IActionResult> RejectPayRun([FromBody] ApproveRequest request)
+        {
+            if (request == null)
+                return BadRequest("Invalid request.");
+
+            try
+            {
+                await _service.Reject(request.ApproverId, request.PayRunId);
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Exception: {ex.Message}");
+                return StatusCode(500, ex.Message);
+            }
+        }
     }
 }
