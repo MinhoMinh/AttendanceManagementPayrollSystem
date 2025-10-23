@@ -2,6 +2,7 @@
 #nullable disable
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace AttendanceManagementPayrollSystem.Models;
 
@@ -11,7 +12,7 @@ public partial class DepartmentHolidayCalender
 
     public int? HolidayId { get; set; }
 
-    public int DepHolidayCalenderId { get; set; }
+    public int DepHolidayCalendarId { get; set; }
 
     public DateTime StartDate { get; set; }
 
