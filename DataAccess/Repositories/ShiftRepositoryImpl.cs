@@ -4,13 +4,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
 {
-    public class ShiftRepositoryImpl : ShiftRepository
+    public class ShiftRepositoryImpl : BaseRepositoryImpl, ShiftRepository
     {
-        private readonly AttendanceManagementPayrollSystemContext _context;
 
-        public ShiftRepositoryImpl(AttendanceManagementPayrollSystemContext context)
+        public ShiftRepositoryImpl(AttendanceManagementPayrollSystemContext context) : base(context)
         {
-            _context = context;
+            
         }
 
         public async Task<WeeklyShift?> GetWeeklyShift(int empId)

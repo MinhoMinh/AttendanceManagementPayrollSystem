@@ -26,7 +26,7 @@ else
                             {
                                 @foreach (var s in day.Value.ShiftDtos)
                                 {
-                                    <div>@($"{s.StartTime:hh\\:mm} - {s.EndTime:hh\\:mm} ({s.Workhour})")</div>
+                                    <div>@($"{s.StartTime:hh\\:mm} - {s.EndTime:hh\\:mm} ({s.WorkUnits})")</div>
                                 }
                             }
                             else

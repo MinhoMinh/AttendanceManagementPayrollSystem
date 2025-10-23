@@ -3,7 +3,7 @@ using AttendanceManagementPayrollSystem.Models;
 
 namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
 {
-    public interface ILeaveRequestRepository
+    public interface ILeaveRequestRepository : BaseRepository
     {
         Task<LeaveRequest> AddAsync(LeaveRequest request);
         Task<IEnumerable<LeaveRequest>> GetByEmployeeIdAsync(int empId);

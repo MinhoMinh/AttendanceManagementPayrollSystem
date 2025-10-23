@@ -1,9 +1,16 @@
-﻿<button class="dashboard-btn" @onclick="OnClick" hidden="@(!Visible)">
-    @Label
-</button>
+﻿@if (Visible)
+{
+    <div class="clickable-wrapper" @onclick="OnClick" >
+        <Figure class="phone-figure" Size="FigureSize.Is64x64" TextAlignment="TextAlignment.Center">
+            <FigureImage Source="@ImageSrc" AlternateText="empty-64x64" Rounded />
+            <FigureCaption TextAlignment="TextAlignment.Center">@Text</FigureCaption>
+        </Figure>
+    </div>
+}
 
 @code {
-    [Parameter] public string Label { get; set; }
+    [Parameter] public string Text { get; set; } = "";
+    [Parameter] public string ImageSrc { get; set; } = "img/apple-icon.png";
     [Parameter] public EventCallback OnClick { get; set; }
     [Parameter] public bool Visible { get; set; } = true;
 }

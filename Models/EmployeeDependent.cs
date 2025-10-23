@@ -31,5 +31,7 @@ public partial class EmployeeDependent
 
     public DateTime CreatedDate { get; set; }
 
+    public string Proof { get; set; }
+
     public virtual Employee Employee { get; set; }
 }

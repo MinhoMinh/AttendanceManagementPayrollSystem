@@ -31,21 +31,13 @@ public partial class Employee
 
     public virtual ICollection<EmployeeAllowance> EmployeeAllowanceEmps { get; set; } = new List<EmployeeAllowance>();
 
+    public virtual ICollection<EmployeeBalance> EmployeeBalances { get; set; } = new List<EmployeeBalance>();
+
     public virtual ICollection<EmployeeDependent> EmployeeDependents { get; set; } = new List<EmployeeDependent>();
 
     public virtual ICollection<EmployeePermission> EmployeePermissions { get; set; } = new List<EmployeePermission>();
 
     public virtual ICollection<EmployeeRole> EmployeeRoles { get; set; } = new List<EmployeeRole>();
-
-    public virtual ICollection<EmployeeSalaryPreview> EmployeeSalaryPreviewCreatedByNavigations { get; set; } = new List<EmployeeSalaryPreview>();
-
-    public virtual ICollection<EmployeeSalaryPreview> EmployeeSalaryPreviewEmps { get; set; } = new List<EmployeeSalaryPreview>();
-
-    public virtual ICollection<EmployeeSalarySlip> EmployeeSalarySlipApprovedByNavigations { get; set; } = new List<EmployeeSalarySlip>();
-
-    public virtual ICollection<EmployeeSalarySlip> EmployeeSalarySlipCreatedByNavigations { get; set; } = new List<EmployeeSalarySlip>();
-
-    public virtual ICollection<EmployeeSalarySlip> EmployeeSalarySlipEmps { get; set; } = new List<EmployeeSalarySlip>();
 
     public virtual ICollection<Kpi> KpiAssignedByNavigations { get; set; } = new List<Kpi>();
 
@@ -68,4 +60,6 @@ public partial class Employee
     public virtual ICollection<PayRun> PayRunCreatedByNavigations { get; set; } = new List<PayRun>();
 
     public virtual ICollection<PayRunItem> PayRunItems { get; set; } = new List<PayRunItem>();
+
+    public virtual ICollection<PayRun> PayRunRejectedByNavigations { get; set; } = new List<PayRun>();
 }

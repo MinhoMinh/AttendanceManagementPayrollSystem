@@ -9,9 +9,9 @@ namespace AttendanceManagementPayrollSystem.Controllers
     [Route("api/[controller]")]
     public class LeaveRequestController : ControllerBase
     {
-        private readonly ILeaveRequestService _service;
+        private readonly LeaveRequestService _service;
 
-        public LeaveRequestController(ILeaveRequestService service)
+        public LeaveRequestController(LeaveRequestService service)
         {
             _service = service;
         }

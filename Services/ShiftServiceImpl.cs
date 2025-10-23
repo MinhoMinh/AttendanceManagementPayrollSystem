@@ -49,41 +49,43 @@ namespace AttendanceManagementPayrollSystem.Services
             };
 
             if (shift.MonDailyShift != null)
-                dto.MonDailyShift = new DailyShiftDto { ShiftDtos = ToDailyDto(shift.MonDailyShift.ShiftString) };
+                dto.MonDailyShift = new DailyShiftDto { ShiftDtos = ToDailyDto(shift.MonDailyShift.ShiftString, shift.MonDailyShift.ShiftHours) };
 
             if (shift.TueDailyShift != null)
-                dto.TueDailyShift = new DailyShiftDto { ShiftDtos = ToDailyDto(shift.TueDailyShift.ShiftString) };
+                dto.TueDailyShift = new DailyShiftDto { ShiftDtos = ToDailyDto(shift.TueDailyShift.ShiftString, shift.TueDailyShift.ShiftHours) };
 
             if (shift.WedDailyShift != null)
-                dto.WedDailyShift = new DailyShiftDto { ShiftDtos = ToDailyDto(shift.WedDailyShift.ShiftString) };
+                dto.WedDailyShift = new DailyShiftDto { ShiftDtos = ToDailyDto(shift.WedDailyShift.ShiftString, shift.WedDailyShift.ShiftHours) };
 
             if (shift.ThuDailyShift != null)
-                dto.ThuDailyShift = new DailyShiftDto { ShiftDtos = ToDailyDto(shift.ThuDailyShift.ShiftString) };
+                dto.ThuDailyShift = new DailyShiftDto { ShiftDtos = ToDailyDto(shift.ThuDailyShift.ShiftString, shift.ThuDailyShift.ShiftHours) };
 
             if (shift.FriDailyShift != null)
-                dto.FriDailyShift = new DailyShiftDto { ShiftDtos = ToDailyDto(shift.FriDailyShift.ShiftString) };
+                dto.FriDailyShift = new DailyShiftDto { ShiftDtos = ToDailyDto(shift.FriDailyShift.ShiftString, shift.FriDailyShift.ShiftHours) };
 
             if (shift.SatDailyShift != null)
-                dto.SatDailyShift = new DailyShiftDto { ShiftDtos = ToDailyDto(shift.SatDailyShift.ShiftString) };
+                dto.SatDailyShift = new DailyShiftDto { ShiftDtos = ToDailyDto(shift.SatDailyShift.ShiftString, shift.SatDailyShift.ShiftHours) };
 
             if (shift.SunDailyShift != null)
-                dto.SunDailyShift = new DailyShiftDto { ShiftDtos = ToDailyDto(shift.SunDailyShift.ShiftString) };
+                dto.SunDailyShift = new DailyShiftDto { ShiftDtos = ToDailyDto(shift.SunDailyShift.ShiftString, shift.SunDailyShift.ShiftHours) };
 
             return dto;
         }
 
 
-        private List<ShiftDto> ToDailyDto(string input) {
+        private List<ShiftDto> ToDailyDto(string shiftString, string shiftHours) {
 
             var result = new List<ShiftDto>();
-            if (string.IsNullOrWhiteSpace(input))
+            if (string.IsNullOrWhiteSpace(shiftString))
                 return result;
 
-            var segments = input.Split('|', StringSplitOptions.RemoveEmptyEntries);
+            var segments = shiftString.Split('|', StringSplitOptions.RemoveEmptyEntries);
+            var hourSegments = (shiftHours ?? "")
+                .Split('|', StringSplitOptions.RemoveEmptyEntries);
 
-            foreach (var segment in segments)
+            for (int i = 0; i < segments.Length; i++)
             {
-                // Example: "8:00-12:00#0.5c"
+                var segment = segments[i];
                 var timeAndWork = segment.Split('#', StringSplitOptions.RemoveEmptyEntries);
                 if (timeAndWork.Length < 2)
                     continue;
@@ -100,17 +102,23 @@ namespace AttendanceManagementPayrollSystem.Services
 
                     if (decimal.TryParse(workStr, out var work))
                     {
+                        decimal workHours = 0;
+                        if (i < hourSegments.Length &&
+                            decimal.TryParse(hourSegments[i], out var hours))
+                            workHours = hours;
+
                         result.Add(new ShiftDto
                         {
                             StartTime = start,
                             EndTime = end,
-                            Workhour = work
+                            WorkUnits = work,
+                            WorkHours = workHours
                         });
                     }
                 }
             }
 
-            return result;
+                return result;
 
         }
     }

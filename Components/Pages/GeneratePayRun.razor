@@ -1,7 +1,8 @@
-﻿
+﻿@using System.Text.Json
 @page "/payruns/generate"
 @using AttendanceManagementPayrollSystem.DTO
 @inject IHttpClientFactory HttpFactory
+@inject IJSRuntime JS
 
 <div class="mb-3">
     <div class="d-flex align-items-center justify-content-between mb-3">
@@ -52,14 +53,24 @@ else
     private int periodMonth = DateTime.Now.AddMonths(-1).Month;
     private int periodYear = DateTime.Now.AddMonths(-1).Year;
 
+    private EmployeeDTO? Employee;
 
     private PayRunDto? payRun;
 
     private PayRunItemDto? selectedItem;
 
+    protected override async Task OnInitializedAsync()
+    {
+        var empJson = await JS.InvokeAsync<string>("localStorage.getItem", "employee");
+        if (string.IsNullOrWhiteSpace(empJson)) return;
+
+        Employee = JsonSerializer.Deserialize<EmployeeDTO>(empJson);
+    }
 
     private async Task Generate()
     {
+        if (Employee == null) return;
+
         try
         {
             var client = HttpFactory.CreateClient("ApiClient");
@@ -69,7 +80,7 @@ else
                     Name = "Pay Run test",
                     PeriodMonth = periodMonth,
                     PeriodYear = periodYear,
-                    CreatedBy = 3
+                    CreatedBy = Employee.EmpId
                 });
             if (response.IsSuccessStatusCode)
             {

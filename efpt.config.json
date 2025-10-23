@@ -1,6 +1,6 @@
 ﻿{
    "CodeGenerationMode": 4,
-   "ContextClassName": "attendance-management-payroll-systemContext",
+   "ContextClassName": "AttendanceManagementPayrollSystemContext",
    "ContextNamespace": null,
    "FilterSchemas": false,
    "IncludeConnectionString": false,
@@ -21,6 +21,10 @@
       },
       {
          "Name": "[dbo].[Clockin]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[ClockinComponent]",
          "ObjectType": 0
       },
       {
@@ -48,6 +52,10 @@
          "ObjectType": 0
       },
       {
+         "Name": "[dbo].[EmployeeBalance]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[dbo].[EmployeeDependent]",
          "ObjectType": 0
       },
@@ -57,14 +65,6 @@
       },
       {
          "Name": "[dbo].[EmployeeRole]",
-         "ObjectType": 0
-      },
-      {
-         "Name": "[dbo].[EmployeeSalaryPreview]",
-         "ObjectType": 0
-      },
-      {
-         "Name": "[dbo].[EmployeeSalarySlip]",
          "ObjectType": 0
       },
       {

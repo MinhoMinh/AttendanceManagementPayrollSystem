@@ -1,6 +1,8 @@
-﻿using AttendanceManagementPayrollSystem.Models;
+﻿using AttendanceManagementPayrollSystem.DTO;
+using AttendanceManagementPayrollSystem.Models;
 using DocumentFormat.OpenXml.Wordprocessing;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 
 namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
 {
@@ -19,15 +21,21 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
 
             return await _context.Clockins
                 .Where(c => c.Date >= startDate && c.Date <= endDate)
+                .Include(c => c.ClockinComponents)
                 .ToListAsync();
         }
 
         //
 
-        public async Task<IEnumerable<Clockin>> GetByEmployeeAsync(int empId, DateTime startDate, DateTime endDate)
+        public async Task<IEnumerable<Clockin>> GetByEmployeeAsync(int empId, DateTime startDate, int months)
         {
+            var endDate = startDate.AddMonths(months).AddDays(-1); // inclusive period
+
             return await _context.Clockins
-                .Where(c => c.EmpId == empId && c.Date >= startDate && c.Date <= endDate)
+                .Where(c => c.EmpId == empId
+                            && c.Date >= startDate.Date
+                            && c.Date <= endDate.Date)
+                .Include(c => c.ClockinComponents)
                 .OrderBy(c => c.Date)
                 .ToListAsync();
         }
@@ -35,6 +43,7 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
         public async Task<Clockin?> GetByEmployeeAndDateAsync(int empId, DateTime date)
         {
             return await _context.Clockins
+                .Include(c => c.ClockinComponents)
                 .FirstOrDefaultAsync(c => c.EmpId == empId && c.Date.Date == date.Date);
         }
 
@@ -48,35 +57,6 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
                 .SumAsync(c => c.WorkUnits ?? 0);
         }
 
-        public async Task UpdateClockinAsync(Clockin clockin)
-        {
-            var existing = await _context.Clockins
-                .FirstOrDefaultAsync(c => c.EmpId == clockin.EmpId && c.Date.Date == clockin.Date.Date);
-
-            if (existing != null)
-            {
-                existing.ClockLog = clockin.ClockLog;
-                existing.WorkUnits = clockin.WorkUnits;
-                existing.WorkUnitBreakdown = clockin.WorkUnitBreakdown;
-                existing.ScheduledUnits = clockin.ScheduledUnits;
-
-                _context.Clockins.Update(existing);
-                await _context.SaveChangesAsync();
-            }
-        }
-
-        public async Task DeleteClockinAsync(int empId, DateTime date)
-        {
-            var clockin = await _context.Clockins
-                .FirstOrDefaultAsync(c => c.EmpId == empId && c.Date.Date == date.Date);
-
-            if (clockin != null)
-            {
-                _context.Clockins.Remove(clockin);
-                await _context.SaveChangesAsync();
-            }
-        }
-
         public async Task<Clockin?> GetByEmployeeAndMonthAsync(int empId, int month, int year)
         {
             //var start = new DateTime(year, month, 1);
@@ -84,38 +64,106 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
 
             return await _context.Clockins
                 .Where(c => c.EmpId == empId && c.Date.Month == month && c.Date.Year == year)
+                .Include(c => c.ClockinComponents)
                 .FirstOrDefaultAsync();
         }
 
-        public async Task SaveClockinData(IEnumerable<Clockin> clockins)
+        public async Task SaveClockinData(IEnumerable<ClockinDTO> clockinDtos)
         {
-            foreach (var clockin in clockins)
+            foreach (var dto in clockinDtos)
             {
+                // Load existing clockin with components
                 var existing = await _context.Clockins
-                    .FirstOrDefaultAsync(c => c.EmpId == clockin.EmpId && c.Date == clockin.Date);
+                    .Include(c => c.ClockinComponents)
+                    .FirstOrDefaultAsync(c => c.EmpId == dto.EmpId && c.Date.Year == dto.Date.Year &&
+                                                                        c.Date.Month == dto.Date.Month);
 
                 if (existing != null)
                 {
-                    existing.WorkUnits = clockin.WorkUnits;
-                    existing.ScheduledUnits = clockin.ScheduledUnits;
-                    existing.ClockLog = clockin.ClockLog;
-                    existing.WorkUnitBreakdown = clockin.WorkUnitBreakdown;
-                    
-                    _context.Clockins.Update(existing);
+                    // Update Clockin fields
+                    existing.WorkUnits = dto.WorkUnits;
+                    existing.ScheduledUnits = dto.ScheduledUnits;
+                    existing.WorkHours = dto.WorkHours;
+                    existing.ScheduledHours = dto.ScheduledHours;
+                    existing.ClockLog = dto.ClockLog;
+                    existing.WorkUnitBreakdown = dto.WorkUnitBreakdown;
+                    foreach (var (compDto, existingComp) in
+                    // Upsert ClockinComponents
+                    from compDto in dto.Components
+                    let existingComp = existing.ClockinComponents
+                         .FirstOrDefault(c =>
+                                c.CloId == existing.CloId &&
+                                c.Shift == compDto.Shift &&
+                                c.Date == compDto.Date)
+                    select (compDto, existingComp))
+                    {
+                        if (existingComp != null)
+                        {
+                            // Update existing component
+                            existingComp.Shift = compDto.Shift;
+                            existingComp.Date = compDto.Date;
+                            existingComp.CheckIn = compDto.CheckIn;
+                            existingComp.CheckOut = compDto.CheckOut;
+                            existingComp.ClockinLog = compDto.ClockinLog;
+                            existingComp.Description = compDto.Description;
+                            existingComp.WorkHours = compDto.WorkHours;
+                            existingComp.ScheduledHours = compDto.ScheduledHours;
+                            existingComp.WorkUnits = compDto.WorkUnits;
+                            existingComp.ScheduledUnits = compDto.ScheduledUnits;
+                        }
+                        else
+                        {
+                            // Add new component
+                            existing.ClockinComponents.Add(new ClockinComponent
+                            {
+                                CloId = existing.CloId,
+                                Shift = compDto.Shift,
+                                Date = compDto.Date,
+                                CheckIn = compDto.CheckIn,
+                                CheckOut = compDto.CheckOut,
+                                ClockinLog = compDto.ClockinLog,
+                                Description = compDto.Description,
+                                WorkHours = compDto.WorkHours,
+                                ScheduledHours = compDto.ScheduledHours,
+                                WorkUnits = compDto.WorkUnits,
+                                ScheduledUnits = compDto.ScheduledUnits
+                            });
+                        }
+                    }
                 }
                 else
                 {
-                    var newEntity = new Clockin
+                    // Add new Clockin with components
+                    var newClockin = new Clockin
                     {
-                        EmpId = clockin.EmpId,
-                        Date = clockin.Date,
-                        WorkUnits = clockin.WorkUnits,
-                        ScheduledUnits = clockin.ScheduledUnits,
-                        ClockLog = clockin.ClockLog,
-                        WorkUnitBreakdown = clockin.WorkUnitBreakdown
+                        EmpId = dto.EmpId,
+                        Date = dto.Date,
+                        WorkUnits = dto.WorkUnits,
+                        ScheduledUnits = dto.ScheduledUnits,
+                        WorkHours= dto.WorkHours,
+                        ScheduledHours= dto.ScheduledHours,
+                        ClockLog = dto.ClockLog,
+                        WorkUnitBreakdown = dto.WorkUnitBreakdown,
+                        ClockinComponents = dto.Components?
+                            .Select(c => new ClockinComponent
+                            {
+                                Shift = c.Shift,
+                                Date = c.Date,
+                                CheckIn = c.CheckIn,
+                                CheckOut = c.CheckOut,
+                                ClockinLog = c.ClockinLog,
+                                Description = c.Description,
+                                WorkHours = c.WorkHours,
+                                ScheduledHours = c.ScheduledHours,
+                                WorkUnits = c.WorkUnits,
+                                ScheduledUnits = c.ScheduledUnits
+                            }).ToList()
                     };
-                    await _context.Clockins.AddAsync(newEntity);
+
+                    await _context.Clockins.AddAsync(newClockin);
                 }
+
+                await _context.SaveChangesAsync();
             }
 
             await _context.SaveChangesAsync();

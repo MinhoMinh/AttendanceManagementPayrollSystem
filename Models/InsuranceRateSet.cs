@@ -28,8 +28,4 @@ public partial class InsuranceRateSet
     public DateOnly EffectiveFrom { get; set; }
 
     public DateOnly? EffectiveTo { get; set; }
-
-    public virtual ICollection<EmployeeSalaryPreview> EmployeeSalaryPreviews { get; set; } = new List<EmployeeSalaryPreview>();
-
-    public virtual ICollection<EmployeeSalarySlip> EmployeeSalarySlips { get; set; } = new List<EmployeeSalarySlip>();
 }

@@ -2,7 +2,13 @@ using AttendanceManagementPayrollSystem.Components;
 using AttendanceManagementPayrollSystem.DataAccess.Repositories;
 using AttendanceManagementPayrollSystem.Models;
 using AttendanceManagementPayrollSystem.Services;
+using Blazorise;
+using Blazorise.Bootstrap5;
+using Blazorise.Icons.FontAwesome;
+using ClosedXML.Parser;
+using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using System;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -33,7 +39,7 @@ builder.Services.AddScoped<PayRunService, PayRunServiceImpl>();
 builder.Services.AddScoped<KPIService, KPIServiceImpl>();
 builder.Services.AddScoped<ClockinService, ClockinServiceImpl>();
 builder.Services.AddScoped<AuthService, AuthServiceImpl>();
-builder.Services.AddScoped<ILeaveRequestService, LeaveRequestServiceImpl>();
+builder.Services.AddScoped<LeaveRequestService, LeaveRequestServiceImpl>();
 builder.Services.AddScoped<ShiftService, ShiftServiceImpl>();
 builder.Services.AddScoped<PayRunItemService, PayRunItemServiceImpl>();
 
@@ -51,6 +57,14 @@ builder.Services.AddHttpClient("ApiClient", client =>
 {
     client.BaseAddress = new Uri("http://localhost:5038/");
 });
+
+builder.Services
+    .AddBlazorise(options =>
+    {
+        options.Immediate = true;
+    })
+.AddBootstrap5Providers()
+.AddFontAwesomeIcons();
 
 var app = builder.Build();
 
