@@ -22,13 +22,13 @@ namespace AttendanceManagementPayrollSystem.Services
             var entity = new LeaveRequest
             {
 
-                EmpId = 3,
+                EmpId = dto.EmpId,
                 StartDate = dto.StartDate,
                 EndDate = dto.EndDate,
                 Reason = dto.Reason,
                 Status = "Pending",
                 NumbersOfDays = (decimal)totalDays,
-                TypeId = dto.typeId
+                TypeId = dto.TypeId
             };
 
             await _repository.AddAsync(entity);
@@ -44,7 +44,7 @@ namespace AttendanceManagementPayrollSystem.Services
                 StartDate = lr.StartDate,
                 EndDate = lr.EndDate,
                 Reason = lr.Reason,
-                typeId = lr.TypeId,
+                TypeId = lr.TypeId,
                 Status = "Pending"
             }).ToList();
         }

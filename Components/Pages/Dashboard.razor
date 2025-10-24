@@ -37,6 +37,7 @@
             new() { Label = "Attendance", OnClick = EventCallback.Factory.Create(this, NavigateAttendance), Visible = HasPermission("has_clockin") },
             new() { Label = "Self KPI", OnClick = EventCallback.Factory.Create(this, NavigateSelfKpi), Visible = HasPermission("has_kpi") },
             new() { Label = "Shift", OnClick = EventCallback.Factory.Create(this, NavigateSelfShift), Visible = HasPermission("has_shift") },
+            new() { Label = "Leave Request", OnClick = EventCallback.Factory.Create(this, NavigateLeaveRequest), Visible = HasPermission("has_leave_request") },
         };
 
         DepartmentHeadService = new()
@@ -84,4 +85,5 @@
     private void NavigateDepKpi() => Navigation.NavigateTo("/kpi/head");
     private void NavigateUploadClockins() => Navigation.NavigateTo("/xlsupload");
     private void NavigatePayRun() => Navigation.NavigateTo("/payruns");
+    private void NavigateLeaveRequest() => Navigation.NavigateTo("/leaverequest");
 }
