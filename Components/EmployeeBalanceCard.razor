@@ -1,0 +1,79 @@
+﻿@using AttendanceManagementPayrollSystem.DTO
+
+
+<h3>Employee Balance</h3>
+
+<table border="1" cellpadding="6" cellspacing="0" style="border-collapse: collapse;">
+    <tr>
+        <th>Employee ID</th>
+        <td>@Data.EmpId</td>
+        <th>Record ID</th>
+        <td>@Data.Id</td>
+        <th>Last Updated</th>
+        <td>@(Data.LastUpdated?.ToString("yyyy-MM-dd HH:mm") ?? "—")</td>
+    </tr>
+</table>
+
+<br />
+
+<table border="1" cellpadding="6" cellspacing="0" style="border-collapse: collapse; text-align:center;">
+    <thead>
+        <tr>
+            <th>Type</th>
+            <th>Available</th>
+            <th>Used</th>
+            <th>Total</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>PTO</td>
+            <td>@Data.PtoAvailable</td>
+            <td>@Data.PtoUsed</td>
+            <td>@Data.PtoTotal</td>
+        </tr>
+        <tr>
+            <td>Sick</td>
+            <td>@Data.SickAvailable</td>
+            <td>@Data.SickUsed</td>
+            <td>@Data.SickTotal</td>
+        </tr>
+        <tr>
+            <td>Vacation</td>
+            <td>@Data.VacationAvailable</td>
+            <td>@Data.VacationUsed</td>
+            <td>@Data.VacationTotal</td>
+        </tr>
+        <tr>
+            <td>Overtime</td>
+            <td>@Data.OvertimeAvailable</td>
+            <td>@Data.OvertimeUsed</td>
+            <td>@Data.OvertimeTotal</td>
+        </tr>
+    </tbody>
+</table>
+
+
+@code {
+    //[Parameter]
+    //public EmployeeBalanceDto Data { get; set; } = new EmployeeBalanceDto();
+
+    private EmployeeBalanceDto Data = new()
+        {
+            Id = 1,
+            EmpId = 1001,
+            PtoAvailable = 12.5m,
+            PtoUsed = 3.0m,
+            PtoTotal = 15.5m,
+            SickAvailable = 8.0m,
+            SickUsed = 1.0m,
+            SickTotal = 9.0m,
+            VacationAvailable = 10.0m,
+            VacationUsed = 2.0m,
+            VacationTotal = 12.0m,
+            OvertimeAvailable = 5.0m,
+            OvertimeUsed = 0.0m,
+            OvertimeTotal = 5.0m,
+            LastUpdated = DateTime.UtcNow
+        };
+}

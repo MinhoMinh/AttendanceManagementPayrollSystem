@@ -30,7 +30,8 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
         public async Task<IEnumerable<PayRun>> GetAllAsync()
         {
             return await _context.PayRuns
-                .Include(p => p.EmployeeSalaryPreviews)  // optional, if you need preview data
+                .Include(p => p.PayRunItems)
+                    .ThenInclude(item => item.PayRunComponents)// optional, if you need preview data
                 .OrderByDescending(p => p.CreatedDate)
                 .ToListAsync();
         }
@@ -49,6 +50,10 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
             if (entity.CreatedBy.HasValue) employeeIds.Add(entity.CreatedBy.Value);
             if (entity.ApprovedFirstBy.HasValue) employeeIds.Add(entity.ApprovedFirstBy.Value);
             if (entity.ApprovedFinalBy.HasValue) employeeIds.Add(entity.ApprovedFinalBy.Value);
+            if (entity.RejectedBy.HasValue) employeeIds.Add(entity.RejectedBy.Value);
+            foreach (var emp in entity.PayRunItems) 
+                employeeIds.Add(emp.EmpId);
+
 
             var names = await _context.Employees
                 .Where(e => employeeIds.Contains(e.EmpId))
@@ -72,10 +77,13 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
                 ApprovedFirstAt = entity.ApprovedFirstAt,
                 ApprovedFinalByName = GetName(entity.ApprovedFinalBy),
                 ApprovedFinalAt = entity.ApprovedFinalAt,
+                RejectedByName = GetName(entity.RejectedBy),
+                RejectedAt = entity.RejectedAt,
                 PayRunItems = entity.PayRunItems.Select(i => new PayRunItemDto
                 {
                     ItemId = i.PayRunItemId,
                     EmpId = i.EmpId,
+                    EmpName = GetName(i.EmpId),
                     GrossPay = i.GrossPay,
                     Deductions = i.Deductions,
                     NetPay = i.NetPay,

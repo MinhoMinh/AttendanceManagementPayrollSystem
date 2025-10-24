@@ -21,7 +21,39 @@
     </section>
 </div>
 
+
+<Toaster>
+    <Toast @bind-Visible="@toastVisible">
+        <ToastHeader>
+            <Strong Margin="Margin.IsAuto.FromEnd">Blazorise</Strong>
+            <Small>11 mins ago</Small>
+            <CloseButton />
+        </ToastHeader>
+        <ToastBody>
+            Hello, world! This is a toast message.
+        </ToastBody>
+    </Toast>
+</Toaster>
+
 @code {
+    bool toastVisible = false;
+    private bool isLoading = false;
+    private async Task SaveAsync()
+    {
+        isLoading = true;
+
+        // Simulate a long-running task (e.g., API call)
+        await Task.Delay(2000);
+
+        isLoading = false;
+
+        // Show a toast notification
+        ToastService.Show("Data saved successfully!");
+    }
+
+    [Inject] private IToastService ToastService { get; set; } = default!;
+
+
     private EmployeeDTO? Employee;
 
     private List<DashboardButton> EmployeeService = new();
@@ -42,7 +74,7 @@
 
         DepartmentHeadService = new()
         {
-            new() { Label = "Dep KPI", OnClick = EventCallback.Factory.Create(this, NavigateDepKpi), Visible = HasPermission("assign_kpi") },
+            new() { Text = "Dep KPI", OnClick = EventCallback.Factory.Create(this, NavigateDepKpi), Visible = HasPermission("assign_kpi") },
         };
 
         CompanyService = new()
@@ -79,7 +111,7 @@
         return Employee.Permissions.Contains(task);
     }
 
-    private void NavigateAttendance() => Navigation.NavigateTo("/attendance");
+    private void NavigateAttendance() => Navigation.NavigateTo("/attendance/self");
     private void NavigateSelfKpi() => Navigation.NavigateTo("/kpi/self");
     private void NavigateSelfShift() => Navigation.NavigateTo("/shift/self");
     private void NavigateDepKpi() => Navigation.NavigateTo("/kpi/head");

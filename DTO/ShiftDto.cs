@@ -54,7 +54,13 @@
     {
         public TimeSpan StartTime { get; set; }
         public TimeSpan EndTime { get; set; }
-        public decimal Workhour { get; set; }
+        public decimal WorkUnits { get; set; }
+        public decimal WorkHours { get; set; }
+
+        public override string ToString()
+        {
+            return $"{StartTime:hh\\:mm} - {EndTime:hh\\:mm}"; ;
+        }
     }
     
 }

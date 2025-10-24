@@ -31,15 +31,19 @@ public partial class PayRun
 
     public string Type { get; set; }
 
+    public int? RejectedBy { get; set; }
+
+    public DateTime? RejectedAt { get; set; }
+
     public virtual Employee ApprovedFinalByNavigation { get; set; }
 
     public virtual Employee ApprovedFirstByNavigation { get; set; }
 
     public virtual Employee CreatedByNavigation { get; set; }
 
-    public virtual ICollection<EmployeeSalaryPreview> EmployeeSalaryPreviews { get; set; } = new List<EmployeeSalaryPreview>();
-
     public virtual ICollection<OvertimeRequest> OvertimeRequests { get; set; } = new List<OvertimeRequest>();
 
     public virtual ICollection<PayRunItem> PayRunItems { get; set; } = new List<PayRunItem>();
+
+    public virtual Employee RejectedByNavigation { get; set; }
 }

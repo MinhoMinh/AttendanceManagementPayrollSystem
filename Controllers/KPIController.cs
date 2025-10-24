@@ -98,7 +98,7 @@ namespace AttendanceManagementPayrollSystem.Controllers
         }
 
         [HttpGet("head/kpi")]
-        public async Task<ActionResult<KpiDto>> GetKpiByManager([FromQuery] int empId, [FromQuery] int month, [FromQuery] int year)
+        public async Task<ActionResult<KpiDto?>> GetKpiByManager([FromQuery] int empId, [FromQuery] int month, [FromQuery] int year)
         {
             if (month < 1 || month > 12) return BadRequest("Invalid month.");
             if (year < 2000 || year > DateTime.Now.Year) return BadRequest("Invalid year.");

@@ -25,7 +25,10 @@ else
         <h4>Pay Run Details</h4>
         @if (canApproveFirst || canApproveFinal)
         {
-            <button class="btn btn-success" @onclick="ShowConfirmModal">Confirm</button>
+            <div class="btn-group">
+                <button class="btn btn-success" @onclick="ShowConfirmModal">Confirm</button>
+                <button class="btn btn-danger" @onclick="ShowRejectModal">Reject</button>
+            </div>
         }
     </div>
 
@@ -44,7 +47,7 @@ else
     </div>
 }
 
-@if (showConfirmModal)
+@if (showApprovalModal)
 {
     <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
         <div class="modal-dialog">
@@ -64,16 +67,37 @@ else
     </div>
 }
 
+@if (showRejectModal)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Reject Pay Run</h5>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to reject this pay run?</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="CancelReject">Cancel</button>
+                    <button class="btn btn-danger" @onclick="RejectPayRun">Yes, Reject</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
 @code {
     [Parameter] public int Id { get; set; }
 
     private PayRunDto? payRun;
     private PayRunItemDto? selectedItem;
+    private EmployeeDTO? employee;
     private bool isLoading = true;
     private bool loadError = false;
-    private EmployeeDTO? employee;
 
-    private bool showConfirmModal = false;
+    private bool showApprovalModal = false;
+    private bool showRejectModal = false;
     private bool canApproveFirst = false;
     private bool canApproveFinal = false;
 
@@ -99,7 +123,7 @@ else
         finally
         {
             isLoading = false;
-            await CheckPermissions(); // 🔹 check permissions right after payRun is loaded
+            await CheckPermissions();
         }
     }
 
@@ -114,7 +138,7 @@ else
             if (!string.IsNullOrWhiteSpace(empJson))
             {
                 employee = JsonSerializer.Deserialize<EmployeeDTO>(empJson);
-                await CheckPermissions(); // 🔹 also check permissions after employee is loaded
+                await CheckPermissions();
             }
         }
         catch (Exception ex)
@@ -135,13 +159,26 @@ else
         await InvokeAsync(StateHasChanged);
     }
 
-    private void ShowConfirmModal() => showConfirmModal = true;
+    private void ShowConfirmModal() => showApprovalModal = true;
+    private void CancelConfirm() => showApprovalModal = false;
 
-    private void CancelConfirm() => showConfirmModal = false;
+    private void ShowRejectModal() => showRejectModal = true;
+    private void CancelReject() => showRejectModal = false;
 
     private async Task ConfirmPayRun()
     {
-        showConfirmModal = false;
+        await HandleApproval("approve");
+    }
+
+    private async Task RejectPayRun()
+    {
+        await HandleApproval("reject");
+    }
+
+    private async Task HandleApproval(string action)
+    {
+        showApprovalModal = false;
+        showRejectModal = false;
 
         if (employee == null || payRun == null)
         {
@@ -151,21 +188,31 @@ else
 
         try
         {
-            string apiUrl = canApproveFirst ? "api/pay-run/approve-first" : canApproveFinal ? "api/pay-run/approve-final" : string.Empty;
+            string apiUrl = action switch
+            {
+                "approve" => canApproveFirst
+                    ? "api/pay-run/approve-first"
+                    : canApproveFinal
+                        ? "api/pay-run/approve-final"
+                        : string.Empty,
+                "reject" => "api/pay-run/reject",
+                _ => string.Empty
+            };
+
             if (string.IsNullOrEmpty(apiUrl))
             {
-                await JS.InvokeVoidAsync("alert", "You do not have permission to approve this pay run.");
+                await JS.InvokeVoidAsync("alert", "You do not have permission for this action.");
                 return;
             }
-            
+
             var client = HttpFactory.CreateClient("ApiClient");
             var request = new { ApproverId = employee.EmpId, PayRunId = payRun.PayrollRunId };
-
             var response = await client.PostAsJsonAsync(apiUrl, request);
 
             if (response.IsSuccessStatusCode)
             {
-                await JS.InvokeVoidAsync("alert", "Pay run approved successfully.");
+                string msg = action == "approve" ? "Pay run approved successfully." : "Pay run rejected.";
+                await JS.InvokeVoidAsync("alert", msg);
                 NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
             }
             else

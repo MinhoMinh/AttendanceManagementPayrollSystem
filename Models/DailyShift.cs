@@ -15,7 +15,9 @@ public partial class DailyShift
 
     public string ShiftDescription { get; set; }
 
-    public decimal? ShiftWorkhour { get; set; }
+    public decimal? ShiftWorkUnit { get; set; }
+
+    public string ShiftHours { get; set; }
 
     public virtual ICollection<WeeklyShift> WeeklyShiftFriDailyShifts { get; set; } = new List<WeeklyShift>();
 

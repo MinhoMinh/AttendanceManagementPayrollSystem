@@ -11,9 +11,9 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
 
         Task<PayRun?> FindAsync(int payrollId);
 
-        Task<IEnumerable<PayRun>> GetAllAsync();
-
         Task<PayRunDto?> GetDtoAsync(int payrollId);
+
+        Task<IEnumerable<PayRun>> GetAllAsync();
 
         Task Update(PayRun run);
 
