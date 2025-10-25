@@ -644,6 +644,7 @@ namespace AMPS.Tests.Repositories
 
 ```
 Màn hình kết quả test: 
+<img width="1571" height="552" alt="image" src="https://github.com/user-attachments/assets/fbb3d92b-a49c-4db4-ad1e-418099e78ccc" />
 
 
 
