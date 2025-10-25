@@ -1,22 +1,29 @@
-PAYRUN FEATURE – ATTENDANCE MANAGEMENT PAYROLL SYSTEM
+Here’s the English translation of your text:
 
-1. Mục đích
-Tính năng Payrun được xây dựng nhằm tự động hóa quá trình chạy bảng lương định kỳ cho nhân viên.
-Hệ thống giúp bộ phận nhân sự tổng hợp dữ liệu chấm công, phụ cấp và khấu trừ để tính toán và tạo bảng lương một cách nhanh chóng, chính xác và minh bạch.
+---
 
-2. Luồng hoạt động
-- Lấy dữ liệu chấm công và thông tin nhân viên trong kỳ tính lương.
-- Tính toán lương cơ bản, làm thêm giờ (OT), phụ cấp và các khoản khấu trừ.
-- Tạo bảng lương (Payrun) và lưu chi tiết từng nhân viên trong cơ sở dữ liệu.
-- Cho phép người quản lý phê duyệt bảng lương, xuất báo cáo và lưu lịch sử payrun.
+## PAYRUN FEATURE – ATTENDANCE MANAGEMENT PAYROLL SYSTEM
 
-3. Kết quả đạt được
-- Tự động sinh bảng lương cho toàn bộ nhân viên trong kỳ.
-- Giảm thiểu sai sót thủ công trong quá trình tính toán lương.
-- Cung cấp dữ liệu đáng tin cậy cho báo cáo chi phí và phân tích nhân sự.
-- Đảm bảo tính minh bạch, có thể truy vết và kiểm tra lịch sử trả lương.
+### 1. Purpose
 
-4. Tổng hợp các prompt AI nhóm đã sử dụng:
+The Payrun feature is developed to automate the periodic payroll process for employees.
+The system assists the HR department in consolidating attendance data, allowances, and deductions to calculate and generate payrolls quickly, accurately, and transparently.
+
+### 2. Workflow
+
+* Retrieve attendance data and employee information for the payroll period.
+* Calculate base salary, overtime (OT), allowances, and deductions.
+* Generate the payrun and store detailed payroll records for each employee in the database.
+* Allow managers to approve the payrun, export reports, and save payrun history.
+
+### 3. Achieved Results
+
+* Automatically generate payrolls for all employees within a pay period.
+* Minimize manual errors during the payroll calculation process.
+* Provide reliable data for cost reporting and HR analytics.
+* Ensure transparency, traceability, and easy review of payroll history.
+
+### 4. Summary of AI Prompts Used by the Team: 
 
 - Prompt 1: Generate comprehensive unit test cases for PayRunCalculator's CalculatePay(Employee employee) function
 ```csharp
