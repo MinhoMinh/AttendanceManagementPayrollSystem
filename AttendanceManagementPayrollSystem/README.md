@@ -1,8 +1,6 @@
-Here’s the English translation of your text:
 
----
 
-## PAYRUN FEATURE – ATTENDANCE MANAGEMENT PAYROLL SYSTEM
+# PAYRUN FEATURE – ATTENDANCE MANAGEMENT PAYROLL SYSTEM
 
 ### 1. Purpose
 
