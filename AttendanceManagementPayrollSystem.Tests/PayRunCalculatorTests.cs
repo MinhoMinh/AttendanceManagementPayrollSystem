@@ -9,6 +9,9 @@ namespace AttendanceManagementPayrollSystem.Tests
 {
     public class PayRunCalculatorTests : IDisposable
     {
+
+        private int id = 0;
+
         private Employee _employee;
 
         public PayRunCalculatorTests()
