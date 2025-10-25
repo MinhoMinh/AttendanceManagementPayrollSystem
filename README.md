@@ -16,9 +16,9 @@ Hệ thống giúp bộ phận nhân sự tổng hợp dữ liệu chấm công,
 - Cung cấp dữ liệu đáng tin cậy cho báo cáo chi phí và phân tích nhân sự.
 - Đảm bảo tính minh bạch, có thể truy vết và kiểm tra lịch sử trả lương.
 
-4. Tổng hợp các prompt AI nhóm đã sử dụng
+4. Tổng hợp các prompt AI nhóm đã sử dụng:
 
-Generate comprehensive unit test cases for PayRunCalculator's CalculatePay(Employee employee) function
+- Prompt 1: Generate comprehensive unit test cases for PayRunCalculator's CalculatePay(Employee employee) function
 ```csharp
 public static PayRunItemDto CalculatePay(Employee employee)
 {
@@ -92,7 +92,7 @@ Output In Form of Test Cases Matrix(Category, Test Case, Input, Expected)
 
 -----------------------------------------------------------------------
 
-Generate comprehensive unit test cases for PayRunRepository's GetActivePolicyAsync(int periodMonth, int periodYear) function
+- Prompt 2: Generate comprehensive unit test cases for PayRunRepository's GetActivePolicyAsync(int periodMonth, int periodYear) function
 ```csharp
 public async Task<SalaryPolicy?> GetActivePolicyAsync(int month, int year)
 {
@@ -112,7 +112,7 @@ Output In Form of Test Cases Matrix(Category, Test Case, Input, Expected)
 
 -----------------------------------------------------------------------
 
-Generate comprehensive unit test cases for PayRunRepository's Update(PayRun run) function
+- Prompt 3: Generate comprehensive unit test cases for PayRunRepository's Update(PayRun run) function
 ```csharp
 public async Task Update(PayRun run)
 {
@@ -129,7 +129,7 @@ Output In Form of Test Cases Matrix(Category, Test Case, Input, Expected)
 
 -----------------------------------------------------------------------
 
-Generate comprehensive unit test cases for PayRunRepository's SaveRegularPayRun(PayRun run) function
+- Prompt 4: Generate comprehensive unit test cases for PayRunRepository's SaveRegularPayRun(PayRun run) function
 ```csharp
 public async Task SaveRegularPayRun(PayRun run)
 {
@@ -146,7 +146,7 @@ Output In Form of Test Cases Matrix(Category, Test Case, Input, Expected)
 
 -----------------------------------------------------------------------
 
-Generate comprehensive unit test cases for PayRunRepository's ApproveFirst(int approverId, int payRunId) function
+- Prompt 5: Generate comprehensive unit test cases for PayRunRepository's ApproveFirst(int approverId, int payRunId) function
 ```csharp
 public async Task<bool> ApproveFirst(int approverId, int payRunId)
 {
@@ -173,3 +173,18 @@ Include:
 - Error scenarios
 - Integration with cart state
 Output In Form of Test Cases Matrix(Category, Test Case, Input, Expected)
+-----------------------------------------------------------------------
+
+- Prompt 6 : Create Xunit tests for PayRunCalculator's CalculatePay(Employee employee) function using the previous Test Case Matrix Requirements:
+
+Include:
+- Use XUnit framework
+- Include setup/teardown
+- Use proper assertions (toEqual, toThrow)
+- Add descriptive test names
+- Mock any external dependencies"
+
+
+
+
+
