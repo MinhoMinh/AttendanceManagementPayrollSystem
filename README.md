@@ -1,4 +1,4 @@
-# 🧾 Payrun Feature – Attendance Management Payroll System
+# Payrun Feature – Attendance Management Payroll System
 
 **Mục đích:**  
 Tự động hóa quy trình chạy bảng lương dựa trên dữ liệu chấm công, phụ cấp và khấu trừ của nhân viên.  
@@ -11,8 +11,8 @@ Giúp HR tạo, phê duyệt và theo dõi bảng lương chính xác, nhanh ch�
 4️. Quản lý phê duyệt bảng lương, xuất báo cáo tổng hợp.
 
 **Kết quả:**  
-✅ Sinh ra bảng lương đầy đủ và chính xác cho toàn hệ thống.  
-✅ Giảm sai sót thủ công, tiết kiệm thời gian xử lý.  
-✅ Cung cấp dữ liệu cho báo cáo chi phí và phân tích nhân sự.
+ Sinh ra bảng lương đầy đủ và chính xác cho toàn hệ thống.  
+ Giảm sai sót thủ công, tiết kiệm thời gian xử lý.  
+ Cung cấp dữ liệu cho báo cáo chi phí và phân tích nhân sự.
 -----------------------------------------------------------------------------------------------
 **Tổng Hớp Promt AI nhóm đã dùng:**
