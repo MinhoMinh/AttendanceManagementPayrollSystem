@@ -6,12 +6,12 @@ Tính năng Payrun được xây dựng nhằm tự động hóa quá trình ch�
 2.	Tính toán lương cơ bản, làm thêm giờ (OT), phụ cấp và các khoản khấu trừ.
 3.	Tạo bảng lương (Payrun) và lưu chi tiết từng nhân viên trong cơ sở dữ liệu.
 4.	Cho phép người quản lý phê duyệt bảng lương, xuất báo cáo và lưu lịch sử payrun.
-3. Kết quả đạt được
-•	Tự động sinh bảng lương cho toàn bộ nhân viên trong kỳ.
-•	Giảm thiểu sai sót thủ công trong quá trình tính toán lương.
-•	Cung cấp dữ liệu đáng tin cậy cho báo cáo chi phí và phân tích nhân sự.
-•	Đảm bảo tính minh bạch, có thể truy vết và kiểm tra lịch sử trả lương.
-4. Tổng hợp các prompt AI nhóm đã sử dụng
+3. Kết quả đạt được:
+ •	Tự động sinh bảng lương cho toàn bộ nhân viên trong kỳ.
+ •	Giảm thiểu sai sót thủ công trong quá trình tính toán lương.
+ •	Cung cấp dữ liệu đáng tin cậy cho báo cáo chi phí và phân tích nhân sự.
+ •	Đảm bảo tính minh bạch, có thể truy vết và kiểm tra lịch sử trả lương.
+4. Tổng hợp các prompt AI nhóm đã sử dụng: 
 
 Generate comprehensive unit test cases for PayRunCalculator's CalculatePay(Employee employee) function
 
