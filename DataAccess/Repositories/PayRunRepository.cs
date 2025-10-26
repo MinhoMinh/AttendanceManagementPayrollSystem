@@ -22,5 +22,7 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
         Task<bool> ContainsValidPayRunInPeriod(int month, int year);
 
         Task SaveRegularPayRun(PayRun run);
+
+        Task<List<PayRunDto>> GetPayRunByEmpIdAndDateAsync(int empId, int periodMonth, int periodYear);
     }
 }

@@ -140,5 +140,14 @@ namespace AttendanceManagementPayrollSystem.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
+        [HttpGet("getpayrun/{empId}/{periodMonth}/{periodYear}")]
+        public async Task<ActionResult<List<PayRun>>> GetPayRunByEmpIdAndDate(int empId, int periodMonth, int periodYear)
+        {
+            var result = await _service.GetPayRunByEmpIdAndDateAsync(empId, periodMonth, periodYear);
+            if (result == null)
+                return NotFound();
+
+            return Ok(result);
+        }
     }
 }

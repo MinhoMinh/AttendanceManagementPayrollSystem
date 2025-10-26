@@ -15,7 +15,7 @@ namespace AttendanceManagementPayrollSystem.Services
         }
         public async Task<List<PayRunItemDTO>> GetPayRunItemsByEmpIdAsync(int empId)
         {
-            return await payRunItemRepository.GetPayRunItemsByEmpIdAsync(8);
+            return await payRunItemRepository.GetPayRunItemsByEmpIdAsync(empId);
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿//using AttendanceManagementPayrollSystem.DTO;
 using AttendanceManagementPayrollSystem.DTO;
 using AttendanceManagementPayrollSystem.Models;
+using DocumentFormat.OpenXml.ExtendedProperties;
 using DocumentFormat.OpenXml.Office2010.Excel;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -141,6 +142,52 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
         {
             await _context.PayRuns.AddAsync(run);
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<List<PayRunDto>> GetPayRunByEmpIdAndDateAsync(int empId, int periodMonth, int periodYear)
+        {
+            var items = await _context.PayRuns
+                .Where(p => p.PeriodMonth >= periodMonth
+                        && p.PeriodYear >= periodYear
+                        && p.PayRunItems.Any(i => i.EmpId == empId))
+                .Select(p => new PayRunDto
+                {
+                    PayrollRunId = p.PayrollRunId,
+                    Name = p.Name,
+                    PeriodMonth = p.PeriodMonth,
+                    PeriodYear = p.PeriodYear,
+                    Status = p.Status,
+                    CreatedDate = p.CreatedDate,
+                    Type = p.Type,
+                    PayRunItems = p.PayRunItems
+                        .Where(i => i.EmpId == empId)
+                        .Select(i => new PayRunItemDto
+                        {
+                            ItemId = i.PayRunItemId,
+                            EmpId = i.EmpId,
+                            EmpName = i.Emp != null ? i.Emp.EmpName : null,
+                            GrossPay = i.GrossPay,
+                            Deductions = i.Deductions,
+                            NetPay = i.NetPay,
+                            Notes = i.Notes,
+                            Components = i.PayRunComponents
+                                    .Select(c => new PayRunComponentDto
+                                    {
+                                        ComponentId = c.PayRunComponentId,
+                                        ComponentType = c.ComponentType,
+                                        ComponentCode = c.ComponentCode,
+                                        Description = c.Description,
+                                        Amount = c.Amount,
+                                        Taxable = c.Taxable,
+                                        Insurable = c.Insurable,
+                                        CreatedAt = c.CreatedAt
+                                    }).ToList()
+                        }).ToList()
+                }).ToListAsync();
+
+
+            return items;
+
         }
     }
 }

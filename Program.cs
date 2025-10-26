@@ -5,6 +5,7 @@ using AttendanceManagementPayrollSystem.Services;
 using Blazorise;
 using Blazorise.Bootstrap5;
 using Blazorise.Icons.FontAwesome;
+using Blazorise.DataGrid;
 using ClosedXML.Parser;
 using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
 using Microsoft.EntityFrameworkCore;

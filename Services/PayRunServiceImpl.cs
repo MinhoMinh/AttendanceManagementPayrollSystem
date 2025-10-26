@@ -183,5 +183,11 @@ namespace AttendanceManagementPayrollSystem.Services
 
             return true;
         }
+
+        public async Task<List<PayRunDto>> GetPayRunByEmpIdAndDateAsync(int empId, int periodMonth, int periodYear)
+        {
+            return await _payRunRepo.GetPayRunByEmpIdAndDateAsync(empId, periodMonth, periodYear);
+
+        }
     }
 }
