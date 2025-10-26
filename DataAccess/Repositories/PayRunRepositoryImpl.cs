@@ -144,19 +144,19 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task<List<PayRunDto>> GetPayRunByEmpIdAndDateAsync(int empId, int periodMonth, int periodYear)
+        public async Task<List<PayRunPreviewDTO>> GetPayRunByEmpIdAndDateAsync(int empId, int periodMonth, int periodYear)
         {
             var items = await _context.PayRuns
                 .Where(p => p.PeriodMonth >= periodMonth
                         && p.PeriodYear >= periodYear
+                        && p.Status.Equals("FinalApproved")
                         && p.PayRunItems.Any(i => i.EmpId == empId))
-                .Select(p => new PayRunDto
+                .Select(p => new PayRunPreviewDTO
                 {
                     PayrollRunId = p.PayrollRunId,
                     Name = p.Name,
                     PeriodMonth = p.PeriodMonth,
                     PeriodYear = p.PeriodYear,
-                    Status = p.Status,
                     CreatedDate = p.CreatedDate,
                     Type = p.Type,
                     PayRunItems = p.PayRunItems

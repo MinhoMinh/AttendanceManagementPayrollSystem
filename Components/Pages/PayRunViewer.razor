@@ -16,42 +16,51 @@ else if (payRuns == null || !payRuns.Any())
 else
 {
     <div class="row">
-        <!-- Bên trái: Danh sách các bảng lương -->
-        <div class="col-md-4 border-end">
+        <!-- Bên trái: Bảng danh sách bảng lương -->
+        <div class="col-md-4">
             @{
                 var CurrentEmployeeName = payRuns
                 .SelectMany(r => r.PayRunItems ?? new List<PayRunItemDto>())
                 .FirstOrDefault(x => x.EmpId == empId)?.EmpName ?? "Không xác định";
             }
             <h5>Nhân viên: @CurrentEmployeeName</h5>
-
-            @foreach (var run in payRuns)
-            {
-                <div class="mb-4 p-3 border rounded shadow-sm">
-                    <h5>@run.Name (@run.PeriodMonth/@run.PeriodYear)</h5>
-                    <p><strong>Trạng thái:</strong> @run.Status</p>
-
-                    @if (run.PayRunItems != null && run.PayRunItems.Any())
+            <table class="table table-bordered table-hover align-middle shadow-sm">
+                <thead class="table-light">
+                    <tr>
+                        <th>Tên bảng lương</th>
+                        <th>Tháng/Năm</th>
+                        <th>Tên nhân viên</th>
+                        <th>Net Pay</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var run in payRuns)
                     {
-                        @foreach (var item in run.PayRunItems)
+                        if (run.PayRunItems != null && run.PayRunItems.Any())
                         {
-                            <div class="p-2 mb-2 border rounded
-                                                        @(selectedEmpId == item.EmpId && selectedPayrunId == run.PayrollRunId
-                                                                             ? "bg-primary text-white"
-                                                                             : "bg-light")"
-                 style="cursor:pointer"
-                 @onclick="() => SelectEmployee(item.EmpId, run.PayrollRunId)">
-                <strong>@item.EmpName</strong><br />
-                <small>Net Pay: @item.NetPay</small>
-            </div>
+                            @foreach (var item in run.PayRunItems)
+                            {
+                                <tr class="@(selectedEmpId == item.EmpId && selectedPayrunId == run.PayrollRunId ? "table-primary" : "")"
+                                    style="cursor:pointer"
+                                    @onclick="() => SelectEmployee(item.EmpId, run.PayrollRunId)">
+                                    <td>@run.Name</td>
+                                    <td>@($"{run.PeriodMonth}/{run.PeriodYear}")</td>
+                                    <td>@item.EmpName</td>
+                                    <td>@item.NetPay</td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td>@run.Name</td>
+                                <td>@($"{run.PeriodMonth}/{run.PeriodYear}")</td>
+                                <td colspan="2" class="text-muted text-center">Không có nhân viên trong bảng lương này.</td>
+                            </tr>
                         }
                     }
-                    else
-                    {
-                        <p class="text-muted">Không có nhân viên trong bảng lương này.</p>
-                    }
-                </div>
-            }
+                </tbody>
+            </table>
         </div>
 
         <!-- Bên phải: Chi tiết -->
@@ -102,6 +111,7 @@ else
             }
         </div>
     </div>
+
 }
 
 @code {
@@ -109,7 +119,7 @@ else
     [Parameter] public int month { get; set; }
     [Parameter] public int year { get; set; }
 
-    private List<PayRunDto>? payRuns;
+    private List<PayRunPreviewDTO>? payRuns;
     private bool isLoading = true;
 
     private int? selectedEmpId;
@@ -121,7 +131,7 @@ else
         try
         {
             var client = HttpFactory.CreateClient();
-            payRuns = await client.GetFromJsonAsync<List<PayRunDto>>(
+            payRuns = await client.GetFromJsonAsync<List<PayRunPreviewDTO>>(
                 $"https://localhost:7088/api/pay-run/getpayrun/{empId}/{month}/{year}");
         }
         catch (Exception ex)

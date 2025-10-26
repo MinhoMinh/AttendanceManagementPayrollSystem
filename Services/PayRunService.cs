@@ -22,7 +22,7 @@ namespace AttendanceManagementPayrollSystem.Services
 
         Task<bool> Reject(int approverId, int payRunId);
 
-        Task<List<PayRunDto>> GetPayRunByEmpIdAndDateAsync(int empId, int periodMonth, int periodYear);
+        Task<List<PayRunPreviewDTO>> GetPayRunByEmpIdAndDateAsync(int empId, int periodMonth, int periodYear);
         
 
     }

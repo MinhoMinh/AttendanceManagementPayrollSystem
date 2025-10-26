@@ -42,7 +42,6 @@ builder.Services.AddScoped<ClockinService, ClockinServiceImpl>();
 builder.Services.AddScoped<AuthService, AuthServiceImpl>();
 builder.Services.AddScoped<LeaveRequestService, LeaveRequestServiceImpl>();
 builder.Services.AddScoped<ShiftService, ShiftServiceImpl>();
-builder.Services.AddScoped<PayRunItemService, PayRunItemServiceImpl>();
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>

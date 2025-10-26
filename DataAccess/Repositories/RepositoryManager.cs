@@ -15,7 +15,6 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
             builder.Services.AddScoped<PayRunRepository, PayRunRepositoryImpl>();
             builder.Services.AddScoped<ILeaveRequestRepository, LeaveRequestRepositoryImpl>();
             builder.Services.AddScoped<ShiftRepository, ShiftRepositoryImpl>();
-            builder.Services.AddScoped<PayRunItemRepository, PayRunItemRepositoryImpl>();
 
         }
 
