@@ -1,0 +1,418 @@
+@page "/employee-dependent"
+@using AttendanceManagementPayrollSystem.DTO
+@using AttendanceManagementPayrollSystem.Models
+@inject IHttpClientFactory HttpFactory
+@inject IJSRuntime JS
+
+<div class="container-fluid py-4">
+    <h3 class="mb-4">Quản Lý Người Phụ Thuộc</h3>
+
+    <!-- Filter Section -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Phòng Ban</label>
+                    <select class="form-select" @onchange="OnDepartmentChanged">
+                        <option value="">-- Chọn phòng ban --</option>
+                        @if (departments != null)
+                        {
+                            @foreach (var dept in departments)
+                            {
+                                <option value="@dept.DepId">@dept.DepName</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Nhân Viên</label>
+                    <select class="form-select" @bind="selectedEmployeeId" @onchange="OnEmployeeChanged">
+                        <option value="">-- Chọn nhân viên --</option>
+                        @if (employees != null)
+                        {
+                            @foreach (var emp in employees)
+                            {
+                                <option value="@emp.EmpId">@emp.EmpName</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button class="btn btn-primary w-100" @onclick="ShowAddModal" disabled="@(string.IsNullOrEmpty(selectedEmployeeId))">
+                        <i class="bi bi-plus-circle me-2"></i>Thêm Người Phụ Thuộc
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dependents List -->
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Danh Sách Người Phụ Thuộc</h5>
+        </div>
+        <div class="card-body">
+            @if (isLoading)
+            {
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            }
+            else if (dependents == null || !dependents.Any())
+            {
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i>
+                    @if (string.IsNullOrEmpty(selectedEmployeeId))
+                    {
+                        <span>Vui lòng chọn nhân viên để xem danh sách người phụ thuộc.</span>
+                    }
+                    else
+                    {
+                        <span>Nhân viên này chưa có người phụ thuộc nào.</span>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Họ Tên</th>
+                                <th>Quan Hệ</th>
+                                <th>Ngày Sinh</th>
+                                <th>Giới Tính</th>
+                                <th>CMND/CCCD</th>
+                                <th>Giảm Trừ Thuế</th>
+                                <th>Ngày Hiệu Lực</th>
+                                <th>Người Tạo</th>
+                                <th>Thao Tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var dependent in dependents)
+                            {
+                                <tr>
+                                    <td>@dependent.FullName</td>
+                                    <td>@dependent.Relationship</td>
+                                    <td>@(dependent.DateOfBirth?.ToString("dd/MM/yyyy") ?? "N/A")</td>
+                                    <td>@dependent.Gender</td>
+                                    <td>@dependent.NationalId</td>
+                                    <td>
+                                        @if (dependent.IsTaxDependent)
+                                        {
+                                            <span class="badge bg-success">Có</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">Không</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @dependent.EffectiveStartDate.ToString("dd/MM/yyyy")
+                                        @if (dependent.EffectiveEndDate.HasValue)
+                                        {
+                                            <span> - @dependent.EffectiveEndDate.Value.ToString("dd/MM/yyyy")</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">
+                                            @dependent.CreatedByName<br />
+                                            <span class="text-muted">@dependent.CreatedDate.ToString("dd/MM/yyyy HH:mm")</span>
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <button class="btn btn-outline-primary" @onclick="() => ShowEditModal(dependent)">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <button class="btn btn-outline-danger" @onclick="() => DeleteDependent(dependent.DependentId)">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Add/Edit Modal -->
+@if (showModal)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">@(isEditMode ? "Chỉnh Sửa" : "Thêm Mới") Người Phụ Thuộc</h5>
+                    <button type="button" class="btn-close btn-close-white" @onclick="CloseModal"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Họ Tên <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" @bind="formModel.FullName" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Quan Hệ <span class="text-danger">*</span></label>
+                                <select class="form-select" @bind="formModel.Relationship">
+                                    <option value="">-- Chọn quan hệ --</option>
+                                    <option value="Vợ">Vợ</option>
+                                    <option value="Chồng">Chồng</option>
+                                    <option value="Con">Con</option>
+                                    <option value="Cha">Cha</option>
+                                    <option value="Mẹ">Mẹ</option>
+                                    <option value="Anh/Chị/Em">Anh/Chị/Em</option>
+                                    <option value="Khác">Khác</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Ngày Sinh</label>
+                                <input type="date" class="form-control" value="@dateOfBirthInput" @onchange="@((e) => dateOfBirthInput = e.Value?.ToString())" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Giới Tính</label>
+                                <select class="form-select" @bind="formModel.Gender">
+                                    <option value="">-- Chọn giới tính --</option>
+                                    <option value="Nam">Nam</option>
+                                    <option value="Nữ">Nữ</option>
+                                    <option value="Khác">Khác</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">CMND/CCCD</label>
+                                <input type="text" class="form-control" @bind="formModel.NationalId" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Ngày Hiệu Lực <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control" value="@effectiveStartDateInput" @onchange="@((e) => effectiveStartDateInput = e.Value?.ToString())" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Ngày Kết Thúc</label>
+                                <input type="date" class="form-control" value="@effectiveEndDateInput" @onchange="@((e) => effectiveEndDateInput = e.Value?.ToString())" />
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check mt-4">
+                                    <input class="form-check-input" type="checkbox" @bind="formModel.IsTaxDependent" id="taxDependentCheck" />
+                                    <label class="form-check-label fw-bold" for="taxDependentCheck">
+                                        Được giảm trừ thuế
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-bold">Giấy Tờ Chứng Minh</label>
+                                <textarea class="form-control" rows="2" @bind="formModel.Proof" placeholder="Nhập thông tin giấy tờ chứng minh..."></textarea>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CloseModal">Hủy</button>
+                    <button type="button" class="btn btn-primary" @onclick="SaveDependent">
+                        <i class="bi bi-save me-2"></i>Lưu
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private List<DepartmentDTO>? departments;
+    private List<Employee>? employees;
+    private List<EmployeeDependentDTO>? dependents;
+    private string? selectedEmployeeId;
+    private bool isLoading = false;
+    private bool showModal = false;
+    private bool isEditMode = false;
+
+    private DependentFormModel formModel = new();
+    private string? dateOfBirthInput;
+    private string? effectiveStartDateInput;
+    private string? effectiveEndDateInput;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDepartments();
+    }
+
+    private async Task LoadDepartments()
+    {
+        var client = HttpFactory.CreateClient("ApiClient");
+        departments = await client.GetFromJsonAsync<List<DepartmentDTO>>("http://localhost:5038/api/department");
+    }
+
+    private async Task OnDepartmentChanged(ChangeEventArgs e)
+    {
+        var depId = e.Value?.ToString();
+        if (string.IsNullOrEmpty(depId))
+        {
+            employees = null;
+            dependents = null;
+            selectedEmployeeId = null;
+            return;
+        }
+
+        var client = HttpFactory.CreateClient("ApiClient");
+        employees = await client.GetFromJsonAsync<List<Employee>>($"http://localhost:5038/api/employees");
+        employees = employees?.Where(emp => emp.DepId.ToString() == depId).ToList();
+        
+        dependents = null;
+        selectedEmployeeId = null;
+    }
+
+    private async Task OnEmployeeChanged(ChangeEventArgs e)
+    {
+        selectedEmployeeId = e.Value?.ToString();
+        if (string.IsNullOrEmpty(selectedEmployeeId))
+        {
+            dependents = null;
+            return;
+        }
+
+        await LoadDependents();
+    }
+
+    private async Task LoadDependents()
+    {
+        if (string.IsNullOrEmpty(selectedEmployeeId)) return;
+
+        isLoading = true;
+        var client = HttpFactory.CreateClient("ApiClient");
+        dependents = await client.GetFromJsonAsync<List<EmployeeDependentDTO>>(
+            $"http://localhost:5038/api/employeedependent/employee/{selectedEmployeeId}");
+        isLoading = false;
+    }
+
+    private void ShowAddModal()
+    {
+        isEditMode = false;
+        formModel = new DependentFormModel();
+        dateOfBirthInput = null;
+        effectiveStartDateInput = DateOnly.FromDateTime(DateTime.Now).ToString("yyyy-MM-dd");
+        effectiveEndDateInput = null;
+        showModal = true;
+    }
+
+    private void ShowEditModal(EmployeeDependentDTO dependent)
+    {
+        isEditMode = true;
+        formModel = new DependentFormModel
+        {
+            DependentId = dependent.DependentId,
+            FullName = dependent.FullName,
+            Relationship = dependent.Relationship,
+            Gender = dependent.Gender,
+            NationalId = dependent.NationalId,
+            IsTaxDependent = dependent.IsTaxDependent,
+            Proof = dependent.Proof
+        };
+        dateOfBirthInput = dependent.DateOfBirth?.ToString("yyyy-MM-dd");
+        effectiveStartDateInput = dependent.EffectiveStartDate.ToString("yyyy-MM-dd");
+        effectiveEndDateInput = dependent.EffectiveEndDate?.ToString("yyyy-MM-dd");
+        showModal = true;
+    }
+
+    private void CloseModal()
+    {
+        showModal = false;
+        formModel = new();
+    }
+
+    private async Task SaveDependent()
+    {
+        if (string.IsNullOrWhiteSpace(formModel.FullName) || string.IsNullOrWhiteSpace(formModel.Relationship))
+        {
+            await JS.InvokeVoidAsync("alert", "Vui lòng điền đầy đủ thông tin bắt buộc!");
+            return;
+        }
+
+        var client = HttpFactory.CreateClient("ApiClient");
+
+        try
+        {
+            if (isEditMode)
+            {
+                var updateDto = new UpdateEmployeeDependentDTO
+                {
+                    DependentId = formModel.DependentId,
+                    FullName = formModel.FullName,
+                    Relationship = formModel.Relationship,
+                    DateOfBirth = string.IsNullOrEmpty(dateOfBirthInput) ? null : DateOnly.Parse(dateOfBirthInput),
+                    Gender = formModel.Gender,
+                    NationalId = formModel.NationalId,
+                    IsTaxDependent = formModel.IsTaxDependent,
+                    EffectiveStartDate = DateOnly.Parse(effectiveStartDateInput),
+                    EffectiveEndDate = string.IsNullOrEmpty(effectiveEndDateInput) ? null : DateOnly.Parse(effectiveEndDateInput),
+                    Proof = formModel.Proof
+                };
+
+                await client.PutAsJsonAsync($"http://localhost:5038/api/employeedependent/{formModel.DependentId}", updateDto);
+            }
+            else
+            {
+                var createDto = new CreateEmployeeDependentDTO
+                {
+                    EmployeeId = int.Parse(selectedEmployeeId),
+                    FullName = formModel.FullName,
+                    Relationship = formModel.Relationship,
+                    DateOfBirth = string.IsNullOrEmpty(dateOfBirthInput) ? null : DateOnly.Parse(dateOfBirthInput),
+                    Gender = formModel.Gender,
+                    NationalId = formModel.NationalId,
+                    IsTaxDependent = formModel.IsTaxDependent,
+                    EffectiveStartDate = DateOnly.Parse(effectiveStartDateInput),
+                    EffectiveEndDate = string.IsNullOrEmpty(effectiveEndDateInput) ? null : DateOnly.Parse(effectiveEndDateInput),
+                    Proof = formModel.Proof
+                };
+
+                // TODO: Replace with actual logged-in user ID
+                int createdBy = 1;
+                await client.PostAsJsonAsync($"http://localhost:5038/api/employeedependent?createdBy={createdBy}", createDto);
+            }
+
+            CloseModal();
+            await LoadDependents();
+            await JS.InvokeVoidAsync("alert", "Lưu thành công!");
+        }
+        catch (Exception ex)
+        {
+            await JS.InvokeVoidAsync("alert", $"Lỗi: {ex.Message}");
+        }
+    }
+
+    private async Task DeleteDependent(int dependentId)
+    {
+        var confirmed = await JS.InvokeAsync<bool>("confirm", "Bạn có chắc chắn muốn xóa người phụ thuộc này?");
+        if (!confirmed) return;
+
+        var client = HttpFactory.CreateClient("ApiClient");
+        try
+        {
+            await client.DeleteAsync($"http://localhost:5038/api/employeedependent/{dependentId}");
+            await LoadDependents();
+            await JS.InvokeVoidAsync("alert", "Xóa thành công!");
+        }
+        catch (Exception ex)
+        {
+            await JS.InvokeVoidAsync("alert", $"Lỗi: {ex.Message}");
+        }
+    }
+
+    private class DependentFormModel
+    {
+        public int DependentId { get; set; }
+        public string FullName { get; set; }
+        public string Relationship { get; set; }
+        public string Gender { get; set; }
+        public string NationalId { get; set; }
+        public bool IsTaxDependent { get; set; }
+        public string Proof { get; set; }
+    }
+}
