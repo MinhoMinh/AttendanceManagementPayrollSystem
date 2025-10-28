@@ -1,0 +1,153 @@
+is_global = true
+build_property.TargetFramework = net8.0
+build_property.TargetPlatformMinVersion = 
+build_property.UsingMicrosoftNETSdkWeb = true
+build_property.ProjectTypeGuids = 
+build_property.InvariantGlobalization = 
+build_property.PlatformNeutralAssembly = 
+build_property.EnforceExtendedAnalyzerRules = 
+build_property._SupportedPlatformList = Linux,macOS,Windows
+build_property.RootNamespace = AttendanceManagementPayrollSystem
+build_property.RootNamespace = AttendanceManagementPayrollSystem
+build_property.ProjectDir = C:\Users\ANH DUC\Documents\GitHub\AttendanceManagementPayrollSystem\
+build_property.EnableComHosting = 
+build_property.EnableGeneratedComInterfaceComImportInterop = 
+build_property.RazorLangVersion = 8.0
+build_property.SupportLocalizedComponentNames = 
+build_property.GenerateRazorMetadataSourceChecksumAttributes = 
+build_property.MSBuildProjectDirectory = C:\Users\ANH DUC\Documents\GitHub\AttendanceManagementPayrollSystem
+build_property._RazorSourceGeneratorDebug = 
+build_property.EffectiveAnalysisLevelStyle = 8.0
+build_property.EnableCodeStyleSeverity = 
+
+[C:/Users/ANH DUC/Documents/GitHub/AttendanceManagementPayrollSystem/Components/App.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xBcHAucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/ANH DUC/Documents/GitHub/AttendanceManagementPayrollSystem/Components/DashboardButtonGroup.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xEYXNoYm9hcmRCdXR0b25Hcm91cC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/ANH DUC/Documents/GitHub/AttendanceManagementPayrollSystem/Components/EmployeeBalanceCard.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xFbXBsb3llZUJhbGFuY2VDYXJkLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/ANH DUC/Documents/GitHub/AttendanceManagementPayrollSystem/Components/KpiComponentTable.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xLcGlDb21wb25lbnRUYWJsZS5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/ANH DUC/Documents/GitHub/AttendanceManagementPayrollSystem/Components/Layout/Navbar.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xMYXlvdXRcTmF2YmFyLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/ANH DUC/Documents/GitHub/AttendanceManagementPayrollSystem/Components/Layout/Sidebar.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xMYXlvdXRcU2lkZWJhci5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/ANH DUC/Documents/GitHub/AttendanceManagementPayrollSystem/Components/MonthYearPicker.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xNb250aFllYXJQaWNrZXIucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/ANH DUC/Documents/GitHub/AttendanceManagementPayrollSystem/Components/Pages/AttendanceSelf.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xBdHRlbmRhbmNlU2VsZi5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/ANH DUC/Documents/GitHub/AttendanceManagementPayrollSystem/Components/Pages/ClockinUpload.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xDbG9ja2luVXBsb2FkLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/ANH DUC/Documents/GitHub/AttendanceManagementPayrollSystem/Components/Pages/Counter.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xDb3VudGVyLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/ANH DUC/Documents/GitHub/AttendanceManagementPayrollSystem/Components/Pages/Dashboard.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xEYXNoYm9hcmQucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/ANH DUC/Documents/GitHub/AttendanceManagementPayrollSystem/Components/Pages/Error.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xFcnJvci5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/ANH DUC/Documents/GitHub/AttendanceManagementPayrollSystem/Components/Pages/GeneratePayRun.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xHZW5lcmF0ZVBheVJ1bi5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/ANH DUC/Documents/GitHub/AttendanceManagementPayrollSystem/Components/Pages/KpiHead.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xLcGlIZWFkLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/ANH DUC/Documents/GitHub/AttendanceManagementPayrollSystem/Components/Pages/KpiManager.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xLcGlNYW5hZ2VyLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/ANH DUC/Documents/GitHub/AttendanceManagementPayrollSystem/Components/Pages/KpiSelf.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xLcGlTZWxmLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/ANH DUC/Documents/GitHub/AttendanceManagementPayrollSystem/Components/Pages/Login.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xMb2dpbi5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/ANH DUC/Documents/GitHub/AttendanceManagementPayrollSystem/Components/Pages/PayRunList.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xQYXlSdW5MaXN0LnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/ANH DUC/Documents/GitHub/AttendanceManagementPayrollSystem/Components/Pages/PayRunView.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xQYXlSdW5WaWV3LnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/ANH DUC/Documents/GitHub/AttendanceManagementPayrollSystem/Components/Pages/PayRunViewer.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xQYXlSdW5WaWV3ZXIucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/ANH DUC/Documents/GitHub/AttendanceManagementPayrollSystem/Components/Pages/ShiftSelf.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xTaGlmdFNlbGYucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/ANH DUC/Documents/GitHub/AttendanceManagementPayrollSystem/Components/Pages/Weather.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xXZWF0aGVyLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/ANH DUC/Documents/GitHub/AttendanceManagementPayrollSystem/Components/PayRunDetails.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYXlSdW5EZXRhaWxzLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/ANH DUC/Documents/GitHub/AttendanceManagementPayrollSystem/Components/PayRunItemDetails.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYXlSdW5JdGVtRGV0YWlscy5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/ANH DUC/Documents/GitHub/AttendanceManagementPayrollSystem/Components/PayRunItemList.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYXlSdW5JdGVtTGlzdC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/ANH DUC/Documents/GitHub/AttendanceManagementPayrollSystem/Components/Routes.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xSb3V0ZXMucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/ANH DUC/Documents/GitHub/AttendanceManagementPayrollSystem/Components/WeeklyShiftView.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xXZWVrbHlTaGlmdFZpZXcucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/ANH DUC/Documents/GitHub/AttendanceManagementPayrollSystem/Components/_Imports.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xfSW1wb3J0cy5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/ANH DUC/Documents/GitHub/AttendanceManagementPayrollSystem/Components/Calendar.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xDYWxlbmRhci5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = b-z9c94anlqg
+
+[C:/Users/ANH DUC/Documents/GitHub/AttendanceManagementPayrollSystem/Components/DashboardButton.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xEYXNoYm9hcmRCdXR0b24ucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = b-maa5nfldx5
+
+[C:/Users/ANH DUC/Documents/GitHub/AttendanceManagementPayrollSystem/Components/Layout/MainLayout.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xMYXlvdXRcTWFpbkxheW91dC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = b-dvyftf7dh0
+
+[C:/Users/ANH DUC/Documents/GitHub/AttendanceManagementPayrollSystem/Components/Layout/NavMenu.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xMYXlvdXRcTmF2TWVudS5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = b-6r6vys0ewk
+
+[C:/Users/ANH DUC/Documents/GitHub/AttendanceManagementPayrollSystem/Components/Pages/Testing.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xUZXN0aW5nLnJhem9y
+build_metadata.AdditionalFiles.CssScope = b-2uicq9lq4b

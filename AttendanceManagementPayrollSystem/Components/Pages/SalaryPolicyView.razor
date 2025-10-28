@@ -1,0 +1,151 @@
+﻿@page "/salary-policies"
+@using AttendanceManagementPayrollSystem.DTO
+@inject IHttpClientFactory HttpFactory
+@inject NavigationManager Navigation
+
+<h3>Chính Sách Lương Hiện Hành</h3>
+
+<button class="btn btn-secondary mb-3" @onclick="GoToHistory">Xem Lịch Sử Chính Sách</button>
+
+@if (salaryPolicy == null)
+{
+    <p><em>Đang tải...</em></p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Tên</th>
+                <th>Giá trị công việc</th>
+                <th>Nghỉ phép hàng năm</th>
+                <th>Hệ số Overclock</th>
+                <th>Ngày hiệu lực</th>
+                <th>Đang hoạt động</th>
+                <th>Hành động</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>@salaryPolicy.SalaryPolicyName.Trim()</td>
+                <td>@salaryPolicy.WorkUnitValue.ToString("N0") VNĐ</td>
+                <td>@salaryPolicy.YearlyPto</td>
+                <td>@salaryPolicy.OverclockMultiplier</td>
+                <td>@salaryPolicy.EffectiveFrom.ToShortDateString()</td>
+                <td>@(salaryPolicy.IsActive ? "Có" : "Không")</td>
+                <td>
+                    <button class="btn btn-sm btn-primary" @onclick="() => EditPolicy(salaryPolicy)">Chỉnh sửa</button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+}
+
+<!-- Modal -->
+@if (editingPolicy != null)
+{
+    <div class="modal fade show d-block" style="background-color: rgba(0,0,0,0.5);" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Chỉnh sửa chính sách</h5>
+                    <button type="button" class="btn-close" @onclick="CloseModal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-2">
+                        <label>Tên</label>
+                        <input class="form-control" @bind="editingPolicy.SalaryPolicyName" />
+                    </div>
+                    <div class="mb-2">
+                        <label>Giá trị công việc</label>
+                        <input type="number" class="form-control" @bind="editingPolicy.WorkUnitValue" />
+                    </div>
+                    <div class="mb-2">
+                        <label>Nghỉ phép hàng năm</label>
+                        <input type="number" class="form-control" @bind="editingPolicy.YearlyPto" />
+                    </div>
+                    <div class="mb-2">
+                        <label>Hệ số Overclock</label>
+                        <input type="number" step="0.1" class="form-control" @bind="editingPolicy.OverclockMultiplier" />
+                    </div>
+                    <div class="mb-2">
+                        <label>Ngày hiệu lực</label>
+                        <input type="date" class="form-control" @bind="editingPolicy.EffectiveFrom" />
+                    </div>
+                    <div class="mb-2">
+                        <label>Đang hoạt động</label>
+                        <p>@(editingPolicy.IsActive ? "Có" : "Không")</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="CloseModal">Hủy</button>
+                    <button class="btn btn-primary" @onclick="SaveEditingPolicy">Lưu</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private SalaryPolicyViewDTO salaryPolicy;
+    private SalaryPolicyEditDTO editingPolicy;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadPolicyAsync();
+    }
+
+    private async Task LoadPolicyAsync()
+    {
+        try
+        {
+            var client = HttpFactory.CreateClient("ApiClient");
+            salaryPolicy = await client.GetFromJsonAsync<SalaryPolicyViewDTO>("api/salarypolicy/getactivesalarypolicy");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Lỗi khi tải chính sách: {ex.Message}");
+        }
+    }
+
+    private void EditPolicy(SalaryPolicyViewDTO policy)
+    {
+        editingPolicy = new SalaryPolicyEditDTO
+        {
+            SalId = policy.SalId,
+            SalaryPolicyName = policy.SalaryPolicyName,
+            WorkUnitValue = policy.WorkUnitValue,
+            YearlyPto = policy.YearlyPto,
+            OverclockMultiplier = policy.OverclockMultiplier,
+            EffectiveFrom = policy.EffectiveFrom,
+            IsActive = policy.IsActive
+        };
+    }
+
+    private void CloseModal()
+    {
+        editingPolicy = null;
+    }
+
+    private async Task SaveEditingPolicy()
+    {
+        try
+        {
+            var client = HttpFactory.CreateClient("ApiClient");
+            var response = await client.PutAsJsonAsync($"api/salarypolicy/{editingPolicy.SalId}", editingPolicy);
+            response.EnsureSuccessStatusCode();
+
+            editingPolicy = null;
+            await LoadPolicyAsync(); // tải lại chính sách hiện hành
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Lỗi khi lưu chính sách: {ex.Message}");
+        }
+    }
+
+    private void GoToHistory()
+    {
+        Navigation.NavigateTo("/salary-policies/history");
+    }
+}
