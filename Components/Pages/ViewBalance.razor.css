@@ -1,0 +1,13 @@
+﻿.balance-card {
+    background-color: #f7f7f7;
+    border-radius: 12px;
+    padding: 16px;
+    margin-top: 16px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.bottom-button {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+}

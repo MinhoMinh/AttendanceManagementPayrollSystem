@@ -1,0 +1,28 @@
+﻿h3 {
+    margin-bottom: 1rem;
+    color: #2c3e50;
+}
+
+.table {
+    background-color: #ffffff;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+    .table th {
+        background-color: #007bff;
+        color: white;
+        text-align: center;
+    }
+
+    .table td {
+        vertical-align: middle;
+    }
+
+button {
+    min-width: 90px;
+}
+
+.alert {
+    margin-top: 10px;
+}

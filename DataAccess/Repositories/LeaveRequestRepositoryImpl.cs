@@ -22,5 +22,21 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
                 .OrderByDescending(lr => lr.ReqDate)
                 .ToListAsync();
         }
+        public async Task<IEnumerable<LeaveRequest>> GetPendingAsync()
+        {
+            return await _context.LeaveRequests
+                .Where(x => x.Status == "Pending")
+                .ToListAsync();
+        }
+        public async Task<LeaveRequest?> GetByIdAsync(int id)
+        {
+            return await _context.LeaveRequests.FirstOrDefaultAsync(x => x.ReqId == id);
+        }
+
+        public async Task UpdateAsync(LeaveRequest request)
+        {
+            _context.LeaveRequests.Update(request);
+            await _context.SaveChangesAsync();
+        }
     }
 }

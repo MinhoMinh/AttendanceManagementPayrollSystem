@@ -1,0 +1,60 @@
+﻿@page "/viewbalance"
+@using AttendanceManagementPayrollSystem.DTO
+@inject IHttpClientFactory HttpClientFactory
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+
+<h3>Employee Balance</h3>
+
+@if (balance == null)
+{
+    <h1></h1>
+    <p>Loading...</p>
+}
+else
+{
+    <div class="balance-card">
+        <p><b>PTO:</b> @balance.PtoAvailable / @balance.PtoTotal used: @balance.PtoUsed</p>
+        <p><b>Sick:</b> @balance.SickAvailable / @balance.SickTotal used: @balance.SickUsed</p>
+        <p><b>Vacation:</b> @balance.VacationAvailable / @balance.VacationTotal used: @balance.VacationUsed</p>
+        <p><b>Overtime:</b> @balance.OvertimeAvailable / @balance.OvertimeTotal used: @balance.OvertimeUsed</p>
+        <p><small>Last updated: @balance.LastUpdated?.ToString("dd/MM/yyyy HH:mm")</small></p>
+    </div>
+}
+
+<div class="bottom-button">
+    <button class="btn btn-primary" @onclick="NavigateLeaveRequest">Go to Leave Request</button>
+</div>
+
+@code {
+    private EmployeeBalanceDto? balance;
+    private int? currentEmpId;
+    private bool _firstRender = true;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && _firstRender)
+        {
+            _firstRender = false;
+
+            // Lấy employee từ localStorage
+            var empJson = await JS.InvokeAsync<string>("localStorage.getItem", "employee");
+
+            if (!string.IsNullOrEmpty(empJson))
+            {
+                var emp = System.Text.Json.JsonSerializer.Deserialize<EmployeeDTO>(empJson);
+                currentEmpId = emp?.EmpId;
+            }
+
+            if (currentEmpId.HasValue)
+            {
+                // Dùng HttpClient được cấu hình sẵn base address
+                var client = HttpClientFactory.CreateClient("ApiClient");
+                balance = await client.GetFromJsonAsync<EmployeeBalanceDto>($"api/employeebalance/{currentEmpId}");
+                StateHasChanged();
+            }
+        }
+    }
+
+    private void NavigateLeaveRequest() => Navigation.NavigateTo("/leaverequest");
+}

@@ -64,23 +64,25 @@
     {
         if (Employee == null) return;
 
-        EmployeeService = new()
+        EmployeeService = new List<DashboardButton>
         {
-            new() { Label = "Attendance", OnClick = EventCallback.Factory.Create(this, NavigateAttendance), Visible = HasPermission("has_clockin") },
-            new() { Label = "Self KPI", OnClick = EventCallback.Factory.Create(this, NavigateSelfKpi), Visible = HasPermission("has_kpi") },
-            new() { Label = "Shift", OnClick = EventCallback.Factory.Create(this, NavigateSelfShift), Visible = HasPermission("has_shift") },
-            new() { Label = "Leave Request", OnClick = EventCallback.Factory.Create(this, NavigateLeaveRequest), Visible = HasPermission("has_leave_request") },
+            new DashboardButton { Text = "Attendance", OnClick = EventCallback.Factory.Create(this, NavigateAttendance), Visible = HasPermission("has_clockin") },
+            new DashboardButton { Text = "Self KPI", OnClick = EventCallback.Factory.Create(this, NavigateSelfKpi), Visible = HasPermission("has_kpi") },
+            new DashboardButton { Text = "Shift", OnClick = EventCallback.Factory.Create(this, NavigateSelfShift), Visible = HasPermission("has_shift") },
+            new DashboardButton { Text = "Leave Request", OnClick = EventCallback.Factory.Create(this, NavigateLeaveRequest), Visible = HasPermission("has_leave_request") },
+            new DashboardButton { Text = "View Balance", OnClick = EventCallback.Factory.Create(this, NavigateViewBalance), Visible = true },
         };
 
-        DepartmentHeadService = new()
+        DepartmentHeadService = new List<DashboardButton>
         {
-            new() { Text = "Dep KPI", OnClick = EventCallback.Factory.Create(this, NavigateDepKpi), Visible = HasPermission("assign_kpi") },
+            new DashboardButton { Text = "Dep KPI", OnClick = EventCallback.Factory.Create(this, NavigateDepKpi), Visible = HasPermission("assign_kpi") },
+            new DashboardButton { Text = "View Pending Requests", OnClick = EventCallback.Factory.Create(this, NavigateViewPending), Visible = true }
         };
 
-        CompanyService = new()
+        CompanyService = new List<DashboardButton>
         {
-            new() { Label = "Upload Clockins", OnClick = EventCallback.Factory.Create(this, NavigateUploadClockins), Visible = HasPermission("upload_clockin") },
-            new() { Label = "Pay Run", OnClick = EventCallback.Factory.Create(this, NavigatePayRun), Visible = HasPermission("view_payroll_run") },
+            new DashboardButton { Text = "Upload Clockins", OnClick = EventCallback.Factory.Create(this, NavigateUploadClockins), Visible = HasPermission("upload_clockin") },
+            new DashboardButton { Text = "Pay Run", OnClick = EventCallback.Factory.Create(this, NavigatePayRun), Visible = HasPermission("view_payroll_run") },
         };
     }
 
@@ -118,4 +120,8 @@
     private void NavigateUploadClockins() => Navigation.NavigateTo("/xlsupload");
     private void NavigatePayRun() => Navigation.NavigateTo("/payruns");
     private void NavigateLeaveRequest() => Navigation.NavigateTo("/leaverequest");
+    private void NavigateViewBalance() => Navigation.NavigateTo("/viewbalance");
+    private void NavigateViewPending() => Navigation.NavigateTo("/viewpending");
+
+
 }

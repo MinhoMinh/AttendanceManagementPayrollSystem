@@ -1,6 +1,7 @@
 ﻿    using AttendanceManagementPayrollSystem.DTOs;
     using AttendanceManagementPayrollSystem.Services;
-    using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
     using System.Threading.Tasks;
 
 namespace AttendanceManagementPayrollSystem.Controllers
@@ -14,6 +15,37 @@ namespace AttendanceManagementPayrollSystem.Controllers
         public LeaveRequestController(LeaveRequestService service)
         {
             _service = service;
+        }
+
+        [HttpGet("pending")]
+        public async Task<IActionResult> GetPending()
+        {
+            var list = await _service.GetPendingAsync();
+            return Ok(list);
+        }
+
+        [HttpPut("update-status")]
+        public async Task<IActionResult> UpdateStatus([FromBody] LeaveRequestStatusDTO dto)
+        {
+
+            Console.WriteLine($"Incoming: ReqId={dto.ReqId}, Status={dto.Status}");
+            await _service.UpdateStatusAsync(dto);
+            return NoContent();
+        }
+
+        // shortcut endpoints
+        [HttpPut("{id}/approve")]
+        public async Task<IActionResult> Approve(int id)
+        {
+            await _service.UpdateStatusAsync(new LeaveRequestStatusDTO { ReqId = id, Status = "Approved" });
+            return NoContent();
+        }
+
+        [HttpPut("{id}/reject")]
+        public async Task<IActionResult> Reject(int id)
+        {
+            await _service.UpdateStatusAsync(new LeaveRequestStatusDTO { ReqId = id, Status = "Rejected" });
+            return NoContent();
         }
 
         [HttpPost]

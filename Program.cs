@@ -2,6 +2,7 @@ using AttendanceManagementPayrollSystem.Components;
 using AttendanceManagementPayrollSystem.DataAccess.Repositories;
 using AttendanceManagementPayrollSystem.Models;
 using AttendanceManagementPayrollSystem.Services;
+using AttendanceManagementPayrollSystem.Services.Impl;
 using Blazorise;
 using Blazorise.Bootstrap5;
 using Blazorise.Icons.FontAwesome;
@@ -41,6 +42,7 @@ builder.Services.AddScoped<ClockinService, ClockinServiceImpl>();
 builder.Services.AddScoped<AuthService, AuthServiceImpl>();
 builder.Services.AddScoped<LeaveRequestService, LeaveRequestServiceImpl>();
 builder.Services.AddScoped<ShiftService, ShiftServiceImpl>();
+builder.Services.AddScoped<IEmployeeBalanceService, EmployeeBalanceServiceImpl>();
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>

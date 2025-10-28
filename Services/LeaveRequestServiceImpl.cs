@@ -1,7 +1,10 @@
-﻿using System.Threading.Tasks;
+﻿// Implementation
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using AttendanceManagementPayrollSystem.DataAccess.Repositories;
 using AttendanceManagementPayrollSystem.DTOs;
 using AttendanceManagementPayrollSystem.Models;
-using AttendanceManagementPayrollSystem.DataAccess.Repositories;
 
 namespace AttendanceManagementPayrollSystem.Services
 {
@@ -16,24 +19,23 @@ namespace AttendanceManagementPayrollSystem.Services
 
         public async Task<LeaveRequestDTO> AddAsync(LeaveRequestDTO dto)
         {
-
             var totalDays = (dto.EndDate.ToDateTime(TimeOnly.MinValue) - dto.StartDate.ToDateTime(TimeOnly.MinValue)).TotalDays + 1;
 
             var entity = new LeaveRequest
             {
-
-                EmpId = 3,
+                EmpId = dto.EmpId,
                 StartDate = dto.StartDate,
                 EndDate = dto.EndDate,
                 Reason = dto.Reason,
                 Status = "Pending",
                 NumbersOfDays = (decimal)totalDays,
-                TypeId = dto.typeId
+                TypeId = dto.TypeId
             };
 
             await _repository.AddAsync(entity);
             return dto;
         }
+
         public async Task<IEnumerable<LeaveRequestDTO>> GetByEmployeeIdAsync(int empId)
         {
             var list = await _repository.GetByEmployeeIdAsync(empId);
@@ -44,11 +46,34 @@ namespace AttendanceManagementPayrollSystem.Services
                 StartDate = lr.StartDate,
                 EndDate = lr.EndDate,
                 Reason = lr.Reason,
-                typeId = lr.TypeId,
-                Status = "Pending"
+                TypeId = lr.TypeId,
+                Status = lr.Status
             }).ToList();
+        }
+
+        public async Task<IEnumerable<LeaveRequestDTO>> GetPendingAsync()
+        {
+            var list = await _repository.GetPendingAsync();
+            return list.Select(lr => new LeaveRequestDTO
+            {
+                ReqId = lr.ReqId,
+                EmpId = lr.EmpId,
+                StartDate = lr.StartDate,
+                EndDate = lr.EndDate,
+                Reason = lr.Reason,
+                TypeId = lr.TypeId,
+                Status = lr.Status
+            }).ToList();
+        }
+
+        public async Task UpdateStatusAsync(LeaveRequestStatusDTO dto)
+        {
+            var request = await _repository.GetByIdAsync(dto.ReqId);
+            if (request == null) throw new Exception("Leave request not found");
+
+            request.Status = dto.Status;
+
+            await _repository.UpdateAsync(request);
         }
     }
 }
-
-

@@ -7,6 +7,8 @@ namespace AttendanceManagementPayrollSystem.Services
     {
         Task<LeaveRequestDTO> AddAsync(LeaveRequestDTO dto);
         Task<IEnumerable<LeaveRequestDTO>> GetByEmployeeIdAsync(int empId);
+        Task<IEnumerable<LeaveRequestDTO>> GetPendingAsync();
+        Task UpdateStatusAsync(LeaveRequestStatusDTO dto);
     }
 }
 

@@ -1,0 +1,114 @@
+﻿@page "/viewpending"
+@using AttendanceManagementPayrollSystem.DTOs
+@inject IHttpClientFactory ClientFactory
+@inject NavigationManager Navigation
+
+<h3>Pending Leave Requests</h3>
+
+@if (isLoading)
+{
+    <p>Loading...</p>
+}
+else if (requests == null || !requests.Any())
+{
+    <p>No pending requests.</p>
+}
+else
+{
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Request ID</th>
+                <th>Employee ID</th>
+                <th>Start Date</th>
+                <th>End Date</th>
+                <th>Reason</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var r in requests)
+            {
+                <tr>
+                    <td>@r.ReqId</td>
+                    <td>@r.EmpId</td>
+                    <td>@r.StartDate.ToShortDateString()</td>
+                    <td>@r.EndDate.ToShortDateString()</td>
+                    <td>@r.Reason</td>
+                    <td>@r.Status</td>
+                    <td>
+                        <button class="btn btn-success btn-sm me-1"
+                                @onclick='() => UpdateStatusAsync(r.ReqId,"Approved")'>
+                            Approve
+                        </button>
+                        <button class="btn btn-danger btn-sm"
+                                @onclick='() => UpdateStatusAsync(r.ReqId,"Rejected")'>
+                            Reject
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger mt-2">@errorMessage</div>
+}
+
+@code {
+    private List<LeaveRequestDTO>? requests;
+    private bool isLoading = true;
+    private string errorMessage = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadPendingRequestsAsync();
+    }
+
+    private async Task LoadPendingRequestsAsync()
+    {
+        isLoading = true;
+        errorMessage = string.Empty;
+
+        try
+        {
+            var client = ClientFactory.CreateClient("ApiClient");
+            requests = await client.GetFromJsonAsync<List<LeaveRequestDTO>>("api/LeaveRequest/pending");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error loading data: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task UpdateStatusAsync(int id, string status)
+    {
+        try
+        {
+            var client = ClientFactory.CreateClient("ApiClient");
+            var dto = new LeaveRequestStatusDTO { ReqId = id, Status = status };
+            Console.WriteLine($"ReqId={id}, Status={status}");
+            var res = await client.PutAsJsonAsync("api/LeaveRequest/update-status", dto);
+
+            if (res.IsSuccessStatusCode)
+            {
+                await LoadPendingRequestsAsync();
+            }
+            else
+            {
+                errorMessage = $"Update failed: {res.ReasonPhrase}";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error updating: {ex.Message}";
+        }
+    }
+}
