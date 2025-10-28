@@ -16,6 +16,10 @@
       "type": "mssql",
       "connectionId": "ConnectionStrings:DatabaseConnection2",
       "dynamicId": null
+    },
+    "mssql4": {
+      "type": "mssql",
+      "connectionId": "ConnectionStrings:DatabaseConnection3"
     }
   }
 }
