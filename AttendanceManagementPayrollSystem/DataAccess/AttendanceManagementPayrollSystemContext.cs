@@ -71,8 +71,6 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
 
     public virtual DbSet<WeeklyShift> WeeklyShifts { get; set; }
 
-
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<AllowanceType>(entity =>
@@ -206,7 +204,7 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
 
             entity.ToTable("DepartmentHolidayCalender");
 
-            entity.Property(e => e.DepHolidayCalendarId).HasColumnName("dep_holiday_calendar_id").ValueGeneratedOnAdd();
+            entity.Property(e => e.DepHolidayCalendarId).HasColumnName("dep_holiday_calendar_id");
             entity.Property(e => e.DepId).HasColumnName("dep_id");
             entity.Property(e => e.EndDate)
                 .HasColumnType("datetime")

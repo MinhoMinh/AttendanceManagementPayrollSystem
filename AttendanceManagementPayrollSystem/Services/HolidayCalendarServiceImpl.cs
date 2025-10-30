@@ -31,6 +31,12 @@ namespace AttendanceManagementPayrollSystem.Services
             return holidays.Select(ToDTO);
         }
 
+        public async Task<IEnumerable<HolidayCalendarDTO>> GetByEmployeeInRange(int empId, DateTime start, DateTime end)
+        {
+            var holidays = await _holidayRepo.GetByEmployeeAsync(empId, start, end);
+            return holidays;
+        }
+
         public async Task<HolidayCalendarDTO> AddAsync(HolidayCalendarDTO dto)
         {
             var entity = new HolidayCalendar
@@ -49,15 +55,8 @@ namespace AttendanceManagementPayrollSystem.Services
 
         public async Task<HolidayCalendarDTO> UpdateAsync(HolidayCalendarDTO dto)
         {
-            var entity = new HolidayCalendar
-            {
-                HolidayId = dto.HolidayId,
-                HolidayName = dto.HolidayName,
-                PeriodYear = dto.PeriodYear,
-                CreatedAt = dto.CreatedAt
-            };
 
-            await _holidayRepo.UpdateAsync(entity);
+            await _holidayRepo.UpdateAsync(dto);
             return dto;
         }
 
@@ -69,6 +68,11 @@ namespace AttendanceManagementPayrollSystem.Services
         public async Task RemoveHolidayFromDepartmentAsync(int holidayId, int depId)
         {
             await _holidayRepo.RemoveHolidayFromDepartmentAsync(holidayId, depId);
+        }
+
+        public async Task<List<HolidayCalendarDTO>> GetFilteredHolidaysAsync(DateTime? start, DateTime? end, string? name)
+        {
+            return await _holidayRepo.GetFilteredHolidaysAsync(start, end, name);
         }
 
         // Helper: map entity → DTO

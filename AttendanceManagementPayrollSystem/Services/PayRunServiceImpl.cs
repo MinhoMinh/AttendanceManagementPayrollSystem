@@ -2,6 +2,7 @@
 using AttendanceManagementPayrollSystem.DTO;
 using AttendanceManagementPayrollSystem.Models;
 using AttendanceManagementPayrollSystem.Services.Helper;
+using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace AttendanceManagementPayrollSystem.Services
@@ -10,14 +11,20 @@ namespace AttendanceManagementPayrollSystem.Services
     {
         private readonly PayRunRepository _payRunRepo;
         private readonly ClockinRepository _clockinRepo;
-        private readonly EmployeeRepository _employeeRepo;  
+        private readonly EmployeeRepository _employeeRepo;
+        private readonly HolidayCalendarRepository _holidayRepo;
+
+        private readonly ShiftService _shiftService;
 
 
-        public PayRunServiceImpl(ClockinRepository clockinRepo, PayRunRepository payrollRepo, EmployeeRepository empRepo)
+        public PayRunServiceImpl(ShiftService shiftService, ClockinRepository clockinRepo, 
+            PayRunRepository payrollRepo, EmployeeRepository empRepo, HolidayCalendarRepository holidayRepo)
         {
+            _shiftService = shiftService;
             _clockinRepo = clockinRepo;
             _payRunRepo = payrollRepo;
             _employeeRepo = empRepo;
+            _holidayRepo = holidayRepo;
         }
 
         public async Task<PayRunDto> GenerateRegularPayRun(string name, int month, int year, int createdBy)
@@ -36,11 +43,28 @@ namespace AttendanceManagementPayrollSystem.Services
                 Type = "Monthly"
             };
 
+            var periodStart = new DateTime(year, month, 1);
+            var periodEnd = periodStart.AddMonths(1).AddDays(-1);
+
             var employees = await _payRunRepo.GetEmployeesWithComponents(month, year);
+
+            var shiftDictionary = await _shiftService.GetWeeklyShiftDtos(employees.Select(e => e.EmpId));
+
+            var holidays = await _holidayRepo.GetByRangeAsync(periodStart, periodEnd);
 
             foreach (var employee in employees)
             {
-                payRunDto.PayRunItems.Add(PayRunCalculator.CalculatePay(employee));
+                // find shift for employee
+                shiftDictionary.TryGetValue(employee.EmpId, out var shift);
+
+                // filter holidays by employee’s department
+                var empHolidays = holidays
+                    .SelectMany(h => h.DepartmentHolidays)
+                    .Where(dhc => dhc.DepId == employee.DepId)
+                    .ToList();
+
+                var payItem = PayRunCalculator.CalculatePay(employee, shift, empHolidays, periodStart, periodEnd);
+                payRunDto.PayRunItems.Add(payItem);
             }
 
             return payRunDto;

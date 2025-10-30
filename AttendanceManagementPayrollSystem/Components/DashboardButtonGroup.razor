@@ -1,18 +1,30 @@
 ﻿@if (Buttons.Any(b => b.Visible))
 {
-    <div class="button-group-container">
-        @if (!string.IsNullOrEmpty(GroupName))
-        {
-            <h3>@GroupName</h3>
-        }
-        <div class="button-group">
-            @foreach (var btn in Buttons)
-            {
-                <DashboardButton Text="@btn.Text" OnClick="@btn.OnClick" Visible="@btn.Visible" />
-            }
-        </div>
-    </div>
+    <Card Class="mb-3">
+        <CardHeader>
+            <CardTitle>@GroupName</CardTitle>
+        </CardHeader>
+        <CardBody>
+            <div class="d-flex flex-wrap justify-content-start">
+                @foreach (var btn in Buttons.Where(x => x.Visible))
+                {
+                    <div style="width:128px; height:128px; margin:8px;">
+                        <Card Class="h-100 text-center">
+                            <CardImage Src="@(!string.IsNullOrEmpty(btn.ImageSrc) ? btn.ImageSrc : "https://via.placeholder.com/128")"
+                                       Style="height:64px; object-fit:contain;" />
+                            <CardBody Class="p-2">
+                                <Button Color="Color.Primary" Size="Size.Small" FullWidth Clicked="@btn.OnClick">
+                                    @btn.Text
+                                </Button>
+                            </CardBody>
+                        </Card>
+                    </div>
+                }
+            </div>
+        </CardBody>
+    </Card>
 }
+
 
 @code {
     [Parameter] public string GroupName { get; set; }

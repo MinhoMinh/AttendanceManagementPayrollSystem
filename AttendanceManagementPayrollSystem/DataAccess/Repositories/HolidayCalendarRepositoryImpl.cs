@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AttendanceManagementPayrollSystem.DTO;
 using AttendanceManagementPayrollSystem.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -41,6 +42,37 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
                 .ToListAsync();
         }
 
+        public async Task<IEnumerable<HolidayCalendarDTO>> GetByRangeAsync(DateTime start, DateTime end)
+        {
+            return await _dbContext.HolidayCalendars
+        .Include(h => h.DepartmentHolidayCalenders)
+            .ThenInclude(dh => dh.Dep)
+        .Where(h => h.DepartmentHolidayCalenders.Any(dh =>
+            dh.StartDate <= end &&
+            dh.EndDate >= start))
+        .OrderBy(h => h.HolidayName)
+        .Select(h => new HolidayCalendarDTO
+        {
+            HolidayId = h.HolidayId,
+            HolidayName = h.HolidayName,
+            PeriodYear = h.PeriodYear,
+            CreatedAt = h.CreatedAt,
+            DepartmentHolidays = h.DepartmentHolidayCalenders
+                .Where(dh => dh.StartDate <= end && dh.EndDate >= start)
+                .Select(dh => new DepartmentHolidayCalendarDTO
+                {
+                    DepHolidayCalendarId = dh.DepHolidayCalendarId,
+                    DepId = dh.DepId,
+                    HolidayId = dh.HolidayId,
+                    StartDate = dh.StartDate,
+                    EndDate = dh.EndDate,
+                    DepName = dh.Dep.DepName,
+                    HolidayName = h.HolidayName
+                }).ToList()
+        })
+        .ToListAsync();
+        }
+
         /// <summary>
         /// Lấy chi tiết ngày nghỉ lễ theo ID.
         /// </summary>
@@ -64,6 +96,38 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
                 .ToListAsync();
         }
 
+        public async Task<IEnumerable<HolidayCalendarDTO>> GetByEmployeeAsync(int empId, DateTime start, DateTime end)
+        {
+            return await _dbContext.HolidayCalendars
+        .Include(h => h.DepartmentHolidayCalenders)
+            .ThenInclude(dh => dh.Dep)
+        .Where(h => h.DepartmentHolidayCalenders.Any(dh =>
+            dh.Dep.Employees.Any(e => e.EmpId == empId) &&
+            dh.StartDate <= end &&
+            dh.EndDate >= start))
+        .OrderBy(h => h.HolidayName)
+        .Select(h => new HolidayCalendarDTO
+        {
+            HolidayId = h.HolidayId,
+            HolidayName = h.HolidayName,
+            PeriodYear = h.PeriodYear,
+            CreatedAt = h.CreatedAt,
+            DepartmentHolidays = h.DepartmentHolidayCalenders
+                .Where(dh => dh.StartDate <= end && dh.EndDate >= start)
+                .Select(dh => new DepartmentHolidayCalendarDTO
+                {
+                    DepHolidayCalendarId = dh.DepHolidayCalendarId,
+                    DepId = dh.DepId,
+                    HolidayId = dh.HolidayId,
+                    StartDate = dh.StartDate,
+                    EndDate = dh.EndDate,
+                    DepName = dh.Dep.DepName,
+                    HolidayName = h.HolidayName
+                }).ToList()
+        })
+        .ToListAsync();
+        }
+
         /// <summary>
         /// Thêm mới ngày nghỉ lễ.
         /// </summary>
@@ -77,17 +141,56 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
         /// <summary>
         /// Cập nhật ngày nghỉ lễ.
         /// </summary>
-        public async Task UpdateAsync(HolidayCalendar holiday)
+        public async Task UpdateAsync(HolidayCalendarDTO dto)
         {
-            var existing = await _dbContext.HolidayCalendars
-                .FirstOrDefaultAsync(h => h.HolidayId == holiday.HolidayId);
+            // Load existing entity including children
+            var entity = await _context.HolidayCalendars
+                .Include(h => h.DepartmentHolidayCalenders)
+                .FirstOrDefaultAsync(h => h.HolidayId == dto.HolidayId);
 
-            if (existing != null)
+            if (entity == null)
+                throw new InvalidOperationException($"Holiday with ID {dto.HolidayId} not found");
+
+            // Update holiday scalar properties
+            entity.HolidayName = dto.HolidayName;
+            entity.PeriodYear = dto.PeriodYear;
+            entity.CreatedAt = dto.CreatedAt;
+
+            // Sync DepartmentHolidayCalenders
+            var dtoDeps = dto.DepartmentHolidays ?? new List<DepartmentHolidayCalendarDTO>();
+
+            // Remove deleted
+            var toRemove = entity.DepartmentHolidayCalenders
+                .Where(e => !dtoDeps.Any(d => d.DepHolidayCalendarId == e.DepHolidayCalendarId))
+                .ToList();
+            foreach (var remove in toRemove)
+                _context.DepartmentHolidayCalenders.Remove(remove);
+
+            // Update existing and add new
+            foreach (var depDto in dtoDeps)
             {
-                existing.HolidayName = holiday.HolidayName;
-                existing.PeriodYear = holiday.PeriodYear;
-                await _dbContext.SaveChangesAsync();
+                var existing = entity.DepartmentHolidayCalenders
+                    .FirstOrDefault(e => e.DepId == depDto.DepId && e.HolidayId == depDto.HolidayId);
+
+                if (existing != null)
+                {
+                    existing.DepId = depDto.DepId;
+                    existing.StartDate = depDto.StartDate;
+                    existing.EndDate = depDto.EndDate;
+                }
+                else
+                {
+                    entity.DepartmentHolidayCalenders.Add(new DepartmentHolidayCalender
+                    {
+                        DepId = depDto.DepId,
+                        HolidayId = dto.HolidayId,
+                        StartDate = depDto.StartDate,
+                        EndDate = depDto.EndDate
+                    });
+                }
             }
+
+            await _context.SaveChangesAsync();
         }
 
         /// <summary>
@@ -143,6 +246,51 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
                 _dbContext.DepartmentHolidayCalenders.Remove(record);
                 await _dbContext.SaveChangesAsync();
             }
+        }
+
+        public async Task<List<HolidayCalendarDTO>> GetFilteredHolidaysAsync(DateTime? start, DateTime? end, string? name)
+        {
+            // Base holidays query with filters
+            var holidaysQuery = _context.HolidayCalendars.AsQueryable();
+
+            if (start.HasValue)
+                holidaysQuery = holidaysQuery.Where(h => h.PeriodYear >= start.Value);
+
+            if (end.HasValue)
+                holidaysQuery = holidaysQuery.Where(h => h.PeriodYear <= end.Value);
+
+            if (!string.IsNullOrWhiteSpace(name))
+                holidaysQuery = holidaysQuery.Where(h => h.HolidayName.Contains(name));
+
+            // Project holidays into DTOs and populate DepartmentHolidays via join
+            var resultQuery =
+                from h in holidaysQuery
+                orderby h.PeriodYear descending
+                select new HolidayCalendarDTO
+                {
+                    HolidayId = h.HolidayId,
+                    HolidayName = h.HolidayName,
+                    PeriodYear = h.PeriodYear,
+                    CreatedAt = h.CreatedAt,
+
+                    DepartmentHolidays =
+                        (from dh in _context.DepartmentHolidayCalenders
+                         where dh.HolidayId == h.HolidayId
+                         join dep in _context.Departments on dh.DepId equals dep.DepId
+                         // join to holiday table only if you need holiday name from that table; here h.HolidayName is available
+                         select new DepartmentHolidayCalendarDTO
+                         {
+                             DepHolidayCalendarId = dh.DepHolidayCalendarId,
+                             DepId = dh.DepId,
+                             HolidayId = dh.HolidayId,
+                             StartDate = dh.StartDate,
+                             EndDate = dh.EndDate,
+                             DepName = dep.DepName,
+                             HolidayName = h.HolidayName
+                         }).ToList()
+                };
+
+            return await resultQuery.ToListAsync();
         }
     }
 }

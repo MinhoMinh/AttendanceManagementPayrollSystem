@@ -7,5 +7,7 @@
         public DateTime? PeriodYear { get; set; }
         public DateTime? CreatedAt { get; set; }
 
+        public List<DepartmentHolidayCalendarDTO> DepartmentHolidays { get; set; } = new();
+
     }
 }

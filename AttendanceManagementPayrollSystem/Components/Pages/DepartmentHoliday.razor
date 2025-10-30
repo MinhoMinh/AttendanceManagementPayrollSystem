@@ -1,159 +1,640 @@
 ﻿@page "/department-holiday"
+@using System.Globalization
 @using AttendanceManagementPayrollSystem.DTO
+@using Blazorise
+@using Blazorise.DataGrid
 @inject IHttpClientFactory HttpFactory
-@inject IJSRuntime JS
 
-<h3 class="mb-3">Quản lý Ngày Nghỉ Theo Phòng Ban</h3>
+<PageTitle>Department Holiday</PageTitle>
 
-@if (records == null)
-{
-    <p><em>Đang tải dữ liệu...</em></p>
-}
-else
-{
-    <div class="mb-3 text-end">
-        <button class="btn btn-primary" @onclick="ShowAddModal">+ Gán Ngày Nghỉ</button>
-    </div>
+<Row>
+    <!-- Left 4-column section -->
+    <Column ColumnSize="ColumnSize.Is4">
+        <!-- Filter Card -->
+        <Card Class="mb-3">
+            <CardHeader>
+                <CardTitle>Lọc ngày lễ</CardTitle>
+            </CardHeader>
+            <CardBody>
+                <Fields Class="d-flex flex-wrap align-items-end gap-3">
+                    <Field>
+                        <FieldLabel>Theo tên</FieldLabel>
+                        <TextEdit @bind-Text="FilterName" Placeholder="Tên lễ" />
+                    </Field>
 
-    <table class="table table-bordered table-striped">
-        <thead class="table-light">
-            <tr>
-                <th>#</th>
-                <th>Phòng Ban</th>
-                <th>Ngày Nghỉ</th>
-                <th>Bắt đầu</th>
-                <th>Kết thúc</th>
-                <th>Hành động</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var r in records)
-            {
-                <tr>
-                    <td>@r.DepHolidayCalendarId</td>
-                    <td>@r.DepName</td>
-                    <td>@r.HolidayName</td>
-                    <td>@r.StartDate.ToString("dd/MM/yyyy")</td>
-                    <td>@r.EndDate.ToString("dd/MM/yyyy")</td>
-                    <td>
-                        <button class="btn btn-sm btn-danger" @onclick="() => DeleteRecord(r.DepHolidayCalendarId)">Xóa</button>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
-}
+                    <Field>
+                        <FieldLabel>Tìm từ</FieldLabel>
+                        <DatePicker @bind-Date="FilterStart" Placeholder="Ngày bắt đầu" />
+                    </Field>
 
-@if (showModal)
-{
-    <div class="modal fade show d-block" style="background-color:rgba(0,0,0,0.5);">
-        <div class="modal-dialog">
-            <div class="modal-content p-3">
-                <div class="modal-header">
-                    <h5 class="modal-title">Gán Ngày Nghỉ Cho Phòng Ban</h5>
-                    <button type="button" class="btn-close" @onclick="CloseModal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-2">
-                        <label>Phòng ban</label>
-                        <select class="form-select" @bind="newRecord.DepId">
-                            <option value="">-- Chọn phòng ban --</option>
-                            @foreach (var d in departments)
-                            {
-                                <option value="@d.DepId">@d.DepName</option>
-                            }
-                        </select>
-                    </div>
-                    <div class="mb-2">
-                        <label>Ngày nghỉ</label>
-                        <select class="form-select" @bind="newRecord.HolidayId">
-                            <option value="">-- Chọn ngày nghỉ --</option>
-                            @foreach (var h in holidays)
-                            {
-                                <option value="@h.HolidayId">@h.HolidayName</option>
-                            }
-                        </select>
-                    </div>
-                    <div class="mb-2">
-                        <label>Bắt đầu</label>
-                        <input type="date" class="form-control" @bind="newRecord.StartDate" />
-                    </div>
-                    <div class="mb-2">
-                        <label>Kết thúc</label>
-                        <input type="date" class="form-control" @bind="newRecord.EndDate" />
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" @onclick="CloseModal">Hủy</button>
-                    <button class="btn btn-success" @onclick="SaveRecord">Lưu</button>
-                </div>
-            </div>
+                    <Field>
+                        <FieldLabel>Tìm đến</FieldLabel>
+                        <DatePicker @bind-Date="FilterEnd" Placeholder="Ngày kết thúc" />
+                    </Field>
+
+                    <Field Class="pt-4">
+                        <Button Color="Color.Primary" Clicked="ApplyFilter">Tìm</Button>
+                    </Field>
+                </Fields>
+            </CardBody>
+        </Card>
+
+        <!-- Holidays Table -->
+        <Card>
+            <div class="d-flex justify-content-between align-items-center">
+            <CardTitle>Ngày lễ</CardTitle>
+            <Button Color="Color.Success" Size="Size.Small" Clicked="ShowNewHolidayModal">
+                Thêm ngày lễ
+            </Button>
         </div>
-    </div>
-}
+            <CardBody>
+                <DataGrid TItem="HolidayCalendarDTO"
+                          Data="@Holidays"
+                          ShowPager="false"
+                          ClickableRows="true"
+                          RowClicked="@OnHolidaySelected">
+                    <DataGridColumns>
+                        <DataGridColumn TItem="HolidayCalendarDTO" Field="@nameof(HolidayCalendarDTO.HolidayName)" Caption="Tên" />
+                        <DataGridColumn TItem="HolidayCalendarDTO" Field="@nameof(HolidayCalendarDTO.PeriodYear)" Caption="Giai đoạn" DisplayFormat="{0:yyyy-MM-dd}" />
+                        <DataGridColumn TItem="HolidayCalendarDTO" Field="@nameof(HolidayCalendarDTO.CreatedAt)" Caption="Tạo lúc" DisplayFormat="{0:yyyy-MM-dd}" />
+                    </DataGridColumns>
+                </DataGrid>
+            </CardBody>
+        </Card>
+    </Column>
 
-@code {
-    private HttpClient Http;
-    private List<DepartmentHolidayCalendarDTO>? records;
-    private List<DepartmentDTO>? departments;
-    private List<HolidayCalendarDTO>? holidays;
-    private DepartmentHolidayCalendarDTO newRecord = new();
-    private bool showModal = false;
-
-    protected override async Task OnInitializedAsync()
-    {
-        Http = HttpFactory.CreateClient("ApiClient");
-        await LoadData();
-    }
-
-    private async Task LoadData()
-    {
-        records = await Http.GetFromJsonAsync<List<DepartmentHolidayCalendarDTO>>("api/departmentholidaycalendar");
-        departments = await Http.GetFromJsonAsync<List<DepartmentDTO>>("api/department");
-        holidays = await Http.GetFromJsonAsync<List<HolidayCalendarDTO>>("api/holidaycalendar");
-    }
-
-    private void ShowAddModal()
-    {
-        newRecord = new DepartmentHolidayCalendarDTO
+    <!-- Right 8-column section -->
+    <Column ColumnSize="ColumnSize.Is8">
+        @if (SelectedHoliday is not null)
         {
-            StartDate = DateTime.Now,
-            EndDate = DateTime.Now
-        };
-        showModal = true;
-    }
+            var isEdit = IsEditMode(SelectedHoliday);
 
-    private void CloseModal() => showModal = false;
+            <Card Class="mb-3">
+                <CardHeader>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <CardTitle>@SelectedHoliday.HolidayName (@SelectedHoliday.PeriodYear?.ToString("yyyy-MM-dd"))</CardTitle>
+                        @if (isEdit)
+                        {
+                            <div class="d-flex gap-2">
+                                <Button Color="Color.Success" Size="Size.Small" Clicked="CreateNewSchedule">Thêm lịch</Button>
+                                <Button Color="Color.Primary" Size="Size.Small" Clicked="SaveHoliday">Lưu</Button>
+                                <Button Color="Color.Danger" Size="Size.Small" Clicked="DeleteHoliday">Xóa</Button>
+                            </div>
+                        }
+                    </div>
+                </CardHeader>
+            </Card>
 
-    private async Task SaveRecord()
-    {
-        if (newRecord.DepId == 0 || newRecord.HolidayId == 0)
-        {
-            await JS.InvokeVoidAsync("alert", "Vui lòng chọn đầy đủ thông tin.");
-            return;
+            <!-- Department Holiday List -->
+            @foreach (var kvp in DepartmentHolidayDict)
+            {
+                var key = kvp.Key;
+                var group = kvp.Value;
+
+                <Card class="mb-2">
+                    <CardHeader>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <CardTitle>@key.StartDate.ToString("yyyy-MM-dd HH:mm") - @key.EndDate.ToString("yyyy-MM-dd HH:mm")</CardTitle>
+                            @if (isEdit)
+                            {
+                                <div class="d-flex gap-2">
+                                    <Button Color="Color.Secondary" Size="Size.Small"
+                                            Clicked="@(() => ShowAddDepModal(key.StartDate, key.EndDate))">
+                                        Thêm phòng ban
+                                    </Button>
+                                    <Button Color="Color.Danger" Size="Size.Small"
+                                            Clicked="@(() => ShowRemoveDepModal(key.StartDate, key.EndDate))">
+                                        Bỏ phòng ban
+                                    </Button>
+                                </div>
+                            }
+                        </div>
+                    </CardHeader>
+
+                    <CardBody>
+                        @foreach (var dep in group)
+                        {
+                            <div class="d-flex justify-content-start align-items-center border-bottom py-1 ps-2">
+                                <span>@dep.DepName</span>
+                            </div>
+                        }
+                    </CardBody>
+                </Card>
+            }
+
         }
+    </Column>
+</Row>
 
-        var response = await Http.PostAsJsonAsync("api/departmentholidaycalendar", newRecord);
-        if (response.IsSuccessStatusCode)
+<!-- Modal for Adding Department -->
+<Modal @bind-Visible="@IsAddDepModalVisible" Backdrop="Backdrop.Static" Class="bg-light p-3 rounded shadow-lg">
+    <ModalHeader>Thêm phòng ban</ModalHeader>
+    <ModalBody>
+        @if (departments != null && SelectedHoliday != null)
         {
-            await LoadData();
-            showModal = false;
+            var remainingDeps = DepartmentHolidays
+            .Where(d => d.StartDate == DateTime.MinValue && d.EndDate == DateTime.MinValue)
+                .ToList();
+
+
+            @if (remainingDeps.Count == 0)
+            {
+                <p>Tất cả các phòng ban đã được phân công.</p>
+            }
+            else
+            {
+
+                @foreach (var dep in remainingDeps)
+                {
+                    <Field>
+                        <Check TValue="bool"
+                               Checked="@(dep.DepId != null && SelectedDepIds.Contains((int)dep.DepId))"
+                               CheckedChanged="@(val => { if (dep.DepId != null) OnDepCheckedChanged((int)dep.DepId, val); })">
+                            @dep.DepName
+                        </Check>
+                    </Field>
+                }
+            }
+        }
+    </ModalBody>
+    <ModalFooter>
+        <Button Color="Color.Primary" Clicked="ConfirmAddDep" Disabled="@(!SelectedDepIds.Any())">Add</Button>
+        <Button Color="Color.Secondary" Clicked="@(() => IsAddDepModalVisible = false)">Cancel</Button>
+    </ModalFooter>
+</Modal>
+
+<!-- Modal for Removing Department -->
+<Modal @bind-Visible="@IsRemoveDepModalVisible" Backdrop="Backdrop.Static" Class="bg-light p-3 rounded shadow-lg">
+    <ModalHeader>Remove Department</ModalHeader>
+
+    <ModalBody Class="bg-white p-3 rounded border">
+        @if (CurrentGroupDeps?.Any() == true)
+        {
+            @foreach (var dep in CurrentGroupDeps)
+            {
+                <Field>
+                    <Check TValue="bool"
+                           Checked="@(dep.DepId != null && SelectedDepIds.Contains((int)dep.DepId))"
+                           CheckedChanged="@(val => { if (dep.DepId != null) OnDepCheckedChanged((int)dep.DepId, val); })">
+                        @dep.DepName
+                    </Check>
+                </Field>
+            }
         }
         else
         {
-            var msg = await response.Content.ReadAsStringAsync();
-            await JS.InvokeVoidAsync("alert", $"Lỗi khi lưu: {msg}");
+            <div class="text-muted">No departments to remove.</div>
+        }
+    </ModalBody>
+
+    <ModalFooter>
+        <Button Color="Color.Danger" Clicked="ConfirmRemoveDep">Remove Selected</Button>
+        <Button Color="Color.Secondary" Clicked="@(() => IsRemoveDepModalVisible = false)">Cancel</Button>
+    </ModalFooter>
+</Modal>
+
+<!-- Modal for New Schedule -->
+<Modal @bind-Visible="@IsNewScheduleModalVisible" Backdrop="Backdrop.Static" Class="bg-light p-3 rounded shadow-lg">
+    <ModalHeader>Create New Schedule</ModalHeader>
+
+    <ModalBody Class="bg-white p-3 rounded border">
+        <Fields>
+            <Field>
+                <FieldLabel>Start Date</FieldLabel>
+                <DatePicker @bind-Date="NewScheduleStartDate" />
+            </Field>
+            <Field>
+                <FieldLabel>Start Time</FieldLabel>
+                <TimeEdit @bind-Time="NewScheduleStartTime" />
+            </Field>
+        </Fields>
+
+        <Fields>
+            <Field>
+                <FieldLabel>End Date</FieldLabel>
+                <DatePicker @bind-Date="NewScheduleEndDate" />
+            </Field>
+            <Field>
+                <FieldLabel>End Time</FieldLabel>
+                <TimeEdit @bind-Time="NewScheduleEndTime" />
+            </Field>
+        </Fields>
+    </ModalBody>
+
+    <ModalFooter>
+        <Button Color="Color.Primary" Clicked="ConfirmCreateSchedule">Create</Button>
+        <Button Color="Color.Secondary" Clicked="@(() => IsNewScheduleModalVisible = false)">Cancel</Button>
+    </ModalFooter>
+</Modal>
+
+<!-- Modal for New Holiday -->
+<Modal @bind-Visible="@IsNewHolidayModalVisible" Backdrop="Backdrop.Static" Class="bg-light p-3 rounded shadow-lg">
+    <ModalHeader>Thêm ngày lễ mới</ModalHeader>
+
+    <ModalBody>
+        <Fields>
+            <Field>
+                <FieldLabel>Tên ngày lễ</FieldLabel>
+                <TextEdit @bind-Text="NewHolidayName" Placeholder="Nhập tên ngày lễ" />
+            </Field>
+
+            <Field>
+                <FieldLabel>Ngày</FieldLabel>
+                <DatePicker @bind-Date="NewHolidayPeriodDate" />
+            </Field>
+        </Fields>
+    </ModalBody>
+
+    <ModalFooter>
+        <Button Color="Color.Primary" Clicked="ConfirmCreateHoliday">Tạo</Button>
+        <Button Color="Color.Secondary" Clicked="@(() => IsNewHolidayModalVisible = false)">Hủy</Button>
+    </ModalFooter>
+</Modal>
+
+@code {
+    private string FilterName;
+    private DateTime? FilterStart = new DateTime(DateTime.Today.Year, 1, 1);
+    private DateTime? FilterEnd = DateTime.Today.AddMonths(2);
+
+    private List<HolidayCalendarDTO> Holidays = new();
+
+
+    private HolidayCalendarDTO SelectedHoliday;
+    private List<DepartmentHolidayCalendarDTO> DepartmentHolidays = new();
+
+    private Dictionary<(DateTime StartDate, DateTime EndDate), List<DepartmentHolidayCalendarDTO>> _departmentHolidayDict;
+
+    private Dictionary<(DateTime StartDate, DateTime EndDate), List<DepartmentHolidayCalendarDTO>> DepartmentHolidayDict
+    {
+        get
+        {
+            if (_departmentHolidayDict == null)
+            {
+                _departmentHolidayDict = (DepartmentHolidays ?? new List<DepartmentHolidayCalendarDTO>())
+                    .Where(d => d.StartDate != DateTime.MinValue && d.EndDate != DateTime.MinValue)
+                    .GroupBy(d => (d.StartDate, d.EndDate))
+                    .OrderBy(g => g.Key.StartDate)
+                    .ThenBy(g => g.Key.EndDate)
+                    .ToDictionary(g => g.Key, g => g.ToList());
+            }
+
+            return _departmentHolidayDict;
         }
     }
 
-    private async Task DeleteRecord(int id)
+    private bool IsAddDepModalVisible;
+    private HashSet<int> SelectedDepIds = new();
+    private DateTime AddDepStartDate;
+    private DateTime AddDepEndDate;
+
+    private bool IsRemoveDepModalVisible;
+    private List<DepartmentHolidayCalendarDTO> CurrentGroupDeps = new();
+    private DateTime CurrentStartDateForRemoval;
+    private DateTime CurrentEndDateForRemoval;
+
+    [Inject] INotificationService NotificationService { get; set; }
+
+    private List<DepartmentDTO> departments;
+
+    protected override async Task OnInitializedAsync()
     {
-        bool confirm = await JS.InvokeAsync<bool>("confirm", "Xóa bản ghi này?");
-        if (confirm)
+        var client = HttpFactory.CreateClient("ApiClient");
+        var result = await client.GetFromJsonAsync<List<DepartmentDTO>>("api/department");
+
+        if (result == null)
         {
-            var response = await Http.DeleteAsync($"api/departmentholidaycalendar/{id}");
-            if (response.IsSuccessStatusCode)
-                await LoadData();
+            NotificationService.Warning("Không thể tìm thấy thông tin phòng ban!", "Lỗi");
+            departments = new();
+        }
+        else departments = result;
+    }
+
+    private async Task ApplyFilter()
+    {
+        var client = HttpFactory.CreateClient("ApiClient");
+
+        var query = new List<string>();
+        if (FilterStart.HasValue)
+            query.Add($"start={FilterStart.Value:yyyy-MM-dd}");
+        if (FilterEnd.HasValue)
+            query.Add($"end={FilterEnd.Value:yyyy-MM-dd}");
+        if (!string.IsNullOrWhiteSpace(FilterName))
+            query.Add($"name={Uri.EscapeDataString(FilterName)}");
+
+        var url = "/api/holidaycalendar";
+        if (query.Any())
+            url += "?" + string.Join("&", query);
+
+        try
+        {
+            var result = await client.GetFromJsonAsync<List<HolidayCalendarDTO>>(url);
+            if (result != null)
+            {
+                Holidays = result;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading holidays: {ex.Message}");
+            Holidays = new();
+
+            NotificationService.Warning(ex.Message, "Lỗi");
         }
     }
+
+    private void OnHolidaySelected(DataGridRowMouseEventArgs<HolidayCalendarDTO> args)
+    {
+        SelectedHoliday = args.Item;
+
+        DepartmentHolidays.Clear();
+
+        if (SelectedHoliday.DepartmentHolidays != null)
+        {
+            DepartmentHolidays.AddRange(SelectedHoliday.DepartmentHolidays);
+        }
+
+        // Add unassigned placeholders for remaining departments
+        foreach (var dep in departments)
+        {
+            if (!DepartmentHolidays.Any(d => d.DepId == dep.DepId))
+            {
+                DepartmentHolidays.Add(new DepartmentHolidayCalendarDTO
+                    {
+                        DepId = dep.DepId,
+                        HolidayId = SelectedHoliday.HolidayId,
+                        DepName = dep.DepName,
+                        HolidayName = SelectedHoliday.HolidayName,
+                        StartDate = DateTime.MinValue,
+                        EndDate = DateTime.MinValue
+                    });
+            }
+        }
+
+        // Rebuild grouping
+        _departmentHolidayDict = DepartmentHolidays
+            .Where(d => d.StartDate != DateTime.MinValue && d.EndDate != DateTime.MinValue)
+            .GroupBy(d => (d.StartDate, d.EndDate))
+            .ToDictionary(g => g.Key, g => g.ToList());
+    }
+
+    private bool IsEditMode(HolidayCalendarDTO dto)
+    {
+        if (dto.PeriodYear == null) return false;
+        return (dto.PeriodYear.Value - DateTime.Today).TotalDays <= 2;
+    }
+
+    private async Task SaveHoliday()
+    {
+        if (SelectedHoliday == null)
+            return;
+
+        try
+        {
+            SelectedHoliday.DepartmentHolidays = DepartmentHolidays
+            .Where(d => d.StartDate != DateTime.MinValue && d.EndDate != DateTime.MinValue)
+            .ToList();
+
+            var client = HttpFactory.CreateClient("ApiClient");
+
+            var response = await client.PutAsJsonAsync(
+                $"/api/holidaycalendar/{SelectedHoliday.HolidayId}",
+                SelectedHoliday
+            );
+
+            if (response.IsSuccessStatusCode)
+            {
+                var updated = await response.Content.ReadFromJsonAsync<HolidayCalendarDTO>();
+                if (updated != null)
+                {
+                    // refresh SelectedHoliday with returned object
+                    SelectedHoliday = updated;
+
+                    // optional: also refresh Holidays list to reflect updates
+                    var index = Holidays.FindIndex(h => h.HolidayId == updated.HolidayId);
+                    if (index >= 0)
+                        Holidays[index] = updated;
+
+                    NotificationService.Success("Lễ đã được lưu thành công", "Thành công");
+                }
+            }
+            else
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                NotificationService.Warning($"Lưu thất bại: {error}", "Lỗi");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error saving holiday: {ex.Message}");
+            NotificationService.Warning($"Lỗi khi lưu: {ex.Message}", "Lỗi");
+        }
+    }
+
+
+    private void DeleteHoliday() { }
+
+
+    private void RemoveDep(DepartmentHolidayCalendarDTO dep)
+    {
+        DepartmentHolidays.Remove(dep);
+    }
+
+    private void ShowAddDepModal(DateTime start, DateTime end)
+    {
+        AddDepStartDate = start;
+        AddDepEndDate = end;
+        SelectedDepIds.Clear();
+        IsAddDepModalVisible = true;
+    }
+
+    private void ShowRemoveDepModal(DateTime start, DateTime end)
+    {
+        CurrentStartDateForRemoval = start;
+        CurrentEndDateForRemoval = end;
+
+        var key = (start, end);
+
+        if (_departmentHolidayDict != null && _departmentHolidayDict.TryGetValue(key, out var group))
+            CurrentGroupDeps = group.ToList();
+        else
+            CurrentGroupDeps = new List<DepartmentHolidayCalendarDTO>();
+
+        SelectedDepIds.Clear();
+        IsRemoveDepModalVisible = true;
+    }
+
+    private void OnDepCheckedChanged(int depId, bool isChecked)
+    {
+        if (isChecked)
+            SelectedDepIds.Add(depId);
+        else
+            SelectedDepIds.Remove(depId);
+    }
+
+    private void ConfirmAddDep()
+    {
+        if (SelectedHoliday == null || departments == null)
+            return;
+
+        _departmentHolidayDict ??= new Dictionary<(DateTime, DateTime), List<DepartmentHolidayCalendarDTO>>();
+
+        foreach (var depId in SelectedDepIds)
+        {
+            var depHoliday = DepartmentHolidays.FirstOrDefault(d => d.DepId == depId);
+            if (depHoliday == null)
+                continue;
+
+            // Remove from its old group if it existed
+            var oldKey = (depHoliday.StartDate, depHoliday.EndDate);
+            if (_departmentHolidayDict.TryGetValue(oldKey, out var oldList))
+                oldList.Remove(depHoliday);
+
+            // Update dates
+            depHoliday.StartDate = AddDepStartDate;
+            depHoliday.EndDate = AddDepEndDate;
+
+            // Add to new group
+            var newKey = (depHoliday.StartDate, depHoliday.EndDate);
+            if (!_departmentHolidayDict.TryGetValue(newKey, out var newList))
+            {
+                newList = new List<DepartmentHolidayCalendarDTO>();
+                _departmentHolidayDict[newKey] = newList;
+            }
+            newList.Add(depHoliday);
+        }
+
+        SelectedDepIds.Clear();
+        IsAddDepModalVisible = false;
+    }
+
+    private void ConfirmRemoveDep()
+    {
+        if (SelectedHoliday == null || departments == null)
+            return;
+
+        _departmentHolidayDict ??= new Dictionary<(DateTime, DateTime), List<DepartmentHolidayCalendarDTO>>();
+
+        foreach (var depId in SelectedDepIds)
+        {
+            var depHoliday = DepartmentHolidays.FirstOrDefault(d => d.DepId == depId);
+            if (depHoliday == null)
+                continue;
+
+            // Remove from current group if it exists
+            var oldKey = (depHoliday.StartDate, depHoliday.EndDate);
+            if (_departmentHolidayDict.TryGetValue(oldKey, out var oldList))
+                oldList.Remove(depHoliday);
+
+            // Reset dates
+            depHoliday.StartDate = DateTime.MinValue;
+            depHoliday.EndDate = DateTime.MinValue;
+        }
+
+        SelectedDepIds.Clear();
+        IsRemoveDepModalVisible = false;
+    }
+
+    private bool IsNewScheduleModalVisible;
+    private DateTime NewScheduleStartDate = DateTime.Today.AddDays(2);
+    private TimeSpan NewScheduleStartTime = new TimeSpan(8, 0, 0); // 08:00
+    private DateTime NewScheduleEndDate = DateTime.Today.AddDays(2);
+    private TimeSpan NewScheduleEndTime = new TimeSpan(17, 0, 0); // 17:00
+
+    private void CreateNewSchedule()
+    {
+        // just open modal, user will select dates
+        IsNewScheduleModalVisible = true;
+    }
+
+    private void ConfirmCreateSchedule()
+    {
+        if (SelectedHoliday == null)
+            return;
+
+        // merge date + time
+        var start = NewScheduleStartDate.Date + NewScheduleStartTime;
+        var end = NewScheduleEndDate.Date + NewScheduleEndTime;
+
+        if (end <= start)
+        {
+            NotificationService.Warning("Ngày/giờ kết thúc phải sau ngày/giờ bắt đầu", "Lịch không hợp lệ!");
+            return;
+        }
+
+        if (start < DateTime.Now.AddDays(2))
+        {
+            NotificationService.Warning("Ngày/giờ bắt đầu phải được thêm 2 ngày trước khi sảy ra", "Lịch không hợp lệ!");
+            return;
+        }
+
+
+        _departmentHolidayDict ??= new Dictionary<(DateTime, DateTime), List<DepartmentHolidayCalendarDTO>>();
+
+        var key = (start, end);
+        if (!_departmentHolidayDict.ContainsKey(key))
+            _departmentHolidayDict[key] = new List<DepartmentHolidayCalendarDTO>();
+
+        // close modal
+        IsNewScheduleModalVisible = false;
+    }
+
+    private bool IsNewHolidayModalVisible;
+    private string NewHolidayName;
+    private DateTime? NewHolidayPeriodDate = DateTime.Today;
+
+    private void ShowNewHolidayModal()
+    {
+        NewHolidayName = string.Empty;
+        NewHolidayPeriodDate = DateTime.Today;
+        IsNewHolidayModalVisible = true;
+    }
+
+    private async Task ConfirmCreateHoliday()
+{
+    if (string.IsNullOrWhiteSpace(NewHolidayName))
+    {
+        NotificationService.Warning("Tên ngày lễ không được để trống", "Lỗi");
+        return;
+    }
+    if (NewHolidayPeriodDate == null)
+    {
+        NotificationService.Warning("Vui lòng chọn ngày", "Lỗi");
+        return;
+    }
+
+    var newHoliday = new HolidayCalendarDTO
+    {
+        HolidayName = NewHolidayName,
+        PeriodYear = NewHolidayPeriodDate.Value,
+        CreatedAt = DateTime.Now,
+        DepartmentHolidays = new List<DepartmentHolidayCalendarDTO>()
+    };
+
+    try
+    {
+        var client = HttpFactory.CreateClient("ApiClient");
+        var response = await client.PostAsJsonAsync("/api/holidaycalendar", newHoliday);
+
+        if (response.IsSuccessStatusCode)
+        {
+            var created = await response.Content.ReadFromJsonAsync<HolidayCalendarDTO>();
+            if (created != null)
+            {
+                Holidays.Add(created);
+                NotificationService.Success("Ngày lễ mới đã được tạo", "Thành công");
+            }
+        }
+        else
+        {
+            var error = await response.Content.ReadAsStringAsync();
+            NotificationService.Warning($"Tạo thất bại: {error}", "Lỗi");
+        }
+    }
+    catch (Exception ex)
+    {
+        NotificationService.Warning($"Lỗi khi tạo ngày lễ: {ex.Message}", "Lỗi");
+    }
+
+    IsNewHolidayModalVisible = false;
+}
 }
