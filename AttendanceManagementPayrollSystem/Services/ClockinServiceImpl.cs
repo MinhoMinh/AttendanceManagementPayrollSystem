@@ -81,8 +81,6 @@ namespace AttendanceManagementPayrollSystem.Services
                 if (row1Empty)
                     break;
 
-                Console.WriteLine($"Clock ID: {clockId}");
-
 
                 var empId = await _empRepo.GetIdByClockId(clockId);
 

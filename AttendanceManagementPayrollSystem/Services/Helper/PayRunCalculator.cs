@@ -5,7 +5,9 @@ namespace AttendanceManagementPayrollSystem.Services.Helper
 {
     public class PayRunCalculator
     {
-        public static PayRunItemDto CalculatePay(Employee employee)
+        public static PayRunItemDto CalculatePay(Employee employee, 
+            WeeklyShiftDto shift, List<DepartmentHolidayCalendarDTO> holidays,
+            DateTime periodStart, DateTime periodEnd)
         {
             PayRunItemDto itemDto = new PayRunItemDto
             {
@@ -25,7 +27,7 @@ namespace AttendanceManagementPayrollSystem.Services.Helper
                     {
                         ComponentType = "Earning",
                         ComponentCode = "BASIC",
-                        Description = $"Clockin: {clockin.WorkUnits} workhour",
+                        Description = $"Chấm công: {clockin.WorkUnits} công",
                         Amount = actualClockinValue,
                         Taxable = true,
                         Insurable = true
@@ -63,6 +65,43 @@ namespace AttendanceManagementPayrollSystem.Services.Helper
                         itemDto.Components.Add(componentDto);
                         itemDto.GrossPay += actualClockinValue;
                     }
+                }
+            }
+
+            //holiday
+            decimal holidayUnits = 0m;
+
+            foreach (var holiday in holidays)
+            {
+                holidayUnits = 0m;
+
+                // Restrict holiday within the pay period
+                var start = holiday.StartDate.Date < periodStart.Date ? periodStart.Date : holiday.StartDate.Date;
+                var end = holiday.EndDate.Date > periodEnd.Date ? periodEnd.Date : holiday.EndDate.Date;
+
+                for (var date = start; date <= end; date = date.AddDays(1))
+                {
+                    var dailyShift = shift.GetDailyShift(date.DayOfWeek);
+                    if (dailyShift != null)
+                    {
+                        holidayUnits += dailyShift.ShiftDtos.Sum(s => s.WorkUnits);
+                    }
+                }
+
+                if (holidayUnits > 0)
+                {
+                    decimal holidayValue = holidayUnits * 200000m; // same rate as you use for work units
+                    var holidayComponent = new PayRunComponentDto
+                    {
+                        ComponentType = "Earning",
+                        ComponentCode = "HOLIDAY",
+                        Description = $"Lương nghỉ lễ {holiday.HolidayName}: {holidayUnits} công",
+                        Amount = holidayValue,
+                        Taxable = true,
+                        Insurable = true
+                    };
+                    itemDto.Components.Add(holidayComponent);
+                    itemDto.GrossPay += holidayValue;
                 }
             }
 

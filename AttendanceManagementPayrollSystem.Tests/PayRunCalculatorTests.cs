@@ -1,4 +1,6 @@
-﻿using Moq;
+﻿using AttendanceManagementPayrollSystem.Models;
+using AttendanceManagementPayrollSystem.Services.Helper;
+using Moq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,7 +24,7 @@ namespace AttendanceManagementPayrollSystem.Tests
                 EmpId = 1001,
                 EmpName = "Nguyen Van A",
                 Clockins = new List<Clockin>(),
-                KpiEmps = new List<KpiEmp>()
+                KpiEmps = new List<Kpi>()
             };
         }
 
@@ -57,13 +59,13 @@ namespace AttendanceManagementPayrollSystem.Tests
         {
             // Arrange
             _employee.Clockins.Add(new Clockin { WorkUnits = 8, ScheduledUnits = 8 });
-            _employee.KpiEmps.Add(new KpiEmp
+            _employee.KpiEmps.Add(new Kpi
             {
                 Prorate = true,
-                Kpicomponents = new List<KpiComponent>
+                Kpicomponents = new List<Kpicomponent>
                 {
-                    new KpiComponent { AssignedScore = 8, Weight = 50 },
-                    new KpiComponent { SelfScore = 9, Weight = 50 }
+                    new Kpicomponent { AssignedScore = 8, Weight = 50 },
+                    new Kpicomponent { SelfScore = 9, Weight = 50 }
                 }
             });
 
@@ -133,7 +135,7 @@ namespace AttendanceManagementPayrollSystem.Tests
         {
             // Arrange
             _employee.Clockins.Add(new Clockin { WorkUnits = 8, ScheduledUnits = 8 });
-            _employee.KpiEmps.Add(new KpiEmp { Prorate = true, Kpicomponents = new List<KpiComponent>() });
+            _employee.KpiEmps.Add(new Kpi { Prorate = true, Kpicomponents = new List<Kpicomponent>() });
 
             // Act
             var result = PayRunCalculator.CalculatePay(_employee);
@@ -142,139 +144,122 @@ namespace AttendanceManagementPayrollSystem.Tests
             Assert.DoesNotContain(result.Components, c => c.ComponentCode == "BONUS");
         }
 
-        // ---------- INTEGRATION (CART STATE) ----------
-
-        [Fact]
-        public void CalculatePay_ShouldIntegrateWithCartState_WhenEmployeeIsActiveInCart()
-        {
-            // Arrange
-            var mockCart = new Mock<IPayrollCart>();
-            mockCart.Setup(c => c.IsEmployeeActive(_employee.EmpId)).Returns(true);
-            _employee.Clockins.Add(new Clockin { WorkUnits = 8, ScheduledUnits = 8 });
-
-            // Act
-            var result = PayRunCalculator.CalculatePay(_employee);
-
-            // Assert
-            mockCart.Verify(c => c.IsEmployeeActive(_employee.EmpId), Times.Once);
-            Assert.True(result.GrossPay > 0);
-        }
     }
 
     // ----------- MOCKED MODELS FOR TESTING -----------
 
-    public class Employee
-    {
-        public int EmpId { get; set; }
-        public string EmpName { get; set; }
-        public List<Clockin> Clockins { get; set; }
-        public List<KpiEmp> KpiEmps { get; set; }
-    }
+    //public class Employee
+    //{
+    //    public int EmpId { get; set; }
+    //    public string EmpName { get; set; }
+    //    public List<Clockin> Clockins { get; set; }
+    //    public List<KpiEmp> KpiEmps { get; set; }
+    //}
 
-    public class Clockin
-    {
-        public decimal? WorkUnits { get; set; }
-        public decimal? ScheduledUnits { get; set; }
-    }
+    //public class Clockin
+    //{
+    //    public decimal? WorkUnits { get; set; }
+    //    public decimal? ScheduledUnits { get; set; }
+    //}
 
-    public class KpiEmp
-    {
-        public bool? Prorate { get; set; }
-        public List<KpiComponent> Kpicomponents { get; set; }
-    }
+    //public class KpiEmp
+    //{
+    //    public bool? Prorate { get; set; }
+    //    public List<Kpicomponent> Kpicomponents { get; set; }
+    //}
 
-    public class KpiComponent
-    {
-        public decimal? AssignedScore { get; set; }
-        public decimal? SelfScore { get; set; }
-        public decimal Weight { get; set; }
-    }
+    //public class Kpicomponent
+    //{
+    //    public decimal? AssignedScore { get; set; }
+    //    public decimal? SelfScore { get; set; }
+    //    public decimal Weight { get; set; }
+    //}
 
-    public class PayRunItemDto
-    {
-        public int EmpId { get; set; }
-        public string EmpName { get; set; }
-        public decimal GrossPay { get; set; } = 0;
-        public List<PayRunComponentDto> Components { get; set; } = new();
-        public string Notes { get; set; }
-    }
+    //public class PayRunItemDto
+    //{
+    //    public int EmpId { get; set; }
+    //    public string EmpName { get; set; }
+    //    public decimal GrossPay { get; set; } = 0;
+    //    public List<PayRunComponentDto> Components { get; set; } = new();
+    //    public string Notes { get; set; }
+    //}
 
-    public class PayRunComponentDto
-    {
-        public string ComponentType { get; set; }
-        public string ComponentCode { get; set; }
-        public string Description { get; set; }
-        public decimal Amount { get; set; }
-        public bool Taxable { get; set; }
-        public bool Insurable { get; set; }
-    }
+    //public class PayRunComponentDto
+    //{
+    //    public string ComponentType { get; set; }
+    //    public string ComponentCode { get; set; }
+    //    public string Description { get; set; }
+    //    public decimal Amount { get; set; }
+    //    public bool Taxable { get; set; }
+    //    public bool Insurable { get; set; }
+    //}
 
-    public interface IPayrollCart
-    {
-        bool IsEmployeeActive(int empId);
-    }
+    //public interface IPayrollCart
+    //{
+    //    bool IsEmployeeActive(int empId);
+    //}
 
-    public static class PayRunCalculator
-    {
-        public static PayRunItemDto CalculatePay(Employee employee)
-        {
-            if (employee == null)
-                throw new NullReferenceException("Employee cannot be null");
+    //public static class PayRunCalculator
+    //{
+    //    public static PayRunItemDto CalculatePay(Employee employee)
+    //    {
+    //        if (employee == null)
+    //            throw new NullReferenceException("Employee cannot be null");
 
-            PayRunItemDto itemDto = new PayRunItemDto
-            {
-                EmpId = employee.EmpId,
-                EmpName = employee.EmpName,
-                Notes = ""
-            };
+    //        PayRunItemDto itemDto = new PayRunItemDto
+    //        {
+    //            EmpId = employee.EmpId,
+    //            EmpName = employee.EmpName,
+    //            Notes = ""
+    //        };
 
-            var clockin = employee.Clockins?.FirstOrDefault();
-            if (clockin != null)
-            {
-                decimal actualClockinValue = (clockin.WorkUnits ??= 0) * 200000m;
-                decimal expectedClockinValue = (clockin.ScheduledUnits ??= 0) * 200000m;
+    //        var clockin = employee.Clockins?.FirstOrDefault();
+    //        if (clockin != null)
+    //        {
+    //            decimal actualClockinValue = (clockin.WorkUnits ??= 0) * 200000m;
+    //            decimal expectedClockinValue = (clockin.ScheduledUnits ??= 0) * 200000m;
 
-                if (actualClockinValue > 0)
-                {
-                    itemDto.Components.Add(new PayRunComponentDto
-                    {
-                        ComponentType = "Earning",
-                        ComponentCode = "BASIC",
-                        Description = $"Clockin: {clockin.WorkUnits} workhour",
-                        Amount = actualClockinValue,
-                        Taxable = true,
-                        Insurable = true
-                    });
-                    itemDto.GrossPay += actualClockinValue;
-                }
+    //            if (actualClockinValue > 0)
+    //            {
+    //                itemDto.Components.Add(new PayRunComponentDto
+    //                {
+    //                    ComponentType = "Earning",
+    //                    ComponentCode = "BASIC",
+    //                    Description = $"Clockin: {clockin.WorkUnits} workhour",
+    //                    Amount = actualClockinValue,
+    //                    Taxable = true,
+    //                    Insurable = true
+    //                });
+    //                itemDto.GrossPay += actualClockinValue;
+    //            }
 
-                var kpi = employee.KpiEmps?.FirstOrDefault();
-                if (kpi != null)
-                {
-                    decimal score = 0m;
-                    foreach (var kpiCom in kpi.Kpicomponents ?? new List<KpiComponent>())
-                    {
-                        decimal componentScore = (kpiCom.AssignedScore ?? kpiCom.SelfScore ?? 0) * kpiCom.Weight * 0.001m;
-                        score += componentScore;
-                    }
+    //            var kpi = employee.KpiEmps?.FirstOrDefault();
+    //            if (kpi != null)
+    //            {
+    //                decimal score = 0m;
+    //                foreach (var kpiCom in kpi.Kpicomponents ?? new List<Kpicomponent>())
+    //                {
+    //                    decimal componentScore = (kpiCom.AssignedScore ?? kpiCom.SelfScore ?? 0) * kpiCom.Weight * 0.001m;
+    //                    score += componentScore;
+    //                }
 
-                    decimal kpiValue = score * ((kpi.Prorate == true) ? actualClockinValue : expectedClockinValue);
-                    if (kpiValue > 0)
-                    {
-                        itemDto.Components.Add(new PayRunComponentDto
-                        {
-                            ComponentType = "Earning",
-                            ComponentCode = "BONUS",
-                            Description = $"Kpi: {(score * 10m):F2}/10 score",
-                            Amount = kpiValue,
-                            Taxable = true,
-                            Insurable = true
-                        });
-                        itemDto.GrossPay += actualClockinValue; // intentional bug mimic
-                    }
-                }
-            }
-            return itemDto;
-        }
-    }
+    //                decimal kpiValue = score * ((kpi.Prorate == true) ? actualClockinValue : expectedClockinValue);
+    //                if (kpiValue > 0)
+    //                {
+    //                    itemDto.Components.Add(new PayRunComponentDto
+    //                    {
+    //                        ComponentType = "Earning",
+    //                        ComponentCode = "BONUS",
+    //                        Description = $"Kpi: {(score * 10m):F2}/10 score",
+    //                        Amount = kpiValue,
+    //                        Taxable = true,
+    //                        Insurable = true
+    //                    });
+    //                    itemDto.GrossPay += actualClockinValue; // intentional bug mimic
+    //                }
+    //            }
+    //        }
+    //        return itemDto;
+    //    }
+    //}
 }

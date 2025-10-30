@@ -15,14 +15,16 @@ namespace AttendanceManagementPayrollSystem.Controllers
             _service = service;
         }
 
-        /// <summary>
-        /// Lấy danh sách tất cả các ngày nghỉ lễ.
-        /// </summary>
+
+        // GET: /api/holidays?start=2025-01-01&end=2025-12-31&name=New
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<ActionResult<IEnumerable<HolidayCalendarDTO>>> GetHolidays(
+            [FromQuery] DateTime? start,
+            [FromQuery] DateTime? end,
+            [FromQuery] string? name)
         {
-            var result = await _service.GetAllAsync();
-            return Ok(result);
+            var holidays = await _service.GetFilteredHolidaysAsync(start, end, name);
+            return Ok(holidays);
         }
 
         /// <summary>
@@ -45,6 +47,18 @@ namespace AttendanceManagementPayrollSystem.Controllers
         public async Task<IActionResult> GetByDepartment(int depId)
         {
             var result = await _service.GetByDepartmentAsync(depId);
+            return Ok(result);
+        }
+
+        [HttpGet("employee/{empId}/range")]
+        public async Task<IActionResult> GetByEmployeeInRange(
+    int empId,
+    [FromQuery] DateTime start,
+    [FromQuery] DateTime end)
+        {
+            if (start > end) return BadRequest("Start must be before or equal to End.");
+
+            var result = await _service.GetByEmployeeInRange(empId, start, end);
             return Ok(result);
         }
 

@@ -3,8 +3,8 @@
     public class DepartmentHolidayCalendarDTO
     {
         public int DepHolidayCalendarId { get; set; }
-        public int DepId { get; set; }
-        public int HolidayId { get; set; }
+        public int? DepId { get; set; }
+        public int? HolidayId { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
 

@@ -1,4 +1,5 @@
-﻿using AttendanceManagementPayrollSystem.Models;
+﻿using AttendanceManagementPayrollSystem.DTO;
+using AttendanceManagementPayrollSystem.Models;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -17,6 +18,8 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
         /// </summary>
         Task<IEnumerable<HolidayCalendar>> GetByYearAsync(int year);
 
+        Task<IEnumerable<HolidayCalendarDTO>> GetByRangeAsync(DateTime start, DateTime end);
+
         /// <summary>
         /// Lấy thông tin chi tiết ngày nghỉ lễ theo ID.
         /// </summary>
@@ -27,6 +30,10 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
         /// </summary>
         Task<IEnumerable<HolidayCalendar>> GetByDepartmentAsync(int depId);
 
+        Task<IEnumerable<HolidayCalendarDTO>> GetByEmployeeAsync(int depId, DateTime start, DateTime end);
+
+
+
         /// <summary>
         /// Thêm mới ngày nghỉ lễ.
         /// </summary>
@@ -35,7 +42,7 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
         /// <summary>
         /// Cập nhật thông tin ngày nghỉ lễ.
         /// </summary>
-        Task UpdateAsync(HolidayCalendar holiday);
+        Task UpdateAsync(HolidayCalendarDTO holiday);
 
         /// <summary>
         /// Xóa ngày nghỉ lễ khỏi hệ thống.
@@ -52,5 +59,7 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
         /// Xóa ngày nghỉ lễ khỏi một phòng ban.
         /// </summary>
         Task RemoveHolidayFromDepartmentAsync(int holidayId, int depId);
+
+        Task<List<HolidayCalendarDTO>> GetFilteredHolidaysAsync(DateTime? start, DateTime? end, string? name);
     }
 }
