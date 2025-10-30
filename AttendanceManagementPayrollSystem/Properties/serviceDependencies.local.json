@@ -19,6 +19,11 @@
       "type": "mssql.local",
       "connectionId": "ConnectionStrings:DatabaseConnection2",
       "dynamicId": null
+    },
+    "mssql4": {
+      "secretStore": "LocalSecretsFile",
+      "type": "mssql.local",
+      "connectionId": "ConnectionStrings:DatabaseConnection3"
     }
   }
 }

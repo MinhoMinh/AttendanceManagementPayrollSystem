@@ -2,6 +2,7 @@ using AttendanceManagementPayrollSystem.Components;
 using AttendanceManagementPayrollSystem.DataAccess.Repositories;
 using AttendanceManagementPayrollSystem.Models;
 using AttendanceManagementPayrollSystem.Services;
+using AttendanceManagementPayrollSystem.Services.Interfaces;
 using Blazorise;
 using Blazorise.Bootstrap5;
 using Blazorise.Icons.FontAwesome;
@@ -44,6 +45,10 @@ builder.Services.AddScoped<HolidayCalendarService, HolidayCalendarServiceImpl>()
 builder.Services.AddScoped<ShiftService, ShiftServiceImpl>();
 builder.Services.AddScoped<HolidayCalendarService, HolidayCalendarServiceImpl>();
 builder.Services.AddScoped<DepartmentService, DepartmentServiceImpl>();
+builder.Services.AddScoped<IOvertimeService, OvertimeService>();
+builder.Services.AddScoped<IOvertimeRepository, OvertimeRepositoryImpl>();
+
+
 
 
 

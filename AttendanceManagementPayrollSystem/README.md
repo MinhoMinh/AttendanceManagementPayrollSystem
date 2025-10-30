@@ -1,15 +1,3 @@
----
-
-## PAYRUN FEATURE – ATTENDANCE MANAGEMENT PAYROLL SYSTEM
-
-### 1. Purpose
-
-The Payrun feature is developed to automate the periodic payroll process for employees.
-The system assists the HR department in consolidating attendance data, allowances, and deductions to calculate and generate payrolls quickly, accurately, and transparently.
-
-### 2. Workflow
-
-# PAYRUN FEATURE – ATTENDANCE MANAGEMENT PAYROLL SYSTEM
 
 ### 1. Purpose
 
