@@ -1,3 +1,16 @@
 /.vs
 /AttendanceManagementPayrollSystem.Tests/bin
 /AttendanceManagementPayrollSystem.Tests/obj
+*.json
+*.dll
+*.exe
+*.pdb
+*.props
+*.targets
+*.cs
+*.Up2Date
+*.cache
+*.BuildWithSkipAnalyzers
+*.txt
+*.editorconfig
+*.css
