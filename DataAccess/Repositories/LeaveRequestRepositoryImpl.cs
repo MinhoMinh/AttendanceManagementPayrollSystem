@@ -18,6 +18,7 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
         public async Task<IEnumerable<LeaveRequest>> GetByEmployeeIdAsync(int empId)
         {
             return await _context.LeaveRequests
+                .Include(lr => lr.Type)
                 .Where(lr => lr.EmpId == empId)
                 .OrderByDescending(lr => lr.ReqDate)
                 .ToListAsync();

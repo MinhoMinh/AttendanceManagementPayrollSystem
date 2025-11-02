@@ -1,0 +1,112 @@
+﻿@page "/viewhistory"
+@inject IHttpClientFactory HttpFactory
+@inject IJSRuntime JS
+
+<h3>Leave Request History</h3>
+
+@if (historyList == null)
+{
+    <p>Loading...</p>
+}
+else if (!historyList.Any())
+{
+    <p>No leave requests found.</p>
+}
+else
+{
+    <table class="history-table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Type</th>
+                <th>Start Date</th>
+                <th>End Date</th>
+                <th>Reason</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var (item, index) in historyList.Select((value, i) => (value, i + 1)))
+            {
+                <tr class="@GetStatusClass(item.Status)">
+                    <td>@index</td>
+                    <td>@item.TypeName</td>
+                    <td>@item.StartDate.ToString("yyyy-MM-dd")</td>
+                    <td>@item.EndDate.ToString("yyyy-MM-dd")</td>
+                    <td>@item.Reason</td>
+                    <td>@item.Status</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<LeaveRequestDTO>? historyList;
+    private int currentEmpId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var empJson = await JS.InvokeAsync<string>("localStorage.getItem", "employee");
+        if (!string.IsNullOrEmpty(empJson))
+        {
+            var emp = System.Text.Json.JsonSerializer.Deserialize<EmployeeDTO>(empJson);
+            if (emp != null)
+            {
+                currentEmpId = emp.EmpId;
+                await LoadHistory();
+            }
+        }
+    }
+
+    private async Task LoadHistory()
+    {
+        try
+        {
+            var client = HttpFactory.CreateClient("ApiClient");
+            var response = await client.GetAsync($"api/LeaveRequest/history/{currentEmpId}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                var data = await response.Content.ReadFromJsonAsync<List<LeaveRequestDTO>>();
+                historyList = data ?? new();
+            }
+            else
+            {
+                historyList = new();
+            }
+        }
+        catch
+        {
+            historyList = new();
+        }
+    }
+
+    private string GetStatusClass(string? status)
+    {
+        return status?.ToLower() switch
+        {
+            "approved" => "status-approved",
+            "rejected" => "status-rejected",
+            _ => "status-pending"
+        };
+    }
+
+    private class LeaveRequestDTO
+    {
+        public int ReqId { get; set; }
+        public int EmpId { get; set; }
+        public int TypeId { get; set; }
+        public string? TypeName { get; set; }
+        public DateTime StartDate { get; set; }
+        public DateTime EndDate { get; set; }
+        public string? Reason { get; set; }
+        public string? Status { get; set; }
+    }
+
+    private class EmployeeDTO
+    {
+        public int EmpId { get; set; }
+        public string EmpName { get; set; } = string.Empty;
+    }
+}

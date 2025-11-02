@@ -15,6 +15,7 @@ namespace AttendanceManagementPayrollSystem.Services
         public LeaveRequestServiceImpl(ILeaveRequestRepository repository)
         {
             _repository = repository;
+            //_balanceRepository = balanceRepository;
         }
 
         public async Task<LeaveRequestDTO> AddAsync(LeaveRequestDTO dto)
@@ -47,6 +48,7 @@ namespace AttendanceManagementPayrollSystem.Services
                 EndDate = lr.EndDate,
                 Reason = lr.Reason,
                 TypeId = lr.TypeId,
+                TypeName = lr.Type?.Name ?? string.Empty,
                 Status = lr.Status
             }).ToList();
         }
@@ -72,8 +74,21 @@ namespace AttendanceManagementPayrollSystem.Services
             if (request == null) throw new Exception("Leave request not found");
 
             request.Status = dto.Status;
-
             await _repository.UpdateAsync(request);
+
+            //if (request.Status.Equals("Approved", StringComparison.OrdinalIgnoreCase))
+            //{
+            //    int days = (request.EndDate.ToDateTime(TimeOnly.MinValue) - request.StartDate.ToDateTime(TimeOnly.MinValue)).Days + 1;
+
+            //    var balance = await _balanceRepository.GetByEmpIdAsync(request.EmpId);
+            //    if (balance != null)
+            //    {
+            //        balance.PtoAvailable -= days;
+            //        if (balance.PtoAvailable < 0) balance.PtoAvailable = 0;
+
+            //        await _balanceRepository.UpdateAsync(balance);
+            //    }
+            //}
         }
     }
 }

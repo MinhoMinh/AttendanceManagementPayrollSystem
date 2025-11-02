@@ -1,8 +1,8 @@
-﻿    using AttendanceManagementPayrollSystem.DTOs;
-    using AttendanceManagementPayrollSystem.Services;
+﻿using AttendanceManagementPayrollSystem.DTOs;
+using AttendanceManagementPayrollSystem.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-    using System.Threading.Tasks;
+using System.Threading.Tasks;
 
 namespace AttendanceManagementPayrollSystem.Controllers
 {

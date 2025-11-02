@@ -44,6 +44,7 @@ builder.Services.AddScoped<LeaveRequestService, LeaveRequestServiceImpl>();
 builder.Services.AddScoped<ShiftService, ShiftServiceImpl>();
 builder.Services.AddScoped<IEmployeeBalanceService, EmployeeBalanceServiceImpl>();
 
+
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {

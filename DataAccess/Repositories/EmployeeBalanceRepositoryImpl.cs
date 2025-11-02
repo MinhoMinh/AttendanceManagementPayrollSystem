@@ -19,5 +19,10 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
                 .Include(e => e.Emp)
                 .FirstOrDefaultAsync(e => e.EmpId == empId);
         }
+        public async Task UpdateAsync(EmployeeBalance balance)
+        {
+            _context.EmployeeBalances.Update(balance);
+            await _context.SaveChangesAsync();
+        }
     }
 }

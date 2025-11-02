@@ -71,6 +71,7 @@
             new DashboardButton { Text = "Shift", OnClick = EventCallback.Factory.Create(this, NavigateSelfShift), Visible = HasPermission("has_shift") },
             new DashboardButton { Text = "Leave Request", OnClick = EventCallback.Factory.Create(this, NavigateLeaveRequest), Visible = HasPermission("has_leave_request") },
             new DashboardButton { Text = "View Balance", OnClick = EventCallback.Factory.Create(this, NavigateViewBalance), Visible = true },
+            new DashboardButton { Text = "View History", OnClick = EventCallback.Factory.Create(this, NavigateViewHistory), Visible = true }
         };
 
         DepartmentHeadService = new List<DashboardButton>
@@ -122,6 +123,6 @@
     private void NavigateLeaveRequest() => Navigation.NavigateTo("/leaverequest");
     private void NavigateViewBalance() => Navigation.NavigateTo("/viewbalance");
     private void NavigateViewPending() => Navigation.NavigateTo("/viewpending");
-
+    private void NavigateViewHistory() => Navigation.NavigateTo("/viewhistory");
 
 }

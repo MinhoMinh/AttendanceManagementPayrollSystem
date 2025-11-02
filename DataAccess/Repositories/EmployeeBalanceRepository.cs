@@ -6,5 +6,6 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
     public interface IEmployeeBalanceRepository
     {
         Task<EmployeeBalance?> GetByEmployeeIdAsync(int empId);
+        Task UpdateAsync(EmployeeBalance balance);
     }
 }

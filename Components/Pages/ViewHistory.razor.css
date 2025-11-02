@@ -1,0 +1,44 @@
+﻿h3 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.history-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #fff;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+    .history-table th,
+    .history-table td {
+        border: 1px solid #ddd;
+        padding: 10px;
+        text-align: center;
+    }
+
+    .history-table th {
+        background-color: #0078d7;
+        color: white;
+    }
+
+.status-approved {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.status-rejected {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.status-pending {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+p {
+    text-align: center;
+    font-style: italic;
+    color: gray;
+}
