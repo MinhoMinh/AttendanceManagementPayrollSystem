@@ -1,0 +1,204 @@
+﻿@page "/rates-tax"
+@using AttendanceManagementPayrollSystem.DTO
+@inject IHttpClientFactory HttpFactory
+@inject NavigationManager Navigation
+@using Blazorise
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+
+<h3 class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
+    <span>Cài đặt Mức đóng & Thuế</span>
+
+    <button class="btn btn-sm btn-outline-primary d-flex align-items-center gap-1"
+            @onclick="NavigateToEdit">
+        <i class="bi bi-pencil-square"></i>
+        <span>@(activeTab == "insurance" ? "Chỉnh sửa Bảo hiểm" : "Chỉnh sửa Thuế")</span>
+    </button>
+</h3>
+
+<Tabs @bind-SelectedTab="activeTab">
+    <Items>
+        <Tab Name="insurance">Mức đóng Bảo hiểm</Tab>
+        <Tab Name="tax">Bảng Thuế</Tab>
+    </Items>
+
+    <Content>
+        <!-- MỨC ĐÓNG BẢO HIỂM -->
+        <TabPanel Name="insurance">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="m-0">Danh sách Mức đóng Bảo hiểm</h5>
+            </div>
+            <div class="row mt-3">
+                <!-- Danh sách bên trái -->
+                <div class="col-5 border-end" style="max-height:70vh;overflow-y:auto;">
+                    @if (insuranceList == null)
+                    {
+                        <p><em>Đang tải dữ liệu bảo hiểm...</em></p>
+                    }
+                    else
+                    {
+                        @foreach (var item in insuranceList)
+                        {
+                            <div class="p-2 border-bottom clickable @(selectedInsurance?.RateSetId == item.RateSetId ? "bg-light" : "")"
+                                 @onclick="() => SelectInsurance(item)">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>@item.TypeName</strong><br />
+                                        <small>Mã luật: @item.LawCode</small><br />
+                                        <small>Hiệu lực từ: @item.EffectiveFrom</small>
+                                    </div>
+
+                                    <Badge Color="@(item.IsActive? Color.Success: Color.Secondary)">
+                                        @(item.IsActive ? "Đang hoạt động" : "Ngưng")
+                                    </Badge>
+                                </div>
+                            </div>
+                        }
+
+                    }
+                </div>
+
+                <!-- Chi tiết bên phải -->
+                <div class="col-7">
+                    @if (selectedInsurance != null)
+                    {
+                        <h5>Chi tiết bảo hiểm @selectedInsurance.TypeName</h5>
+                        <p class="text-muted">Mã luật: @selectedInsurance.LawCode</p>
+
+                        <table class="table table-bordered table-sm">
+                            <tbody>
+                                <tr><th>Tỷ lệ nhân viên</th><td>@(selectedInsurance.EmployeeRate * 100)%</td></tr>
+                                <tr><th>Tỷ lệ doanh nghiệp</th><td>@(selectedInsurance.EmployerRate * 100)%</td></tr>
+                                <tr><th>Quy tắc giới hạn</th><td>@selectedInsurance.CapRule</td></tr>
+                                <tr><th>Hiệu lực từ</th><td>@selectedInsurance.EffectiveFrom</td></tr>
+                                <tr>
+                                    <th>Hiệu lực đến</th>
+                                    <td>
+                                        @if (selectedInsurance.EffectiveTo is null)
+                                        {
+                                            <span class="text-muted">Không có ngày kết thúc</span>
+                                        }
+                                        else
+                                        {
+                                            @selectedInsurance.EffectiveTo
+                                        }
+                                    </td>
+                                </tr>
+                                <tr><th>Trạng thái</th><td>@(selectedInsurance.IsActive == true ? "Đang hoạt động" : "Ngưng hoạt động")</td></tr>
+                            </tbody>
+                        </table>
+                    }
+                    else
+                    {
+                        <p>Chọn một mức bảo hiểm để xem chi tiết.</p>
+                    }
+                </div>
+            </div>
+        </TabPanel>
+
+        <!-- BẢNG THUẾ -->
+        <TabPanel Name="tax">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="m-0">Bảng Thuế</h5>
+            </div>
+            <div class="row mt-3">
+                <div class="col-4 border-end" style="max-height:70vh;overflow-y:auto;">
+                    @if (tax == null)
+                    {
+                        <p><em>Đang tải dữ liệu thuế...</em></p>
+                    }
+                    else
+                    {
+                        <div class="p-2 border-bottom clickable bg-light"
+                             @onclick="() => SelectTax(tax)">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>@tax.TaxName</strong><br />
+                                    <small>Hiệu lực từ: @tax.EffectiveFrom</small>
+                                </div>
+
+                                <Badge Color="@(tax.IsActive? Color.Success: Color.Secondary)">
+                                    @(tax.IsActive ? "Đang hoạt động" : "Ngưng")
+                                </Badge>
+                            </div>
+                        </div>
+
+                    }
+                </div>
+
+                <div class="col-6">
+                    @if (selectedTax != null)
+                    {
+                        <h5>Bậc Thuế</h5>
+                        <table class="table table-bordered table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Giới hạn dưới</th>
+                                    <th>Giới hạn trên</th>
+                                    <th>Tỷ lệ</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var bracket in selectedTax.TaxBrackets ?? Enumerable.Empty<TaxBracketDTO>())
+                                {
+                                    <tr>
+                                        <td>@bracket.LowerBound</td>
+                                        <td>@(bracket.UpperBound?.ToString() ?? "Không giới hạn")</td>
+                                        <td>@(bracket.Rate * 100)%</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                    else
+                    {
+                        <p>Chọn một bảng thuế để xem chi tiết.</p>
+                    }
+                </div>
+            </div>
+        </TabPanel>
+    </Content>
+</Tabs>
+
+@code {
+    private string activeTab = "insurance";
+    private List<InsuranceRateDTO>? insuranceList;
+    private TaxDTO? tax;
+    private InsuranceRateDTO? selectedInsurance;
+    private TaxDTO? selectedTax;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadInsuranceRates();
+        await LoadTax();
+
+        if (insuranceList?.Any() == true)
+            selectedInsurance = insuranceList.First();
+
+        if (tax != null)
+            selectedTax = tax;
+    }
+
+    private async Task LoadInsuranceRates()
+    {
+        var client = HttpFactory.CreateClient("ApiClient");
+        insuranceList = await client.GetFromJsonAsync<List<InsuranceRateDTO>>("api/insurancerateset/active");
+    }
+
+    private async Task LoadTax()
+    {
+        var client = HttpFactory.CreateClient("ApiClient");
+        tax = await client.GetFromJsonAsync<TaxDTO>("api/tax/active");
+    }
+
+    private void SelectInsurance(InsuranceRateDTO dto) => selectedInsurance = dto;
+    private void SelectTax(TaxDTO dto) => selectedTax = dto;
+
+    private void NavigateToEdit()
+    {
+        if (activeTab == "insurance")
+            Navigation.NavigateTo("/edit-insurance");
+        else
+            Navigation.NavigateTo("/edit-tax");
+    }
+}

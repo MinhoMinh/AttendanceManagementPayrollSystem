@@ -1,0 +1,14 @@
+﻿.toast-fixed {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 2000;
+    width: 300px; /* tùy chỉnh */
+}
+
+    .toast-fixed .alert-success {
+        background-color: #28a745; /* xanh lá đẹp */
+        color: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }

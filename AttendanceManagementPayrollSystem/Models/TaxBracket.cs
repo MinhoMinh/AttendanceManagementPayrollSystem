@@ -15,7 +15,7 @@ public partial class TaxBracket
 
     public decimal Rate { get; set; }
 
-    public DateOnly EffectiveFrom { get; set; }
+    public int? TaxId { get; set; }
 
-    public DateOnly? EffectiveTo { get; set; }
+    public virtual Tax Tax { get; set; }
 }
