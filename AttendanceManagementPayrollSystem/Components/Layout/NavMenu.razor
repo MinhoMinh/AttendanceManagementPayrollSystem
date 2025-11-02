@@ -1,13 +1,36 @@
-﻿<Bar ThemeContrast="ThemeContrast.Light" Background="Background.Light" Padding="Padding.Is2.OnY" Mode="BarMode.Horizontal">
-    <BarBrand>
-        <strong>Attendance System</strong>
+﻿<Bar ThemeContrast="ThemeContrast.Light" Background="Background.Light" Padding="Padding.Is3.OnY"
+     Mode="BarMode.Horizontal">
+    <BarBrand Class="ps-4">
+        <BarLink To="/dashboard">
+            <strong>AMPS</strong>
+        </BarLink>
     </BarBrand>
 
-    <BarEnd>
-        <div class="d-flex flex-row align-items-end gap-2">
-        <BarItem><BarLink To="/">Home</BarLink></BarItem>
-        <BarItem><BarLink To="/reports">Reports</BarLink></BarItem>
-        <BarItem><BarLink To="/logout">Logout</BarLink></BarItem>
+    <BarEnd Class="me-4 pe-4">
+        <div class="position-relative d-inline-block">
+            <Dropdown Direction="Direction.Down" DropdownPositionStrategy="DropdownPositionStrategy.Absolute">
+                <DropdownToggle Color="Color.Info" Class="pe-3">
+                    Tài khoản
+                </DropdownToggle>
+                <DropdownMenu Class="position-absolute mt-1 w-auto" Style="min-width:150px;">
+                    <DropdownItem To="/settings">Cài đặt</DropdownItem>
+                    <DropdownDivider />
+                    <DropdownItem Clicked="Logout">Đăng xuất</DropdownItem>
+                </DropdownMenu>
+            </Dropdown>
         </div>
     </BarEnd>
 </Bar>
+
+@code
+{
+    private void Logout()
+    {
+        // clear localStorage and redirect to login
+        JS.InvokeVoidAsync("localStorage.clear");
+        Navigation.NavigateTo("/login", forceLoad: true);
+    }
+
+    [Inject] IJSRuntime JS { get; set; } = default!;
+    [Inject] NavigationManager Navigation { get; set; } = default!;
+}

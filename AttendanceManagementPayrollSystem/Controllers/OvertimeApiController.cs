@@ -1,7 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using AttendanceManagementPayrollSystem.Models;
+﻿using AttendanceManagementPayrollSystem.Models;
 using AttendanceManagementPayrollSystem.Services.Interfaces;
-using System;
+using Microsoft.AspNetCore.Mvc;
 
 namespace AttendanceManagementPayrollSystem.Controllers
 {
@@ -16,54 +15,63 @@ namespace AttendanceManagementPayrollSystem.Controllers
             _service = service;
         }
 
-        // ✅ GET /api/overtime/my
-        [HttpGet("my")]
-        public IActionResult GetMyOvertimeHistory()
+        // ✅ GET /api/overtime/history?empId=1&startDate=2025-10-01&endDate=2025-10-30
+        [HttpGet("history")]
+        public IActionResult GetOvertimeHistory(
+            [FromQuery] int empId,
+            [FromQuery] DateOnly? startDate,
+            [FromQuery] DateOnly? endDate)
         {
-            int currentEmpId = GetCurrentEmployeeId();
-
-            var data = _service.GetOvertimeHistoryByEmployee(currentEmpId);
-
+            var data = _service.GetOvertimeHistoryByEmployee(empId, startDate, endDate);
             return Ok(data);
         }
 
-
-        // 🆕 POST /api/overtime/create
-        [HttpPost("create")]
-        public IActionResult CreateOvertime([FromBody] OvertimeRequest request)
+        // ✅ POST /api/overtime/request (Employee self-request)
+        [HttpPost("request")]
+        public IActionResult RequestOvertime([FromBody] OvertimeRequest request)
         {
             if (request == null) return BadRequest("Invalid request data.");
 
-            request.EmpId = GetCurrentEmployeeId();
             request.Status = "Pending";
             request.CreatedDate = DateOnly.FromDateTime(DateTime.Now);
 
             _service.CreateOvertimeRequest(request);
             return Ok(new { message = "Overtime request submitted successfully." });
         }
+
+        // ✅ POST /api/overtime/request-by-head (Department head creates on behalf)
+        [HttpPost("request-by-head")]
+        public IActionResult RequestOvertimeByHead([FromBody] OvertimeRequest request)
+        {
+            if (request == null) return BadRequest("Invalid request data.");
+
+            request.Status = "Approved";
+            request.CreatedDate = DateOnly.FromDateTime(DateTime.Now);
+
+            _service.CreateOvertimeRequestByHead(request);
+            return Ok(new { message = "Overtime request submitted by department head." });
+        }
+
         // ✅ PUT /api/overtime/approve/{id}
         [HttpPut("approve/{id}")]
-        public IActionResult ApproveOvertime(int id)
+        public IActionResult ApproveOvertime(int id, [FromBody] ApproveRejectDto dto)
         {
-            int approverId = GetCurrentEmployeeId(); // giả lập người duyệt
-            _service.ApproveOvertimeRequest(id, approverId);
+            _service.ApproveOvertimeRequest(id, dto.ApproverId);
             return Ok(new { message = "Overtime request approved." });
         }
 
-
-        // ❌ PUT /api/overtime/reject/{id}
+        // ✅ PUT /api/overtime/reject/{id}
         [HttpPut("reject/{id}")]
-        public IActionResult RejectOvertime(int id)
+        public IActionResult RejectOvertime(int id, [FromBody] ApproveRejectDto dto)
         {
-            int approverId = GetCurrentEmployeeId();
-            _service.RejectOvertimeRequest(id, approverId);
+            _service.RejectOvertimeRequest(id, dto.ApproverId);
             return Ok(new { message = "Overtime request rejected." });
         }
+    }
 
-        private int GetCurrentEmployeeId()
-        {
-            // 🔒 Tạm thời hardcode, sau này thay bằng session/login user context
-            return 1;
-        }
+    // DTOs
+    public class ApproveRejectDto
+    {
+        public int ApproverId { get; set; }
     }
 }
