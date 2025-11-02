@@ -44,6 +44,7 @@ builder.Services.AddScoped<HolidayCalendarService, HolidayCalendarServiceImpl>()
 builder.Services.AddScoped<ShiftService, ShiftServiceImpl>();
 builder.Services.AddScoped<HolidayCalendarService, HolidayCalendarServiceImpl>();
 builder.Services.AddScoped<DepartmentService, DepartmentServiceImpl>();
+builder.Services.AddScoped<SalaryPolicyService, SalaryPolicyServiceImpl>();
 
 
 

@@ -1,0 +1,88 @@
+﻿@page "/salary-policies/history"
+@using AttendanceManagementPayrollSystem.DTO
+@inject IHttpClientFactory HttpFactory
+
+<h3 class="text-center mb-4">Lịch Sử Chính Sách Lương</h3>
+
+<div class="row">
+    <!-- Bảng danh sách các policy đã inactive -->
+    <div class="col-md-4">
+        <div class="list-group">
+            @if (inactivePolicies == null)
+            {
+                <p><em>Đang tải...</em></p>
+            }
+            else if (!inactivePolicies.Any())
+            {
+                <p>Không tìm thấy chính sách lương nào trong lịch sử.</p>
+            }
+            else
+            {
+                @foreach (var policy in inactivePolicies)
+                {
+                    <button class="list-group-item list-group-item-action @(selectedPolicy?.SalId == policy.SalId ? "active" : "")"
+                            @onclick="() => SelectPolicy(policy)">
+                        @policy.SalaryPolicyName.Trim()
+                        <br />
+                        <small>Hiệu lực từ: @policy.EffectiveFrom.ToShortDateString()</small>
+                    </button>
+                }
+            }
+        </div>
+    </div>
+
+    <!-- Bảng chi tiết -->
+    <div class="col-md-8">
+        @if (selectedPolicy == null)
+        {
+            <p>Chọn một chính sách để xem chi tiết.</p>
+        }
+        else
+        {
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">@selectedPolicy.SalaryPolicyName.Trim()</h5>
+                    <p class="card-text"><strong>Giá trị công việc:</strong> @selectedPolicy.WorkUnitValue.ToString("N0") VNĐ</p>
+                    <p class="card-text"><strong>Nghỉ phép hàng năm:</strong> @selectedPolicy.YearlyPto</p>
+                    <p class="card-text"><strong>Hệ số Overclock:</strong> @selectedPolicy.OverclockMultiplier</p>
+                    <p class="card-text"><strong>Ngày hiệu lực:</strong> @selectedPolicy.EffectiveFrom.ToShortDateString()</p>
+                    <p class="card-text">
+                        <strong>Đang hoạt động:</strong>
+                        <span class="badge @(selectedPolicy.IsActive ? "bg-success" : "bg-secondary")">
+                            @(selectedPolicy.IsActive ? "Có" : "Không")
+                        </span>
+                    </p>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private List<SalaryPolicyViewDTO> inactivePolicies;
+    private SalaryPolicyViewDTO selectedPolicy;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadInactivePoliciesAsync();
+    }
+
+    private async Task LoadInactivePoliciesAsync()
+    {
+        try
+        {
+            var client = HttpFactory.CreateClient("ApiClient");
+            inactivePolicies = await client.GetFromJsonAsync<List<SalaryPolicyViewDTO>>("api/salarypolicy/getinactivesalarypolicy");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Lỗi khi tải lịch sử chính sách lương: {ex.Message}");
+            inactivePolicies = new List<SalaryPolicyViewDTO>();
+        }
+    }
+
+    private void SelectPolicy(SalaryPolicyViewDTO policy)
+    {
+        selectedPolicy = policy;
+    }
+}

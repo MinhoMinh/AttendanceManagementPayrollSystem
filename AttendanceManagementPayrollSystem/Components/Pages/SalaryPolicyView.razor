@@ -1,0 +1,237 @@
+﻿@page "/salary-policies"
+@using AttendanceManagementPayrollSystem.DTO
+@inject IHttpClientFactory HttpFactory
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+
+<h3 class="mb-4">Cài đặt Chính sách Lương</h3>
+
+<div class="row">
+    <div class="col-lg-8">
+        <!-- Card: Chính sách lương hiện hành -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-currency-exchange me-2"></i>Chính sách lương hiện hành
+                </h5>
+                <button class="btn btn-sm btn-light" @onclick="GoToHistory">
+                    <i class="bi bi-clock-history"></i> Lịch sử
+                </button>
+            </div>
+            <div class="card-body">
+                @if (salaryPolicy == null)
+                {
+                    <div class="text-center py-4">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Đang tải...</span>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <label class="form-label text-muted">Tên chính sách</label>
+                            <p class="fw-bold">@salaryPolicy.SalaryPolicyName.Trim()</p>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted">Giá trị công việc (1 đơn vị)</label>
+                            <p class="fw-bold text-success">@salaryPolicy.WorkUnitValue.ToString("N0") VNĐ</p>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted">Nghỉ phép hàng năm</label>
+                            <p class="fw-bold">@salaryPolicy.YearlyPto ngày</p>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted">Hệ số Overclock</label>
+                            <p class="fw-bold">@salaryPolicy.OverclockMultiplier.ToString("F1")x</p>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted">Ngày hiệu lực</label>
+                            <p class="fw-bold">@salaryPolicy.EffectiveFrom:dd/MM/yyyy</p>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted">Trạng thái</label>
+                            <p class="fw-bold @(salaryPolicy.IsActive ? "text-success" : "text-danger")">
+                                @(salaryPolicy.IsActive ? "Đang hoạt động" : "Đã vô hiệu")
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 text-end">
+                        <button class="btn btn-outline-primary" @onclick="() => OpenEditModal(salaryPolicy)">
+                            <i class="bi bi-pencil-square"></i> Chỉnh sửa
+                        </button>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <!-- Card: Hướng dẫn nhanh -->
+        <div class="card border-info shadow-sm">
+            <div class="card-header bg-info text-white">
+                <i class="bi bi-info-circle-fill me-2"></i>Thông tin
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled mb-0 small">
+                    <li class="mb-2"><i class="bi bi-check-circle text-success"></i> Chỉ có <strong>một</strong> chính sách lương hoạt động tại một thời điểm.</li>
+                    <li class="mb-2"><i class="bi bi-calendar-check text-primary"></i> Thay đổi sẽ có hiệu lực từ ngày được chọn.</li>
+                    <li><i class="bi bi-clock text-warning"></i> Lịch sử chính sách cũ được lưu tại <strong>Lịch sử</strong>.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal chỉnh sửa -->
+@if (showEditModal)
+{
+    <div class="modal fade show d-block" style="background-color: rgba(0,0,0,0.5);" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-gear-fill me-2"></i>Chỉnh sửa chính sách lương
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" @onclick="CloseModal"></button>
+                </div>
+                <div class="modal-body">
+                    <EditForm Model="@editingPolicy" OnValidSubmit="SaveEditingPolicy">
+                        <DataAnnotationsValidator />
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Tên chính sách <span class="text-danger">*</span></label>
+                                <InputText class="form-control" @bind-Value="editingPolicy.SalaryPolicyName" />
+                                <ValidationMessage For="@(() => editingPolicy.SalaryPolicyName)" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Giá trị công việc (VNĐ) <span class="text-danger">*</span></label>
+                                <InputNumber class="form-control" @bind-Value="editingPolicy.WorkUnitValue" />
+                                <ValidationMessage For="@(() => editingPolicy.WorkUnitValue)" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Nghỉ phép hàng năm (ngày) <span class="text-danger">*</span></label>
+                                <InputNumber class="form-control" @bind-Value="editingPolicy.YearlyPto" />
+                                <ValidationMessage For="@(() => editingPolicy.YearlyPto)" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Hệ số Overclock <span class="text-danger">*</span></label>
+                                <InputNumber class="form-control" step="0.1" @bind-Value="editingPolicy.OverclockMultiplier" />
+                                <ValidationMessage For="@(() => editingPolicy.OverclockMultiplier)" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Ngày hiệu lực <span class="text-danger">*</span></label>
+                                <InputDate class="form-control" @bind-Value="editingPolicy.EffectiveFrom" />
+                                <ValidationMessage For="@(() => editingPolicy.EffectiveFrom)" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Trạng thái</label>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="isActiveSwitch" @bind="editingPolicy.IsActive">
+                                    <label class="form-check-label" for="isActiveSwitch">
+                                        @(editingPolicy.IsActive ? "Đang hoạt động" : "Tạm dừng")
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 d-flex justify-content-end gap-2">
+                            <button type="button" class="btn btn-secondary" @onclick="CloseModal">
+                                <i class="bi bi-x-circle"></i> Hủy
+                            </button>
+                            <button type="submit" class="btn btn-primary" disabled="@isSaving">
+                                @if (isSaving)
+                                {
+                                    <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                    <span>Đang lưu...</span>
+                                }
+                                else
+                                {
+                                    <i class="bi bi-check-circle">Lưu thay đổi</i>
+                                    
+                                                        }
+                            </button>
+                        </div>
+                    </EditForm>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private SalaryPolicyViewDTO salaryPolicy;
+    private SalaryPolicyEditDTO editingPolicy;
+    private bool showEditModal = false;
+    private bool isSaving = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadPolicyAsync();
+    }
+
+    private async Task LoadPolicyAsync()
+    {
+        try
+        {
+            var client = HttpFactory.CreateClient("ApiClient");
+            salaryPolicy = await client.GetFromJsonAsync<SalaryPolicyViewDTO>("api/salarypolicy/getactivesalarypolicy");
+        }
+        catch (Exception ex)
+        {
+            await JS.InvokeVoidAsync("alert", $"Lỗi khi tải dữ liệu: {ex.Message}");
+        }
+    }
+
+    private void OpenEditModal(SalaryPolicyViewDTO policy)
+    {
+        editingPolicy = new SalaryPolicyEditDTO
+        {
+            SalId = policy.SalId,
+            SalaryPolicyName = policy.SalaryPolicyName,
+            WorkUnitValue = policy.WorkUnitValue,
+            YearlyPto = policy.YearlyPto,
+            OverclockMultiplier = policy.OverclockMultiplier,
+            EffectiveFrom = policy.EffectiveFrom,
+            IsActive = policy.IsActive
+        };
+        showEditModal = true;
+    }
+
+    private void CloseModal()
+    {
+        showEditModal = false;
+        editingPolicy = null;
+        isSaving = false;
+    }
+
+    private async Task SaveEditingPolicy()
+    {
+        isSaving = true;
+        try
+        {
+            var client = HttpFactory.CreateClient("ApiClient");
+            var response = await client.PutAsJsonAsync($"api/salarypolicy/{editingPolicy.SalId}", editingPolicy);
+            response.EnsureSuccessStatusCode();
+
+            CloseModal();
+            await LoadPolicyAsync();
+            await JS.InvokeVoidAsync("alert", "Cập nhật chính sách lương thành công!");
+        }
+        catch (Exception ex)
+        {
+            await JS.InvokeVoidAsync("alert", $"Lỗi khi lưu: {ex.Message}");
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private void GoToHistory()
+    {
+        Navigation.NavigateTo("/salary-policies/history");
+    }
+}
