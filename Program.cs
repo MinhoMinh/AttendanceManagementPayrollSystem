@@ -45,6 +45,9 @@ builder.Services.AddScoped<ShiftService, ShiftServiceImpl>();
 builder.Services.AddScoped<IEmployeeBalanceService, EmployeeBalanceServiceImpl>();
 
 
+//builder.Services.AddScoped<IEmployeeBalanceRepository, EmployeeBalanceRepository>();
+
+
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {

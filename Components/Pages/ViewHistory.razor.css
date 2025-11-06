@@ -1,44 +1,72 @@
 ﻿h3 {
     text-align: center;
-    margin-bottom: 20px;
+    margin-bottom: 25px;
+    color: #97322D;
+    font-size: 2rem;
+    font-weight: 700;
 }
 
 .history-table {
-    width: 100%;
+    width: 95%;
+    margin: 0 auto;
     border-collapse: collapse;
-    background-color: #fff;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    background-color: #fffdf7;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(151, 50, 45, 0.15);
+    transition: transform 0.2s ease-in-out;
 }
+
+    .history-table:hover {
+        transform: scale(1.01);
+    }
 
     .history-table th,
     .history-table td {
-        border: 1px solid #ddd;
-        padding: 10px;
+        border: 1px solid #f3d8a2;
+        padding: 12px;
         text-align: center;
+        font-size: 1rem;
     }
 
     .history-table th {
-        background-color: #0078d7;
-        color: white;
+        background-color: #97322D;
+        color: #FFE4A1;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
     }
 
+    .history-table tbody tr:nth-child(even) {
+        background-color: #FFF5D7;
+    }
+
+    .history-table tbody tr:hover {
+        background-color: #FFE4A1;
+        transition: all 0.2s ease-in-out;
+    }
+
+/* Trạng thái */
 .status-approved {
-    background-color: #d4edda;
-    color: #155724;
+    background-color: #e8f8ec;
+    color: #2e7d32;
+    font-weight: 600;
 }
 
 .status-rejected {
-    background-color: #f8d7da;
-    color: #721c24;
+    background-color: #fce5e6;
+    color: #b71c1c;
+    font-weight: 600;
 }
 
 .status-pending {
-    background-color: #fff3cd;
-    color: #856404;
+    background-color: #fff5d7;
+    color: #c47a00;
+    font-weight: 600;
 }
 
 p {
     text-align: center;
     font-style: italic;
-    color: gray;
+    color: #97322D;
+    opacity: 0.8;
 }

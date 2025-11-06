@@ -70,8 +70,8 @@
             new DashboardButton { Text = "Self KPI", OnClick = EventCallback.Factory.Create(this, NavigateSelfKpi), Visible = HasPermission("has_kpi") },
             new DashboardButton { Text = "Shift", OnClick = EventCallback.Factory.Create(this, NavigateSelfShift), Visible = HasPermission("has_shift") },
             new DashboardButton { Text = "Leave Request", OnClick = EventCallback.Factory.Create(this, NavigateLeaveRequest), Visible = HasPermission("has_leave_request") },
-            new DashboardButton { Text = "View Balance", OnClick = EventCallback.Factory.Create(this, NavigateViewBalance), Visible = true },
-            new DashboardButton { Text = "View History", OnClick = EventCallback.Factory.Create(this, NavigateViewHistory), Visible = true }
+            new DashboardButton { Text = "View Balance", OnClick = EventCallback.Factory.Create(this, NavigateViewBalance), Visible = HasPermission("has_leave_balance") },
+            new DashboardButton { Text = "View History", OnClick = EventCallback.Factory.Create(this, NavigateViewHistory), Visible = HasPermission("has_leave_request") }
         };
 
         DepartmentHeadService = new List<DashboardButton>

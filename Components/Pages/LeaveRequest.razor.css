@@ -1,12 +1,88 @@
-﻿.leave-request-container {
-    max-width: 500px;
-    margin-top: 1rem;
+﻿/* ===== Nền toàn trang ===== */
+body, .page {
+    background: linear-gradient(160deg, #B08968 0%, #cfa27d 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-    .leave-request-container .mb-3 {
-        margin-bottom: 1rem;
+/* ===== Tiêu đề ===== */
+h3 {
+    text-align: center;
+    color: #97322D;
+    font-weight: 700;
+    letter-spacing: 1px;
+    margin-bottom: 1.5rem;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* ===== Khung chính ===== */
+.leave-request-container {
+    width: 500px;
+    background: #FFE4A1;
+    padding: 2rem 2.5rem;
+    border-radius: 18px;
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.25), inset 0 0 8px rgba(255, 255, 255, 0.3);
+    animation: fadeIn 0.5s ease;
+}
+
+    /* ===== Nhãn ===== */
+    .leave-request-container label {
+        font-weight: 600;
+        color: #97322D;
     }
 
-    .leave-request-container button {
-        width: 100%;
+    /* ===== Input, Select, Textarea ===== */
+    .leave-request-container .form-control,
+    .leave-request-container .form-select {
+        border: 2px solid #97322D;
+        border-radius: 10px;
+        padding: 0.6rem 0.8rem;
+        background-color: #fff;
+        color: #333;
+        transition: all 0.3s ease;
     }
+
+        .leave-request-container .form-control:focus,
+        .leave-request-container .form-select:focus {
+            outline: none;
+            border-color: #97322D;
+            box-shadow: 0 0 10px rgba(151, 50, 45, 0.3);
+        }
+
+    .leave-request-container textarea {
+        resize: vertical;
+        min-height: 80px;
+    }
+
+    /* ===== Nút ===== */
+    .leave-request-container button {
+        background: linear-gradient(135deg, #97322D, #b5443d);
+        border: none;
+        color: white;
+        padding: 0.8rem 1.2rem;
+        font-weight: 600;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+        box-shadow: 0 6px 15px rgba(151, 50, 45, 0.3);
+    }
+
+        .leave-request-container button:hover {
+            background: linear-gradient(135deg, #b5443d, #97322D);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(151, 50, 45, 0.4);
+        }
+
+/* ===== Animation ===== */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

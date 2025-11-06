@@ -1,4 +1,4 @@
-﻿// Implementation
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -11,13 +11,15 @@ namespace AttendanceManagementPayrollSystem.Services
     public class LeaveRequestServiceImpl : LeaveRequestService
     {
         private readonly ILeaveRequestRepository _repository;
+        //private readonly IEmployeeBalanceRepository _balanceRepository;s
 
-        public LeaveRequestServiceImpl(ILeaveRequestRepository repository)
+        public LeaveRequestServiceImpl(ILeaveRequestRepository repository)//IEmployeeBalanceRepository balanceRepository)
         {
             _repository = repository;
             //_balanceRepository = balanceRepository;
         }
 
+        // cái này là thêm đơn xin nghỉ
         public async Task<LeaveRequestDTO> AddAsync(LeaveRequestDTO dto)
         {
             var totalDays = (dto.EndDate.ToDateTime(TimeOnly.MinValue) - dto.StartDate.ToDateTime(TimeOnly.MinValue)).TotalDays + 1;
@@ -36,7 +38,7 @@ namespace AttendanceManagementPayrollSystem.Services
             await _repository.AddAsync(entity);
             return dto;
         }
-
+        // lấy danh sách đơn xin nghỉ của bro nào đó
         public async Task<IEnumerable<LeaveRequestDTO>> GetByEmployeeIdAsync(int empId)
         {
             var list = await _repository.GetByEmployeeIdAsync(empId);
@@ -53,6 +55,7 @@ namespace AttendanceManagementPayrollSystem.Services
             }).ToList();
         }
 
+        // lấy tất cả đơn lười làm của tất cả bro
         public async Task<IEnumerable<LeaveRequestDTO>> GetPendingAsync()
         {
             var list = await _repository.GetPendingAsync();
@@ -68,26 +71,60 @@ namespace AttendanceManagementPayrollSystem.Services
             }).ToList();
         }
 
+        // cập nhật trạng thái đơn xin nghỉ
         public async Task UpdateStatusAsync(LeaveRequestStatusDTO dto)
         {
             var request = await _repository.GetByIdAsync(dto.ReqId);
             if (request == null) throw new Exception("Leave request not found");
 
             request.Status = dto.Status;
+            if (dto.Status.Equals("Approved", StringComparison.OrdinalIgnoreCase) ||
+                dto.Status.Equals("Rejected", StringComparison.OrdinalIgnoreCase))
+            {
+                request.ApprovedBy = dto.ApprovedBy;
+                request.ApprovedDate = DateOnly.FromDateTime(DateTime.Now);
+            }
+
             await _repository.UpdateAsync(request);
 
-            //if (request.Status.Equals("Approved", StringComparison.OrdinalIgnoreCase))
+            //// chỉ xử lý khi duyệt đơn
+            //if (dto.Status.Equals("Approved", StringComparison.OrdinalIgnoreCase))
             //{
-            //    int days = (request.EndDate.ToDateTime(TimeOnly.MinValue) - request.StartDate.ToDateTime(TimeOnly.MinValue)).Days + 1;
+            //    var balance = await _balanceRepository.GetByEmployeeIdAsync(request.EmpId);
+            //    if (balance == null)
+            //        throw new Exception("Employee balance not found");
 
-            //    var balance = await _balanceRepository.GetByEmpIdAsync(request.EmpId);
-            //    if (balance != null)
+            //    decimal days = request.NumbersOfDays;
+
+            //    // trừ vào loại tương ứng
+            //    switch (request.Type?.Name?.ToLower())
             //    {
-            //        balance.PtoAvailable -= days;
-            //        if (balance.PtoAvailable < 0) balance.PtoAvailable = 0;
+            //        case "pto":
+            //            balance.PtoUsed += days;
+            //            balance.PtoAvailable = balance.PtoTotal - balance.PtoUsed;
+            //            break;
 
-            //        await _balanceRepository.UpdateAsync(balance);
+            //        case "sick":
+            //            balance.SickUsed += days;
+            //            balance.SickAvailable = balance.SickTotal - balance.SickUsed;
+            //            break;
+
+            //        case "vacation":
+            //            balance.VacationUsed += days;
+            //            balance.VacationAvailable = balance.VacationTotal - balance.VacationUsed;
+            //            break;
+
+            //        case "overtime":
+            //            balance.OvertimeUsed += days;
+            //            balance.OvertimeAvailable = balance.OvertimeTotal - balance.OvertimeUsed;
+            //            break;
+
+            //        default:
+            //            throw new Exception("Unknown leave type");
             //    }
+
+            //    balance.LastUpdated = DateTime.Now;
+            //    await _balanceRepository.UpdateAsync(balance);
             //}
         }
     }

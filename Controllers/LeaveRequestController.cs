@@ -27,17 +27,39 @@ namespace AttendanceManagementPayrollSystem.Controllers
         [HttpPut("update-status")]
         public async Task<IActionResult> UpdateStatus([FromBody] LeaveRequestStatusDTO dto)
         {
+            if (dto == null)
+                return BadRequest("Invalid payload");
 
-            Console.WriteLine($"Incoming: ReqId={dto.ReqId}, Status={dto.Status}");
+            dto.ApprovedDate = DateOnly.FromDateTime(DateTime.Now);
             await _service.UpdateStatusAsync(dto);
             return NoContent();
         }
 
-        // shortcut endpoints
         [HttpPut("{id}/approve")]
-        public async Task<IActionResult> Approve(int id)
+        public async Task<IActionResult> Approve(int id, [FromBody] LeaveRequestStatusDTO dto)
         {
-            await _service.UpdateStatusAsync(new LeaveRequestStatusDTO { ReqId = id, Status = "Approved" });
+            if (dto == null || dto.ApprovedBy == null)
+                return BadRequest("ApprovedBy is required");
+
+            dto.ReqId = id;
+            dto.Status = "Approved";
+            dto.ApprovedDate = DateOnly.FromDateTime(DateTime.Now);
+
+            await _service.UpdateStatusAsync(dto);
+            return NoContent();
+        }
+
+        [HttpPut("{id}/reject")]
+        public async Task<IActionResult> Reject(int id, [FromBody] LeaveRequestStatusDTO dto)
+        {
+            if (dto == null || dto.ApprovedBy == null)
+                return BadRequest("ApprovedBy is required");
+
+            dto.ReqId = id;
+            dto.Status = "Rejected";
+            dto.ApprovedDate = DateOnly.FromDateTime(DateTime.Now);
+
+            await _service.UpdateStatusAsync(dto);
             return NoContent();
         }
 
@@ -62,8 +84,6 @@ namespace AttendanceManagementPayrollSystem.Controllers
         public async Task<IActionResult> GetHistory(int empId)
         {
             var history = await _service.GetByEmployeeIdAsync(empId);
-
-            // ✅ Luôn trả về Ok([]) thay vì NotFound
             return Ok(history ?? Enumerable.Empty<LeaveRequestDTO>());
         }
     }
