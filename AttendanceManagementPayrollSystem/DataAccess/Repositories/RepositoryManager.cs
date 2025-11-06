@@ -20,6 +20,9 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
             builder.Services.AddScoped<DepartmentRepository, DepartmentRepositoryImpl>();
             builder.Services.AddScoped<TaxRepository, TaxRepositoryImpl>();
             builder.Services.AddScoped<InsuranceRateRepository, InsuranceRateRepositoryImpl>();
+            builder.Services.AddScoped<ClockInAdjustmentRequestRepository, ClockInAdjustmentRequestRepositoryImpl>();
+            builder.Services.AddScoped<ClockinComponentRepository, ClockinComponentRepositoryImpl>();
+
 
 
         }

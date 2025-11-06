@@ -92,7 +92,7 @@
                             <div class="d-flex flex-column gap-2">
                                 @foreach (var comp in DayClockins.Take(3))
                                 {
-                                    <ClockinDayView Component="@comp" />
+                                    <ClockinDayView Component="@comp" OnReportClicked="OpenReportModal"/>
                                 }
                             </div>
                         }
@@ -111,8 +111,13 @@
     </div>
 </div>
 
+<ClockinReportModal @ref="reportModal" />
+
+
 
 @code {
+    private ClockinReportModal? reportModal;
+
     private DisplayedView _selectedView = DisplayedView.Monthly;
     private DisplayedView SelectedView
     {
@@ -301,5 +306,14 @@
 
         await InvokeAsync(StateHasChanged);
     }
+
+    private async Task OpenReportModal(ClockinComponentDto comp)
+    {
+        if (reportModal != null)
+            await reportModal.ShowAsync(comp);
+        else
+            Console.WriteLine("⚠️ reportModal chưa được khởi tạo!");
+    }
+
 
 }

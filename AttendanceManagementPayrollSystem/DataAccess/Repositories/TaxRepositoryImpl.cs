@@ -10,13 +10,9 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
         {
         }
 
-        public async Task<Tax> AddTaxAsync(TaxEditDTO dto)
+        public async Task<bool> AddTaxAsync(TaxEditDTO dto)
         {
-            var oldTax = await _context.Taxes.FirstOrDefaultAsync(t => t.IsActive);
-            if (oldTax != null)
-            {
-                oldTax.IsActive = false;
-            }
+            if (dto == null) return false;
 
             var newTax = new Tax
             {
@@ -33,10 +29,10 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
             };
             await _context.Taxes.AddAsync(newTax);
             await _context.SaveChangesAsync();
-            return newTax;
+            return true;
         }
 
-        public async Task<TaxDTO?> GetActiveTaxDTOs()
+        public async Task<TaxDTO?> GetActiveTaxDTO()
         {
             return await _context.Taxes.Where(t => t.IsActive == true)
                 .Select(t => new TaxDTO
@@ -78,6 +74,95 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
             }).ToListAsync();
             result.Reverse();
             return result;
+        }
+
+        public async Task<TaxGroupDTO> GetTaxGroupAsync()
+        {
+            var all = await this._context.Taxes.Include(t=>t.TaxBrackets).ToListAsync();
+            DateOnly now = DateOnly.FromDateTime(DateTime.Now);
+
+            var result = new TaxGroupDTO
+            {
+                Active = all.Where(t => t.IsActive && t.EffectiveFrom <= now)
+                          .Select(t => new TaxDTO
+                          {
+                              TaxId = t.TaxId,
+                              EffectiveFrom = t.EffectiveFrom,
+                              IsActive = t.IsActive,
+                              EffectiveTo = t.EffectiveTo,
+                              TaxBrackets = t.TaxBrackets.Select(tb => new TaxBracketDTO
+                              {
+                                  BracketId = tb.BracketId,
+                                  LowerBound = tb.LowerBound,
+                                  TaxId = tb.TaxId,
+                                  Rate = tb.Rate,
+                                  UpperBound = tb.UpperBound
+                              }).ToList(),
+                              TaxName=t.TaxName
+                          }).OrderByDescending(t=>t.EffectiveFrom).ToList(),
+                Inactive=all.Where(t=>!t.IsActive&&t.EffectiveFrom<=now)
+                            .Select(t=>new TaxDTO
+                            {
+                                TaxId = t.TaxId,
+                                EffectiveFrom = t.EffectiveFrom,
+                                IsActive = t.IsActive,
+                                EffectiveTo = t.EffectiveTo,
+                                TaxBrackets = t.TaxBrackets.Select(tb => new TaxBracketDTO
+                                {
+                                    BracketId = tb.BracketId,
+                                    LowerBound = tb.LowerBound,
+                                    TaxId = tb.TaxId,
+                                    Rate = tb.Rate,
+                                    UpperBound = tb.UpperBound
+                                }).ToList(),
+                                TaxName = t.TaxName
+                            }).OrderByDescending(t => t.EffectiveFrom).ToList(),
+                Upcoming= all.Where(t => !t.IsActive && t.EffectiveFrom > now)
+                            .Select(t => new TaxDTO
+                            {
+                                TaxId = t.TaxId,
+                                EffectiveFrom = t.EffectiveFrom,
+                                IsActive = t.IsActive,
+                                EffectiveTo = t.EffectiveTo,
+                                TaxBrackets = t.TaxBrackets.Select(tb => new TaxBracketDTO
+                                {
+                                    BracketId = tb.BracketId,
+                                    LowerBound = tb.LowerBound,
+                                    TaxId = tb.TaxId,
+                                    Rate = tb.Rate,
+                                    UpperBound = tb.UpperBound
+                                }).ToList(),
+                                TaxName = t.TaxName
+                            }).OrderByDescending(t => t.EffectiveFrom).ToList()
+            };
+            return result;
+        }
+        public async Task<Tax?> GetByIdAsync(int id)
+        {
+            return await _context.Taxes.FindAsync(id);
+        }
+
+        public async Task UpdateAsync(Tax tax)
+        {
+            _context.Taxes.Update(tax);
+            await _context.SaveChangesAsync();
+        }
+        public async Task DeleteAsync(Tax tax)
+        {
+            _context.Taxes.Remove(tax);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<Tax?> GetActiveTax()
+        {
+            return await _context.Taxes.Where(t => t.IsActive == true).FirstOrDefaultAsync();
+        }
+
+        public async Task RemoveBracketsAsync(int taxId)
+        {
+            var brackets = _context.TaxBrackets.Where(b => b.TaxId == taxId);
+            _context.TaxBrackets.RemoveRange(brackets);
+            await _context.SaveChangesAsync();
         }
     }
 }

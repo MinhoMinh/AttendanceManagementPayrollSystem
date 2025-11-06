@@ -23,6 +23,10 @@ public partial class Employee
 
     public int? ClockinId { get; set; }
 
+    public virtual ICollection<ClockInAdjustmentRequest> ClockInAdjustmentRequestApprovers { get; set; } = new List<ClockInAdjustmentRequest>();
+
+    public virtual ICollection<ClockInAdjustmentRequest> ClockInAdjustmentRequestEmployees { get; set; } = new List<ClockInAdjustmentRequest>();
+
     public virtual ICollection<Clockin> Clockins { get; set; } = new List<Clockin>();
 
     public virtual Department Dep { get; set; }

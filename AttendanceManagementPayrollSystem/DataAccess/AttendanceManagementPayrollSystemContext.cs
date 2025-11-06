@@ -15,6 +15,8 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
 
     public virtual DbSet<AllowanceType> AllowanceTypes { get; set; }
 
+    public virtual DbSet<ClockInAdjustmentRequest> ClockInAdjustmentRequests { get; set; }
+
     public virtual DbSet<Clockin> Clockins { get; set; }
 
     public virtual DbSet<ClockinComponent> ClockinComponents { get; set; }
@@ -101,6 +103,44 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
                 .HasColumnName("value");
         });
 
+        modelBuilder.Entity<ClockInAdjustmentRequest>(entity =>
+        {
+            entity.HasKey(e => e.RequestId).HasName("PK__ClockInA__33A8519A2C82630E");
+
+            entity.ToTable("ClockInAdjustmentRequest");
+
+            entity.Property(e => e.RequestId).HasColumnName("RequestID");
+            entity.Property(e => e.ApproverId).HasColumnName("ApproverID");
+            entity.Property(e => e.Attachment).HasMaxLength(255);
+            entity.Property(e => e.ClockInComponentId).HasColumnName("ClockInComponentID");
+            entity.Property(e => e.Comment).HasMaxLength(500);
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.EmployeeId).HasColumnName("EmployeeID");
+            entity.Property(e => e.Message).HasMaxLength(500);
+            entity.Property(e => e.RequestedValue).HasColumnType("decimal(5, 2)");
+            entity.Property(e => e.Status)
+                .IsRequired()
+                .HasMaxLength(20)
+                .IsUnicode(false)
+                .HasDefaultValue("Pending");
+
+            entity.HasOne(d => d.Approver).WithMany(p => p.ClockInAdjustmentRequestApprovers)
+                .HasForeignKey(d => d.ApproverId)
+                .HasConstraintName("FK_ClockInAdjustmentRequest_Approver");
+
+            entity.HasOne(d => d.ClockInComponent).WithMany(p => p.ClockInAdjustmentRequests)
+                .HasForeignKey(d => d.ClockInComponentId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ClockInAdjustmentRequest_ClockInComponent");
+
+            entity.HasOne(d => d.Employee).WithMany(p => p.ClockInAdjustmentRequestEmployees)
+                .HasForeignKey(d => d.EmployeeId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ClockInAdjustmentRequest_Employee");
+        });
+
         modelBuilder.Entity<Clockin>(entity =>
         {
             entity.HasKey(e => e.CloId);
@@ -149,6 +189,9 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
             entity.Property(e => e.Description)
                 .HasMaxLength(50)
                 .HasColumnName("description");
+            entity.Property(e => e.OverridedWorkunits)
+                .HasColumnType("decimal(5, 2)")
+                .HasColumnName("overrided_workunits");
             entity.Property(e => e.ScheduledHours)
                 .HasColumnType("decimal(5, 2)")
                 .HasColumnName("scheduled_hours");
@@ -466,6 +509,9 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
             entity.ToTable("InsuranceRate");
 
             entity.Property(e => e.CapRule).HasMaxLength(255);
+            entity.Property(e => e.Category)
+                .IsRequired()
+                .HasMaxLength(20);
             entity.Property(e => e.EmployeeRate).HasColumnType("decimal(5, 2)");
             entity.Property(e => e.EmployerRate).HasColumnType("decimal(5, 2)");
             entity.Property(e => e.LawCode).HasMaxLength(255);

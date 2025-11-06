@@ -1,0 +1,257 @@
+﻿@using System.Text.Json
+@using AttendanceManagementPayrollSystem.DTO
+@inject INotificationService NotificationService
+@inject IHttpClientFactory HttpFactory
+@inject NavigationManager Nav
+@inject IJSRuntime JS
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+@if (Visible)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-dialog-centered modal-md">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Báo cáo chấm công</h5>
+                    <button type="button" class="btn-close" @onclick="Close"></button>
+                </div>
+                <div class="modal-body">
+                    @if (Component != null)
+                    {
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <label class="form-label fw-bold mb-1">Ngày</label>
+                                <div class="form-control-plaintext">
+                                    @($"{Component.Date:dd/MM/yyyy}")
+                                </div>
+                            </div>
+
+                            <div class="col-6">
+                                <label class="form-label fw-bold mb-1">Tình trạng</label>
+                                <div class="form-control-plaintext">
+                                    @if (!string.IsNullOrWhiteSpace(Component.Description))
+                                    {
+                                        bool isFull = Component.Description.Trim() == "Đủ giờ";
+                                        <span class="badge @(isFull ? "bg-success" : "bg-danger")">
+                                            @Component.Description
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">Không có dữ liệu</span>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <label class="form-label fw-bold mb-1">Giờ làm</label>
+                                <div class="form-control-plaintext">
+                                    @($"{(Component.WorkHours ?? 0m):F2}/{(Component.ScheduledHours ?? 0m):F2}")
+                                </div>
+                            </div>
+
+                            <div class="col-6">
+                                <label class="form-label fw-bold mb-1">Công làm</label>
+                                <div class="form-control-plaintext">
+                                    @($"{(Component.WorkUnits ?? 0m):F2}/{(Component.ScheduledUnits ?? 0m):F2}")
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <label class="form-label fw-bold mb-1">Giờ vào / Giờ ra</label>
+                                <div class="form-control-plaintext d-flex flex-row gap-3">
+                                    <span>@(Component.CheckIn?.ToString("HH:mm") ?? "--:--")</span>
+                                    <span>@(Component.CheckOut?.ToString("HH:mm") ?? "--:--")</span>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Công làm muốn chỉnh sửa</label>
+                            <input type="number"
+                                   class="form-control"
+                                   @bind="RequestedValue"
+                                   step="0.01"
+                                   min="0"
+                                   placeholder="Nhập công làm mong muốn (VD: 1.00)" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Lý do báo cáo</label>
+                            <textarea class="form-control"
+                                      @bind="ReportMessage"
+                                      placeholder="Nhập lý do bạn muốn báo cáo..."
+                                      rows="3"></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">File đính kèm (tùy chọn)</label>
+                            <InputFile OnChange="OnFileSelected" />
+                            @if (!string.IsNullOrWhiteSpace(FileName))
+                            {
+                                <small class="text-success">Đã chọn: @FileName</small>
+                            }
+                        </div>
+
+
+                        <div class="mt-3 d-flex justify-content-end gap-2">
+                            <button class="btn btn-primary"
+                                    disabled="@IsSubmitting"
+                                    @onclick="SubmitReport">
+                                @(IsSubmitting ? "Đang gửi..." : "Gửi báo cáo")
+                            </button>
+
+                            @if (LastReportId.HasValue)
+                            {
+                                <button class="btn btn-secondary"
+                                        @onclick="@(() => Nav.NavigateTo($"/attendance/report/{LastReportId.Value}"))">
+                                    Xem lịch sử
+                                </button>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted">Không có dữ liệu ca làm để báo cáo.</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public ClockinComponentDto? Component { get; set; }
+
+    private bool Visible;
+    private bool IsSubmitting;
+    private string? ReportMessage;
+    private string? FileName;
+    private IBrowserFile? SelectedFile;
+    private int? LastReportId;
+    private EmployeeDTO? Employee;
+    private bool _initialized;
+
+    private decimal RequestedValue;
+
+    public async Task ShowAsync(ClockinComponentDto component)
+    {
+        Console.WriteLine("🟢 ShowAsync được gọi!");
+        Component = component;
+        ReportMessage = string.Empty;
+        FileName = null;
+        SelectedFile = null;
+        LastReportId = null;
+
+        Visible = true;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private void Close()
+    {
+        Visible = false;
+    }
+
+    private void OnFileSelected(InputFileChangeEventArgs e)
+    {
+        SelectedFile = e.File;
+        FileName = SelectedFile?.Name;
+    }
+
+    private async Task SubmitReport()
+    {
+        if (Component == null)
+        {
+            NotificationService.Warning("Không xác định được ca làm!", "Lỗi");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(ReportMessage))
+        {
+            NotificationService.Warning("Vui lòng nhập lý do báo cáo!", "Thiếu thông tin");
+            return;
+        }
+
+        if (RequestedValue <= 0)
+        {
+            NotificationService.Warning("Vui lòng nhập công làm hợp lệ!", "Thiếu thông tin");
+            return;
+        }
+
+        if (Employee == null)
+        {
+            NotificationService.Error("Không xác định được thông tin nhân viên!", "Lỗi");
+            return;
+        }
+
+        IsSubmitting = true;
+        try
+        {
+            var client = HttpFactory.CreateClient("ApiClient");
+            var content = new MultipartFormDataContent
+        {
+            { new StringContent(Employee.EmpId.ToString()), "EmployeeId" },
+            { new StringContent(Component.Id.ToString()), "ClockInComponentId" },
+            { new StringContent(RequestedValue.ToString(System.Globalization.CultureInfo.InvariantCulture)), "RequestedValue" },
+            { new StringContent(ReportMessage), "Message" }
+        };
+
+            if (SelectedFile != null)
+            {
+                var stream = SelectedFile.OpenReadStream(maxAllowedSize: 10_000_000);
+                content.Add(new StreamContent(stream), "Attachment", SelectedFile.Name);
+            }
+
+            var response = await client.PostAsync("api/clockin-adjustments", content);
+            if (response.IsSuccessStatusCode)
+            {
+                NotificationService.Success("Báo cáo đã được gửi thành công!", "Thành công");
+                Close();
+            }
+            else
+            {
+                var err = await response.Content.ReadAsStringAsync();
+                NotificationService.Error($"Gửi báo cáo thất bại: {err}", "Lỗi");
+            }
+        }
+        catch (Exception ex)
+        {
+            NotificationService.Error($"Đã xảy ra lỗi: {ex.Message}", "Lỗi");
+        }
+        finally
+        {
+            IsSubmitting = false;
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && !_initialized)
+        {
+            _initialized = true;
+            try
+            {
+                var empJson = await JS.InvokeAsync<string>("localStorage.getItem", "employee");
+                if (!string.IsNullOrWhiteSpace(empJson))
+                {
+                    Employee = JsonSerializer.Deserialize<EmployeeDTO>(empJson);
+                }
+                else
+                {
+                    NotificationService.Warning("Không thể tìm thấy thông tin nhân viên!", "Lỗi");
+                }
+            }
+            catch
+            {
+                NotificationService.Error("Không thể đọc thông tin nhân viên từ localStorage!", "Lỗi");
+            }
+            StateHasChanged();
+        }
+    }
+}

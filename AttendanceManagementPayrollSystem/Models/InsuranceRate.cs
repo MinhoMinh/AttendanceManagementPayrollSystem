@@ -24,4 +24,6 @@ public partial class InsuranceRate
     public string LawCode { get; set; }
 
     public bool IsActive { get; set; }
+
+    public string Category { get; set; }
 }

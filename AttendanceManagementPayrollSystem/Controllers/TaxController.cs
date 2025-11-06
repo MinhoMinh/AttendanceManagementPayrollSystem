@@ -1,6 +1,7 @@
 ﻿using AttendanceManagementPayrollSystem.DTO;
 using AttendanceManagementPayrollSystem.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Identity.Client;
 using System.Reflection.Metadata.Ecma335;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -34,10 +35,21 @@ namespace AttendanceManagementPayrollSystem.Controllers
             }
         }
 
+        [HttpGet("group")]
+        public async Task<ActionResult<TaxGroupDTO>> GetGroup()
+        {
+            var result = await taxService.GetTaxGroupAsync();
+            if (result == null)
+            {
+                return NotFound();
+            }
+            return Ok(result);
+        }
+
         [HttpGet("active")]
         public async Task<ActionResult<TaxDTO?>> GetActive()
         {
-            var result = await taxService.GetActiveTaxDTOs();
+            var result = await taxService.GetActiveTaxDTO();
             if (result == null)
             {
                 return NotFound();
@@ -48,8 +60,8 @@ namespace AttendanceManagementPayrollSystem.Controllers
             }
         }
 
-        [HttpPost("edit")]
-        public async Task<ActionResult<TaxDTO>> EditTax([FromBody] TaxEditDTO dto)
+        [HttpPost]
+        public async Task<ActionResult<TaxDTO>> AddTax([FromBody] TaxEditDTO dto)
         {
             if (!ModelState.IsValid)
             {
@@ -66,30 +78,33 @@ namespace AttendanceManagementPayrollSystem.Controllers
             }
         }
 
-
-        // GET api/<TaxController>/5
-        [HttpGet("{id}")]
-        public string Get(int id)
+        [HttpPut("{id}/status")]
+        public async Task<IActionResult> UpdateStatus(int id, [FromBody] bool newStatus)
         {
-            return "value";
+            var result = await this.taxService.UpdateStatusAsync(id, newStatus);
+            if (!result) return NotFound();
+            return NoContent();
         }
 
-        // POST api/<TaxController>
-        [HttpPost]
-        public void Post([FromBody] string value)
+        [HttpDelete("upcoming/{id}")]
+        public async Task<IActionResult> DeleteUpcoming(int id)
         {
+            var result = await this.taxService.DeleteUpcomingAsync(id);
+            if (!result) return NotFound();
+            return NoContent();
         }
 
-        // PUT api/<TaxController>/5
         [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        public async Task<IActionResult> Update(int id, [FromBody] TaxEditDTO dto)
         {
+            if (dto == null || id != dto.TaxId)
+            {
+                return BadRequest("Invalid request data.");
+            }
+            var result = await this.taxService.UpdateTaxAsync(id, dto);
+            if (!result) return NotFound();
+            return NoContent();
         }
 
-        // DELETE api/<TaxController>/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
-        {
-        }
     }
 }

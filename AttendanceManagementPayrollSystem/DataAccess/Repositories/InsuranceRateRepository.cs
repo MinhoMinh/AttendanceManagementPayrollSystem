@@ -13,6 +13,11 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
         Task<InsuranceRate?> GetById(int id);
         Task UpdateAsync(InsuranceRate insuranceRate);
         Task AddAsync(InsuranceRate entity);
-        
+        Task<Dictionary<string,List<int>>> GetUpcomingInsuranceRateIds();
+        Task<List<InsuranceRateGroupDTO>> GetInsuranceRateGroupsAsync();
+        Task RemoveAsync(InsuranceRate insuranceRate);
+
+        Task<List<InsuranceRate>> GetByCategoryAndActiveAsync(string category);
+
     }
 }

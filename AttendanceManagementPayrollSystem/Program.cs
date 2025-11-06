@@ -46,6 +46,10 @@ builder.Services.AddScoped<HolidayCalendarService, HolidayCalendarServiceImpl>()
 builder.Services.AddScoped<DepartmentService, DepartmentServiceImpl>();
 builder.Services.AddScoped<TaxService, TaxServiceImpl>();
 builder.Services.AddScoped<InsuranceRateService, InsuranceRateServiceImpl>();
+builder.Services.AddScoped<ClockInAdjustmentRequestService, ClockInAdjustmentRequestServiceImpl>();
+builder.Services.AddScoped<ClockinComponentService, ClockinComponentServiceImpl>();
+
+
 
 
 

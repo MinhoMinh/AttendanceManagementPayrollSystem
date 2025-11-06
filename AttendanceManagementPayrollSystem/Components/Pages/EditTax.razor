@@ -2,6 +2,7 @@
 @using AttendanceManagementPayrollSystem.DTO
 @inject IHttpClientFactory HttpFactory
 @inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
 @using Blazorise
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
@@ -36,181 +37,213 @@
         {
             @foreach (var t in taxHistory)
             {
-                bool isCurrentlyActive = t.IsActive;
-
                 <div class="tax-item p-2 border-bottom @(selectedTax?.TaxId == t.TaxId ? "bg-light" : "")"
                      @onclick="() => SelectTax(t)">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <strong>@t.TaxName</strong><br />
                             <small>Từ: @t.EffectiveFrom</small><br />
-                            <Badge Color="@(t.IsActive? Color.Success: Color.Secondary)" Class="mt-1">
-                                @(t.IsActive ? "Đang hoạt động" : "Không hoạt động")
-                            </Badge>
+                            @GetBadge(t)
                         </div>
-
-                        @if (isCurrentlyActive)
-                        {
-                            <button class="btn btn-sm btn-outline-primary edit-btn"
-                                    @onclick:stopPropagation="true"
-                                    @onclick="() => StartEdit(t)">
-                                <i class="bi bi-pencil-square"></i> Sửa
-                            </button>
-                        }
+                        @GetActionButtons(t)
                     </div>
                 </div>
             }
-
         }
+
+        <div class="mt-3 text-end">
+            <button class="btn btn-sm btn-outline-success" @onclick="StartAdd">
+                <i class="bi bi-plus-circle"></i> Thêm mới
+            </button>
+        </div>
     </div>
 
-    <!-- Cột phải: Biểu mẫu chỉnh sửa -->
+    <!-- Cột phải: Chi tiết hoặc Form -->
     <div class="col-8">
-        @if (selectedTax != null)
+        @if (selectedTax == null && !isAdding)
         {
-            @if (isEditing && editModel != null)
-            {
-                <EditForm Model="@editModel" OnValidSubmit="SaveTax">
-                    <DataAnnotationsValidator />
-                    <Blazorise.ValidationSummary />
+            <p><em>Chọn một bảng thuế để xem chi tiết hoặc nhấn “Thêm mới”.</em></p>
+        }
+        else if (!isEditing && !isAdding)
+        {
+            <!-- Chế độ xem chỉ đọc -->
+            <div>
+                <h5>@selectedTax?.TaxName</h5>
+                <p><strong>Hiệu lực từ:</strong> @selectedTax?.EffectiveFrom</p>
+                <p><strong>Hiệu lực đến:</strong> @(selectedTax?.EffectiveTo?.ToString() ?? "Không giới hạn")</p>
+                <p><strong>Trạng thái:</strong> @GetStatus(selectedTax!)</p>
 
-                    <div class="d-flex justify-content-end mb-3">
-                        <button type="submit" class="btn btn-primary me-2">Lưu</button>
-                        <button type="button" class="btn btn-secondary" @onclick="CancelEdit">Hủy</button>
-                    </div>
-
-                    <div class="mb-2">
-                        <label>Tên thuế</label>
-                        <InputText class="form-control" @bind-Value="editModel.TaxName" />
-                    </div>
-
-                    <div class="mb-2">
-                        <label>Hiệu lực từ</label>
-                        <InputDate class="form-control" @bind-Value="editModel.EffectiveFrom" />
-                    </div>
-
-                    <div class="mb-2">
-                        <label>Hiệu lực đến</label>
-                        <InputDate class="form-control" @bind-Value="editModel.EffectiveTo" />
-                    </div>
-
-                    <div class="form-check mb-2">
-                        <InputCheckbox class="form-check-input" @bind-Value="editModel.IsActive" />
-                        <label class="form-check-label">Đang hoạt động</label>
-                    </div>
-
-                    <h5>Bậc thuế</h5>
-                    @foreach (var bracket in editModel.TaxBrackets)
-                    {
-                        <div class="d-flex gap-2 align-items-end mb-2">
-                            <div class="flex-grow-1">
-                                <label>Mức dưới</label>
-                                <InputNumber class="form-control" @bind-Value="bracket.LowerBound" />
-                            </div>
-                            <div class="flex-grow-1">
-                                <label>Mức trên</label>
-                                <InputNumber class="form-control" @bind-Value="bracket.UpperBound" />
-                            </div>
-                            <div class="flex-grow-1">
-                                <label>Thuế suất</label>
-                                <InputNumber class="form-control" @bind-Value="bracket.Rate" />
-                            </div>
-                            <button type="button" class="btn btn-danger btn-sm mb-1" @onclick="() => RemoveBracket(bracket)">Xóa</button>
-                        </div>
-                    }
-
-                    <button type="button" class="btn btn-sm btn-outline-primary mb-3" @onclick="AddBracket">+ Thêm bậc thuế</button>
-                </EditForm>
-            }
-            else
-            {
-                <div>
-                    <!-- Thông tin thuế -->
-                    <div class="p-3 mb-3 border border-2 border-secondary rounded-3 shadow-sm">
-                        <h5>@selectedTax.TaxName</h5>
-                        <p>Từ: @selectedTax.EffectiveFrom</p>
-                        <p>Đến: @(selectedTax.EffectiveTo?.ToString() ?? "∞")</p>
-                        <Badge Color="@(selectedTax.IsActive? Color.Success: Color.Secondary)">
-                            @(selectedTax.IsActive ? "Đang hoạt động" : "Không hoạt động")
-                        </Badge>
-                    </div>
-
-                    <!-- Các bậc thuế -->
-                    <div class="p-3 border border-2 border-secondary rounded-3 shadow-sm">
-                        <h6>Các bậc thuế</h6>
-                        <table class="table table-bordered table-sm mb-0">
-                            <thead>
+                <h6 class="mt-3">Các bậc thuế</h6>
+                @if (selectedTax?.TaxBrackets?.Count > 0)
+                {
+                    <table class="table table-sm table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Thấp nhất</th>
+                                <th>Cao nhất</th>
+                                <th>Tỷ lệ (%)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var b in selectedTax.TaxBrackets)
+                            {
                                 <tr>
-                                    <th>Mức dưới</th>
-                                    <th>Mức trên</th>
-                                    <th>Thuế suất</th>
+                                    <td>@b.LowerBound.ToString("N0")</td>
+                                    <td>@(b.UpperBound?.ToString("N0") ?? "Không giới hạn")</td>
+                                    <td>@(b.Rate * 100)</td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var b in selectedTax.TaxBrackets)
-                                {
-                                    <tr>
-                                        <td>@b.LowerBound</td>
-                                        <td>@(b.UpperBound?.ToString() ?? "Không giới hạn")</td>
-                                        <td>@(b.Rate * 100)%</td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-
-            }
+                            }
+                        </tbody>
+                    </table>
+                }
+                else
+                {
+                    <p><em>Chưa có bậc thuế nào.</em></p>
+                }
+            </div>
         }
         else
         {
-            <p>Chọn một bảng thuế ở bên trái để xem chi tiết.</p>
+            <!-- Form thêm/sửa -->
+            <EditForm Model="AddModel" OnValidSubmit="SaveTax">
+                <DataAnnotationsValidator />
+                <div class="mb-3">
+                    <label class="form-label">Tên bảng thuế</label>
+                    <InputText class="form-control" @bind-Value="AddModel.TaxName" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Hiệu lực từ</label>
+                    <InputDate class="form-control" @bind-Value="AddModel.EffectiveFrom" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Hiệu lực đến</label>
+                    <InputDate class="form-control" @bind-Value="AddModel.EffectiveTo" />
+                </div>
+
+                <h6 class="mt-3">Các bậc thuế</h6>
+
+                <div class="row fw-bold border-bottom pb-1 mb-2">
+                    <div class="col">Thấp nhất</div>
+                    <div class="col">Cao nhất</div>
+                    <div class="col">Tỷ lệ (%)</div>
+                </div>
+
+                @foreach (var b in AddModel.TaxBrackets.Select((value, index) => new { value, index }))
+                {
+                    <div class="row mb-2 align-items-center">
+                        <div class="col">
+                            <InputNumber class="form-control" @bind-Value="b.value.LowerBound" placeholder="Thấp nhất" />
+                        </div>
+                        <div class="col">
+                            <InputNumber class="form-control" @bind-Value="b.value.UpperBound" placeholder="Cao nhất" />
+                        </div>
+                        <div class="col">
+                            <InputNumber class="form-control" @bind-Value="b.value.Rate" placeholder="Tỷ lệ (vd 0.1)" />
+                        </div>
+                        <div class="col-auto">
+                            <button class="btn btn-sm btn-outline-danger"
+                                    type="button"
+                                    @onclick="() => RemoveBracket(b.index)">
+                                <i class="bi bi-x-circle"></i>
+                            </button>
+                        </div>
+                    </div>
+                }
+
+
+
+                <button class="btn btn-sm btn-outline-success mb-3" type="button" @onclick="AddBracket">
+                    <i class="bi bi-plus"></i> Thêm bậc thuế
+                </button>
+
+                <div class="text-end">
+                    <button class="btn btn-success me-2" type="submit">
+                        <i class="bi bi-check-lg"></i> Lưu
+                    </button>
+                    <button class="btn btn-secondary" type="button" @onclick="CancelEdit">
+                        <i class="bi bi-x-lg"></i> Hủy
+                    </button>
+                </div>
+            </EditForm>
         }
     </div>
+
 </div>
+
+@if (showConfirm)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Xác nhận</h5>
+                    <button type="button" class="btn-close" @onclick="CancelConfirm"></button>
+                </div>
+                <div class="modal-body">
+                    <p>@confirmMessage</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="CancelConfirm">Hủy</button>
+                    <button class="btn btn-danger" @onclick="ConfirmAction">Xác nhận</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
 
 @code {
     private List<TaxDTO>? taxHistory;
     private TaxDTO? selectedTax;
-    private TaxEditDTO? editModel;
+    private TaxEditDTO AddModel = new();
+    private bool isAdding = false;
     private bool isEditing = false;
-    private string? successMessage;
     private bool showToast = false;
+    private string? successMessage;
+
+    private bool showConfirm = false;
+    private string? confirmMessage;
+    private Func<Task>? onConfirmAction;
 
     protected override async Task OnInitializedAsync()
-    {
-        await LoadTaxHistory();
-    }
-
-    private async Task LoadTaxHistory()
     {
         var client = HttpFactory.CreateClient("ApiClient");
         taxHistory = await client.GetFromJsonAsync<List<TaxDTO>>("api/tax");
 
-        selectedTax = taxHistory?.FirstOrDefault(t => t.IsActive);
-        isEditing = false;
+        if (selectedTax == null && taxHistory?.Any() == true)
+            selectedTax = taxHistory.First();
     }
 
     private void SelectTax(TaxDTO tax)
     {
         selectedTax = tax;
+        isAdding = false;
         isEditing = false;
     }
 
-    private void StartEdit(TaxDTO tax)
+    private void StartAdd()
     {
-        selectedTax = tax;
-        isEditing = true;
-
-        editModel = new TaxEditDTO
+        isAdding = true;
+        isEditing = false;
+        selectedTax = null;
+        AddModel = new TaxEditDTO
         {
-            TaxId = tax.TaxId,
-            TaxName = tax.TaxName,
-            EffectiveFrom = tax.EffectiveFrom,
-            EffectiveTo = tax.EffectiveTo,
-            IsActive = tax.IsActive,
-            TaxBrackets = tax.TaxBrackets.Select(b => new TaxBracketEditDTO
+            EffectiveFrom = DateOnly.FromDateTime(DateTime.Today),
+            TaxBrackets = new List<TaxBracketEditDTO>()
+        };
+    }
+
+    private void StartEdit()
+    {
+        if (selectedTax == null) return;
+        isEditing = true;
+        AddModel = new TaxEditDTO
+        {
+            TaxId = selectedTax.TaxId,
+            TaxName = selectedTax.TaxName,
+            EffectiveFrom = selectedTax.EffectiveFrom,
+            EffectiveTo = selectedTax.EffectiveTo,
+            IsActive = selectedTax.IsActive,
+            TaxBrackets = selectedTax.TaxBrackets.Select(b => new TaxBracketEditDTO
             {
                 BracketId = b.BracketId,
                 LowerBound = b.LowerBound,
@@ -220,45 +253,91 @@
         };
     }
 
-    private void CancelEdit()
-    {
-        isEditing = false;
-        editModel = null;
-    }
-
     private void AddBracket()
     {
-        editModel?.TaxBrackets.Add(new TaxBracketEditDTO());
-    }
-
-    private void RemoveBracket(TaxBracketEditDTO bracket)
-    {
-        editModel?.TaxBrackets.Remove(bracket);
+        AddModel.TaxBrackets.Add(new TaxBracketEditDTO());
     }
 
     private async Task SaveTax()
     {
-        if (editModel == null) return;
-
         var client = HttpFactory.CreateClient("ApiClient");
+        HttpResponseMessage response = isAdding
+            ? await client.PostAsJsonAsync("api/tax", AddModel)
+            : await client.PutAsJsonAsync($"api/tax/{AddModel.TaxId}", AddModel);
 
-        // POST tạo bảng thuế mới và vô hiệu hóa bảng cũ
-        var response = await client.PostAsJsonAsync("api/tax/edit", editModel);
-        if (response.IsSuccessStatusCode)
-        {
-            await LoadTaxHistory();
-            isEditing = false;
-            editModel = null;
+        successMessage = response.IsSuccessStatusCode
+            ? (isAdding ? "Thêm mới thành công." : "Cập nhật thành công.")
+            : "Lưu thất bại.";
 
-            successMessage = "Chỉnh sửa thành công";
-            showToast = true;
-            StateHasChanged();
-        }
+        showToast = true;
+        isAdding = false;
+        isEditing = false;
+
+        // Cập nhật danh sách trước
+        taxHistory = await client.GetFromJsonAsync<List<TaxDTO>>("api/tax");
+
+        // Cập nhật selectedTax theo ID
+        if (!isAdding && AddModel.TaxId > 0)
+            selectedTax = taxHistory.FirstOrDefault(x => x.TaxId == AddModel.TaxId);
         else
+            selectedTax = taxHistory.FirstOrDefault();
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+
+    private void CancelEdit()
+    {
+        isAdding = false;
+        isEditing = false;
+    }
+
+    private void ShowConfirm(string message, Func<Task> action)
+    {
+        confirmMessage = message;
+        onConfirmAction = action;
+        showConfirm = true;
+    }
+
+    private void CancelConfirm()
+    {
+        showConfirm = false;
+        confirmMessage = null;
+        onConfirmAction = null;
+    }
+
+    private async Task ConfirmAction()
+    {
+        showConfirm = false;
+        if (onConfirmAction != null)
+            await onConfirmAction.Invoke();
+    }
+
+    private async Task DeleteUpcoming(int id)
+    {
+        ShowConfirm($"Bạn có chắc muốn xóa bảng thuế ID {id}?", async () =>
         {
-            var msg = await response.Content.ReadAsStringAsync();
-            Console.WriteLine(msg);
-        }
+            var client = HttpFactory.CreateClient("ApiClient");
+            var response = await client.DeleteAsync($"api/tax/upcoming/{id}");
+
+            successMessage = response.IsSuccessStatusCode ? "Xóa thành công." : "Xóa thất bại.";
+            showToast = true;
+            taxHistory = await client.GetFromJsonAsync<List<TaxDTO>>("api/tax");
+        });
+    }
+
+    private async Task ToggleStatus(TaxDTO t)
+    {
+        var newStatus = !t.IsActive;
+        ShowConfirm($"Bạn có chắc muốn {(newStatus ? "kích hoạt" : "ngừng")} '{t.TaxName}'?", async () =>
+        {
+            var client = HttpFactory.CreateClient("ApiClient");
+            var response = await client.PutAsJsonAsync($"api/tax/{t.TaxId}/status", newStatus);
+
+            successMessage = response.IsSuccessStatusCode ? "Cập nhật trạng thái thành công." : "Cập nhật thất bại.";
+            showToast = true;
+            taxHistory = await client.GetFromJsonAsync<List<TaxDTO>>("api/tax");
+        });
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -271,8 +350,78 @@
         }
     }
 
-    private void BackToRatesTax()
+    private RenderFragment GetBadge(TaxDTO t) => @<Badge Color="@GetColor(t)" Class="mt-1">@GetStatus(t)</Badge>;
+
+    private string GetStatus(TaxDTO t)
     {
-        Navigation.NavigateTo("/rates-tax");
+        DateOnly now = DateOnly.FromDateTime(DateTime.Now);
+        if (t.IsActive && t.EffectiveFrom <= now && (t.EffectiveTo == null || t.EffectiveTo >= now))
+            return "Đang hoạt động";
+        if (!t.IsActive && t.EffectiveFrom > now)
+            return "Chưa có hiệu lực";
+        if (t.EffectiveTo != null && t.EffectiveTo < now)
+            return "Hết hiệu lực";
+        return "Ngừng hoạt động";
     }
+
+    private Color GetColor(TaxDTO t)
+    {
+        DateOnly now = DateOnly.FromDateTime(DateTime.Now);
+        if (t.IsActive && t.EffectiveFrom <= now && (t.EffectiveTo == null || t.EffectiveTo >= now))
+            return Color.Success;
+        if (!t.IsActive && t.EffectiveFrom > now)
+            return Color.Info;
+        if (t.EffectiveTo != null && t.EffectiveTo < now)
+            return Color.Warning;
+        return Color.Secondary;
+    }
+
+    private RenderFragment GetActionButtons(TaxDTO t) => @<div>
+    @{
+        DateOnly now = DateOnly.FromDateTime(DateTime.Now);
+        string status = (t.IsActive && t.EffectiveFrom <= now && (t.EffectiveTo == null || t.EffectiveTo >= now))
+        ? "Active"
+        : (!t.IsActive && t.EffectiveFrom > now ? "Upcoming" : "Inactive");
+    }
+    @if (status == "Upcoming")
+    {
+            <button class="btn btn-sm btn-outline-primary me-1"
+                    @onclick:stopPropagation="true"
+                    @onclick="() => EditUpcoming(t)">
+                <i class="bi bi-pencil-square"></i> Sửa
+            </button>
+            <button class="btn btn-sm btn-outline-danger"
+                    @onclick:stopPropagation="true"
+                    @onclick="() => DeleteUpcoming(t.TaxId)">
+                <i class="bi bi-trash"></i> Xóa
+            </button>
+    }
+    else
+    {
+            <button class="btn btn-sm btn-outline-warning"
+                    @onclick:stopPropagation="true"
+                    @onclick="() => ToggleStatus(t)">
+                <i class="bi bi-toggle2-@(t.IsActive ? "on" : "off")"></i>
+                @(t.IsActive ? "Ngừng" : "Kích hoạt")
+            </button>
+    }
+</div>;
+
+private void RemoveBracket(int index)
+{
+    if (index >= 0 && index < AddModel.TaxBrackets.Count)
+        AddModel.TaxBrackets.RemoveAt(index);
+}
+
+
+private async Task EditUpcoming(TaxDTO t)
+{
+    SelectTax(t);
+    StartEdit();
+    await InvokeAsync(StateHasChanged);
+}
+
+
+
+private void BackToRatesTax() => Navigation.NavigateTo("/rates-tax");
 }

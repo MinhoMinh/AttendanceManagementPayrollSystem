@@ -2,6 +2,8 @@
 @using AttendanceManagementPayrollSystem.DTO
 @inject IHttpClientFactory HttpFactory
 @inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
+
 @using System.Globalization
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
@@ -13,7 +15,7 @@
     </button>
 </h3>
 
-@if (insuranceList == null)
+@if (groups == null)
 {
     <p><em>Đang tải dữ liệu tỷ lệ bảo hiểm...</em></p>
 }
@@ -29,150 +31,329 @@ else
         </div>
     }
 
-    <table class="table table-bordered table-hover align-middle">
-        <thead class="table-light">
-            <tr>
-                <th>Tên loại</th>
-                <th>Tỷ lệ nhân viên</th>
-                <th>Tỷ lệ công ty</th>
-                <th>Quy tắc trần</th>
-                <th>Hiệu lực từ</th>
-                <th>Hiệu lực đến</th>
-                <th>Mã luật</th>
-                <th>Trạng thái</th>
-                <th>Thao tác</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in insuranceList)
-            {
-                bool isCurrentlyActive = activeIds.Contains(item.RateSetId);
+    @foreach (var group in groups)
+    {
+        <div class="mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h5 class="text-uppercase fw-bold mb-0">@group.Category</h5>
+                <button class="btn btn-sm btn-outline-success" @onclick="() => StartAdd(group.Category)">
+                    <i class="bi bi-plus-circle"></i> Thêm mới
+                </button>
+            </div>
+            <div style="max-height: 300px; overflow-y: auto;">
+                <table class="table table-sm table-bordered align-middle">
+                    <thead class="table-light sticky-top">
+                        <tr>
+                            <th>Tên loại</th>
+                            <th>Tỷ lệ nhân viên</th>
+                            <th>Tỷ lệ công ty</th>
+                            <th>Quy tắc trần</th>
+                            <th>Hiệu lực từ</th>
+                            <th>Hiệu lực đến</th>
+                            <th>Mã luật</th>
+                            <th>Trạng thái</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (isAdding && group.Category == editModel.Category)
+                        {
+                            <tr class="table-info">
+                                <td><input class="form-control" @bind="editModel.TypeName" /></td>
+                                <td><input class="form-control" type="number" step="0.01" @bind="editModel.EmployeeRate" /></td>
+                                <td><input class="form-control" type="number" step="0.01" @bind="editModel.EmployerRate" /></td>
+                                <td><input class="form-control" @bind="editModel.CapRule" /></td>
+                                <td><input type="date" class="form-control" @bind-value="editModel.EffectiveFrom" @bind-value:format="yyyy-MM-dd" /></td>
+                                <td><input type="date" class="form-control" @bind-value="editModel.EffectiveTo" @bind-value:format="yyyy-MM-dd" /></td>
+                                <td><input class="form-control" @bind="editModel.LawCode" /></td>
+                                <td>-</td>
+                                <td class="text-nowrap">
+                                    <button class="btn btn-sm btn-success me-1" @onclick="SaveAdd"><i class="bi bi-check-lg"></i> Lưu</button>
+                                    <button class="btn btn-sm btn-secondary" @onclick="CancelAdd"><i class="bi bi-x-lg"></i> Hủy</button>
+                                </td>
+                            </tr>
+                        }
+                        @foreach (var item in group.Upcoming)
+                        {
+                            @RowContent(item, "Upcoming")
+                        }
 
-                <tr class="@(isCurrentlyActive ? "table-success" : "")">
-                    @if (isEditing && selectedItem?.RateSetId == item.RateSetId)
-                    {
-                        <!-- Dòng đang chỉnh sửa -->
-                        <td><InputText @bind-Value="editModel.TypeName" class="form-control" /></td>
-                        <td><InputNumber @bind-Value="editModel.EmployeeRate" class="form-control" /></td>
-                        <td><InputNumber @bind-Value="editModel.EmployerRate" class="form-control" /></td>
-                        <td><InputText @bind-Value="editModel.CapRule" class="form-control" /></td>
-                        <td><InputDate @bind-Value="editModel.EffectiveFrom" class="form-control" /></td>
-                        <td><InputDate @bind-Value="editModel.EffectiveTo" class="form-control" /></td>
-                        <td><InputText @bind-Value="editModel.LawCode" class="form-control" /></td>
-                        <td>
-                            <InputCheckbox @bind-Value="editModel.IsActive" />
-                        </td>
-                        <td class="text-nowrap">
-                            <button class="btn btn-sm btn-success me-1" @onclick="SaveEdit">
-                                <i class="bi bi-check-lg"></i> Lưu
-                            </button>
-                            <button class="btn btn-sm btn-secondary" @onclick="CancelEdit">
-                                <i class="bi bi-x-lg"></i> Hủy
-                            </button>
-                        </td>
-                    }
-                    else
-                    {
-                        <!-- Dòng bình thường -->
-                        <td>@item.TypeName</td>
-                        <td>@(item.EmployeeRate * 100)%</td>
-                        <td>@(item.EmployerRate * 100)%</td>
-                        <td>@item.CapRule</td>
-                        <td>@item.EffectiveFrom.ToString("yyyy-MM-dd")</td>
-                        <td>@(item.EffectiveTo?.ToString("yyyy-MM-dd") ?? "—")</td>
-                        <td>@item.LawCode</td>
-                        <td>@(item.IsActive ? "Đang hoạt động" : "Ngừng hoạt động")</td>
-                        <td>
-                            @if (isCurrentlyActive)
-                            {
-                                <button class="btn btn-sm btn-outline-primary"
-                                        @onclick="() => StartEdit(item)">
-                                    <i class="bi bi-pencil-square"></i> Sửa
-                                </button>
-                            }
-                            else
-                            {
-                                <span class="text-muted small">—</span>
-                            }
-                        </td>
-                    }
-                </tr>
-            }
-        </tbody>
-    </table>
+                        @foreach (var item in group.Active)
+                        {
+                            @RowContent(item, "Active")
+                        }
+
+                        @foreach (var item in group.Inactive)
+                        {
+                            @RowContent(item, "Inactive")
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
 }
 
 @code {
-    private List<InsuranceRateDTO>? insuranceList;
+    private List<InsuranceRateGroupDTO>? groups;
     private InsuranceRateDTO? selectedItem;
     private InsuranceRateEditDTO editModel = new();
     private bool isEditing = false;
-    private List<int> activeIds = new List<int>();
+    private bool isAdding = false;
     private string? successMessage;
     private bool showToast = false;
+
+    //Confirm
+    private bool showConfirm = false;
+    private string? confirmMessage;
+    private Func<Task>? onConfirmAction;
+
+    private void StartAdd(string category)
+    {
+        selectedItem = null;
+        isEditing = false;
+        isAdding = true;
+
+        editModel = new InsuranceRateEditDTO
+        {
+            Category = category,
+            EffectiveFrom = DateOnly.FromDateTime(DateTime.Today),
+            EffectiveTo = null,
+            IsActive = false
+        };
+    }
+
+    private void ShowConfirm(string message, Func<Task> action)
+    {
+        confirmMessage = message;
+        onConfirmAction = action;
+        showConfirm = true;
+    }
+
+    private void CancelConfirm()
+    {
+        showConfirm = false;
+        confirmMessage = null;
+        onConfirmAction = null;
+    }
+
+    private async Task ConfirmAction()
+    {
+        showConfirm = false;
+        if (onConfirmAction != null)
+            await onConfirmAction.Invoke();
+    }
+    //Confirm
 
     protected override async Task OnInitializedAsync()
     {
         var client = HttpFactory.CreateClient("ApiClient");
-        insuranceList = await client.GetFromJsonAsync<List<InsuranceRateDTO>>("api/insurancerateset");
-        activeIds = await client.GetFromJsonAsync<List<int>>("api/insurancerateset/active/ids");
+        groups = await client.GetFromJsonAsync<List<InsuranceRateGroupDTO>>("api/insurancerateset/group");
     }
 
-    private void StartEdit(InsuranceRateDTO item)
+    private RenderFragment RowContent(InsuranceRateDTO item, string status) => @<tr class="@GetRowClass(status)">
+@if (isEditing && selectedItem?.RateSetId == item.RateSetId)
     {
-        selectedItem = item;
-        editModel = new InsuranceRateEditDTO
+    <td><input class="form-control" @bind="editModel.TypeName" /></td>
+    <td><input class="form-control" type="number" step="0.01" @bind="editModel.EmployeeRate" /></td>
+    <td><input class="form-control" type="number" step="0.01" @bind="editModel.EmployerRate" /></td>
+    <td><input class="form-control" @bind="editModel.CapRule" /></td>
+    <td><input type="date" class="form-control" @bind-value="editModel.EffectiveFrom" @bind-value:format="yyyy-MM-dd" /></td>
+    <td><input type="date" class="form-control" @bind-value="editModel.EffectiveTo" @bind-value:format="yyyy-MM-dd" /></td>
+    <td><input class="form-control" @bind="editModel.LawCode" /></td>
+    <td>
+        @{
+                DateOnly now = DateOnly.FromDateTime(DateTime.Now);
+            string statusText;
+                if (!item.IsActive&&(now<item.EffectiveFrom||(now>item.EffectiveFrom&&item.EffectiveTo<now)))
+                statusText = "Không có hiệu lực";
+                else if (!item.IsActive&&now > item.EffectiveTo)
+                statusText = "Hết hiệu lực";
+                else
+                statusText = "Đang được áp dụng";
+                }
+        @statusText
+    </td>
+    <td class="text-nowrap">
+        <button class="btn btn-sm btn-success me-1" @onclick="SaveEdit">Lưu</button>
+        <button class="btn btn-sm btn-secondary" @onclick="CancelEdit">Hủy</button>
+    </td>
+    }
+    else
+    {
+    <td>@item.TypeName</td>
+    <td>@(item.EmployeeRate * 100)%</td>
+    <td>@(item.EmployerRate * 100)%</td>
+    <td>@item.CapRule</td>
+    <td>@item.EffectiveFrom.ToString("yyyy-MM-dd")</td>
+    <td>@(item.EffectiveTo?.ToString("yyyy-MM-dd") ?? "-")</td>
+    <td>@item.LawCode</td>
+    <td>
+        @{
+                DateOnly now = DateOnly.FromDateTime(DateTime.Now);
+            string statusText;
+                if (!item.IsActive&&(now<item.EffectiveFrom||(now>item.EffectiveFrom&&item.EffectiveTo>now)))
+                statusText = "Không có hiệu lực";
+                else if (!item.IsActive&&(now > item.EffectiveTo||item.EffectiveFrom<now))
+                statusText = "Hết hiệu lực";
+                else
+                statusText = "Đang được áp dụng";
+                }
+        @statusText
+    </td>
+
+    <td>
+        @if (status == "Upcoming")
         {
-            RateSetId = item.RateSetId,
-            TypeName = item.TypeName,
-            EmployeeRate = item.EmployeeRate,
-            EmployerRate = item.EmployerRate,
-            CapRule = item.CapRule,
-            EffectiveFrom = item.EffectiveFrom,
-            EffectiveTo = item.EffectiveTo,
-            LawCode = item.LawCode,
-            IsActive = item.IsActive
-        };
-        isEditing = true;
-    }
-
-    private void CancelEdit()
-    {
-        isEditing = false;
-        selectedItem = null;
-    }
-
-    private async Task SaveEdit()
-    {
-        var client = HttpFactory.CreateClient("ApiClient");
-        var response = await client.PutAsJsonAsync($"api/insurancerateset/active/{editModel.RateSetId}", editModel);
-
-        if (response.IsSuccessStatusCode)
-        {
-            insuranceList = await client.GetFromJsonAsync<List<InsuranceRateDTO>>("api/insurancerateset");
-            activeIds = await client.GetFromJsonAsync<List<int>>("api/insurancerateset/active/ids");
-            isEditing = false;
-            selectedItem = null;
-
-            successMessage = "Cập nhật thành công";
-            showToast = true;
-            StateHasChanged();
+                <button class="btn btn-sm btn-outline-primary me-1" @onclick="() => StartEdit(item)">
+                    <i class="bi bi-pencil-square"></i> Sửa
+                </button>
+                <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteUpcoming(item.RateSetId)">
+                    <i class="bi bi-trash"></i> Xóa
+                </button>
         }
         else
         {
-            Console.WriteLine("Lưu thất bại: " + response.StatusCode);
+                <button class="btn btn-sm btn-outline-warning" @onclick="() => ToggleStatus(item)">
+                    <i class="bi bi-toggle2-@(item.IsActive ? "on" : "off")"></i>
+                    @(item.IsActive ? "Ngừng hoạt động" : "Kích hoạt")
+                </button>
         }
+    </td>
     }
+</tr>;
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+
+private string GetRowClass(string status) => status switch
+{
+    "Inactive" => "table-secondary",
+    "Active" => "table-success",
+    "Upcoming" => "table-warning",
+    _ => ""
+};
+
+private void StartEdit(InsuranceRateDTO item)
+{
+    selectedItem = item;
+    editModel = new InsuranceRateEditDTO
     {
-        if (showToast)
-        {
-            await Task.Delay(3000);
-            showToast = false;
-            StateHasChanged();
-        }
-    }
+        RateSetId = item.RateSetId,
+        TypeName = item.TypeName,
+        EmployeeRate = item.EmployeeRate,
+        EmployerRate = item.EmployerRate,
+        CapRule = item.CapRule,
+        EffectiveFrom = item.EffectiveFrom,
+        EffectiveTo = item.EffectiveTo,
+        LawCode = item.LawCode,
+        IsActive = item.IsActive,
+        Category=item.Category
+    };
+    isEditing = true;
+}
 
-    private void BackToRatesTax() => Navigation.NavigateTo("/rates-tax");
+private async Task SaveAdd()
+{
+    var client = HttpFactory.CreateClient("ApiClient");
+    var response = await client.PostAsJsonAsync("api/insurancerateset", editModel);
+
+    successMessage = response.IsSuccessStatusCode ? "Thêm mới thành công." : "Thêm mới thất bại.";
+    showToast = true;
+    isAdding = false;
+
+    groups = await client.GetFromJsonAsync<List<InsuranceRateGroupDTO>>("api/insurancerateset/group");
+}
+
+private void CancelAdd()
+{
+    isAdding = false;
+    editModel = new();
+}
+
+
+private void CancelEdit()
+{
+    isEditing = false;
+    selectedItem = null;
+}
+
+private async Task SaveEdit()
+{
+    var client = HttpFactory.CreateClient("ApiClient");
+    var response = await client.PutAsJsonAsync($"api/insurancerateset/upcoming/{editModel.RateSetId}", editModel);
+
+    if (response.IsSuccessStatusCode)
+    {
+        successMessage = "Cập nhật thành công.";
+        showToast = true;
+        isEditing = false;
+        groups = await client.GetFromJsonAsync<List<InsuranceRateGroupDTO>>("api/insurancerateset/group");
+    }
+    else
+    {
+        successMessage = "Lưu thất bại.";
+        showToast = true;
+    }
+}
+
+protected override async Task OnAfterRenderAsync(bool firstRender)
+{
+    // Tự động ẩn Toast sau 3 giây
+    if (showToast)
+    {
+        await Task.Delay(3000);
+        showToast = false;
+        StateHasChanged();
+    }
+}
+
+private async Task DeleteUpcoming(int id)
+{
+    ShowConfirm($"Bạn có chắc muốn xóa bản ghi ID {id}?", async () =>
+    {
+        var client = HttpFactory.CreateClient("ApiClient");
+        var response = await client.DeleteAsync($"api/insurancerateset/upcoming/{id}");
+
+        successMessage = response.IsSuccessStatusCode ? "Xóa bản ghi thành công." : "Xóa thất bại.";
+        showToast = true;
+        groups = await client.GetFromJsonAsync<List<InsuranceRateGroupDTO>>("api/insurancerateset/group");
+    });
+}
+
+private async Task ToggleStatus(InsuranceRateDTO item)
+{
+    var newStatus = !item.IsActive;
+    ShowConfirm($"Bạn có chắc muốn {(newStatus ? "kích hoạt" : "ngừng")} loại bảo hiểm '{item.TypeName}'?", async () =>
+    {
+        var client = HttpFactory.CreateClient("ApiClient");
+        var response = await client.PutAsJsonAsync($"api/insurancerateset/{item.RateSetId}/status", newStatus);
+
+        successMessage = response.IsSuccessStatusCode ? "Cập nhật trạng thái thành công." : "Cập nhật thất bại.";
+        showToast = true;
+        groups = await client.GetFromJsonAsync<List<InsuranceRateGroupDTO>>("api/insurancerateset/group");
+    });
+}
+
+
+
+private void BackToRatesTax() => Navigation.NavigateTo("/rates-tax");
+}
+@if (showConfirm)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Xác nhận</h5>
+                    <button type="button" class="btn-close" @onclick="CancelConfirm"></button>
+                </div>
+                <div class="modal-body">
+                    <p>@confirmMessage</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="CancelConfirm">Hủy</button>
+                    <button class="btn btn-danger" @onclick="ConfirmAction">Xác nhận</button>
+                </div>
+            </div>
+        </div>
+    </div>
 }

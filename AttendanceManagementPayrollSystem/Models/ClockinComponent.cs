@@ -31,5 +31,9 @@ public partial class ClockinComponent
 
     public decimal? ScheduledUnits { get; set; }
 
+    public decimal? OverridedWorkunits { get; set; }
+
     public virtual Clockin Clo { get; set; }
+
+    public virtual ICollection<ClockInAdjustmentRequest> ClockInAdjustmentRequests { get; set; } = new List<ClockInAdjustmentRequest>();
 }

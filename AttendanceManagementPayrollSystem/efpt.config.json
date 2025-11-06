@@ -24,6 +24,10 @@
          "ObjectType": 0
       },
       {
+         "Name": "[dbo].[ClockInAdjustmentRequest]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[dbo].[ClockinComponent]",
          "ObjectType": 0
       },
