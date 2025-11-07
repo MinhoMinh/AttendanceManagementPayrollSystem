@@ -1,0 +1,231 @@
+﻿@page "/overtime/head"
+@using System.Net.Http.Json
+@using AttendanceManagementPayrollSystem.DTO
+@using AttendanceManagementPayrollSystem.Models
+@using System.Text.Json
+@inject IJSRuntime JS
+@inject IHttpClientFactory HttpFactory
+
+<div class="d-flex" style="width:100%; gap:1rem;">
+
+    <!-- Left -->
+
+    <div style="flex:1; display:flex; flex-direction:column; gap:1rem;">
+        <Card>
+            <CardBody>
+                <div class="d-flex justify-content-between align-items-start" style="gap:0.5rem;">
+
+                    <div class="d-flex" style="gap:0.5rem;">
+                        <div>
+                            <label>Nhan vien</label>
+                            <Select TValue="EmployeeBasicDTO" @bind-SelectedValue="selectedEmployee">
+                                <SelectItem Value="@( (EmployeeBasicDTO) null )">-- Chọn --</SelectItem>
+                                @if (employees != null)
+                                {
+                                    @foreach (var emp in employees)
+                                    {
+                                        <SelectItem Value="emp" @onclick="() => SelectEmployee(emp)">@emp.EmpName</SelectItem>
+                                    }
+                                }
+                            </Select>
+                        </div>
+
+                        <div>
+                            <label>Tu ngay</label>
+                            <DatePicker TValue="DateOnly?" Date="fromDate" DateChanged="LoadEmployeeOvertime" />
+                        </div>
+
+                        <div>
+                            <label>Den ngay</label>
+                            <DatePicker TValue="DateOnly?" Date="toDate" DateChanged="LoadEmployeeOvertime" />
+                        </div>
+                    </div>
+
+                </div>
+            </CardBody>
+        </Card>
+
+        <Card>
+            <CardBody>
+                @if (requests == null)
+                {
+                    <p>Đang tải...</p>
+                }
+                else
+                {
+                    <Table Hoverable="true">
+                        <TableHeader>
+                            <TableRow>
+                                <TableHeaderCell>Ngày</TableHeaderCell>
+                                <TableHeaderCell>Giờ</TableHeaderCell>
+                                <TableHeaderCell>Trạng thái</TableHeaderCell>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            @foreach (var item in requests)
+                            {
+                                <TableRow @onclick="() => Select(item)">
+                                    <TableRowCell>@item.ReqDate</TableRowCell>
+                                    <TableRowCell>@item.Hours</TableRowCell>
+                                    <TableRowCell>@item.Status</TableRowCell>
+                                </TableRow>
+                            }
+                        </TableBody>
+                    </Table>
+                }
+            </CardBody>
+        </Card>
+
+
+    </div>
+
+    <!-- Right -->
+    <div style="flex:1;">
+        @if (selected != null)
+        {
+            <Card Class="p-3">
+                <CardBody>
+                    <h6 class="fw-bold mb-3">Chi tiết yêu cầu</h6>
+
+                    <div class="mb-2"><strong>Ngày:</strong> @selected.ReqDate</div>
+                    <div class="mb-2"><strong>Bắt đầu:</strong> @selected.StartTime</div>
+                    <div class="mb-2"><strong>Kết thúc:</strong> @selected.EndTime</div>
+                    <div class="mb-2"><strong>Giờ:</strong> @selected.Hours</div>
+                    <div class="mb-2"><strong>Loại:</strong> @selected.OvertimeTypeName</div>
+                    <div class="mb-2"><strong>Trạng thái:</strong> @selected.Status</div>
+                    <div class="mb-2"><strong>Lý do:</strong> @selected.Reason</div>
+                    <div class="mb-2"><strong>Ngày tạo:</strong> @selected.CreatedDate</div>
+
+                    @if (AllowDecision(selected))
+                    {
+                        <div class="d-flex" style="gap:0.5rem;">
+                            <Button Color="Color.Success" @onclick="Approve">Duyệt</Button>
+                            <Button Color="Color.Danger" @onclick="Deny">Từ chối</Button>
+                        </div>
+                    }
+                </CardBody>
+            </Card>
+        }
+    </div>
+
+</div>
+
+@code {
+    EmployeeDTO Head;
+
+    private List<EmployeeBasicDTO>? employees;
+    private EmployeeBasicDTO? selectedEmployee;
+    // private EmployeeBasicDTO? selectedEmployee
+    // {
+    //     get => _selectedEmployee;
+    //     set
+    //     {
+    //         _selectedEmployee = value;
+    //         _ = SelectEmployee(value);
+    //     }
+    // }
+
+    List<OvertimeRequestDTO> requests;
+    OvertimeRequestDTO selected;
+
+    DateOnly fromDate = DateOnly.FromDateTime(DateTime.Today.AddYears(-1));
+    DateOnly toDate = DateOnly.FromDateTime(DateTime.Today);
+
+    [Inject] INotificationService NotificationService { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var empJson = await JS.InvokeAsync<string>("localStorage.getItem", "employee");
+            if (!string.IsNullOrWhiteSpace(empJson))
+            {
+                Head = JsonSerializer.Deserialize<EmployeeDTO>(empJson);
+                //LoadData(null);
+            }
+
+            // you load Head from localStorage same as Employee in original
+            var client = HttpFactory.CreateClient("ApiClient");
+
+            employees = await client.GetFromJsonAsync<List<EmployeeBasicDTO>>(
+                $"api/department/employees?headId={Head.EmpId}");
+        }
+        catch
+        {
+            NotificationService.Warning("Không tải được danh sách nhân viên", "Lỗi");
+        }
+    }
+
+
+    async Task SelectEmployee(EmployeeBasicDTO emp)
+    {
+        selectedEmployee = emp;
+        selected = null;
+
+        if (emp != null) await LoadEmployeeOvertime();
+
+        StateHasChanged();
+    }
+
+    async Task LoadEmployeeOvertime()
+    {
+        if (Head == null)
+        {
+            NotificationService.Warning("Không tìm thấy dữ liệu nhan vien", "Lỗi");
+            return;
+        }
+
+        if (selectedEmployee == null)
+        {
+            NotificationService.Warning("Không tìm thấy dữ liệu nhan vien duoc chon", "Lỗi");
+            return;
+        }
+
+        var client = HttpFactory.CreateClient("ApiClient");
+
+        var response = await client.GetFromJsonAsync<List<OvertimeRequestDTO>>(
+            $"api/overtime/history?empId={selectedEmployee.EmpId}&startDate={fromDate}&endDate={toDate}");
+
+        if (response == null)
+        {
+            NotificationService.Warning("Không tìm thấy dữ liệu gio vuot cua nhan vien", "Lỗi");
+            return;
+        }
+
+        requests = response;
+
+        StateHasChanged();
+    }
+
+    void Select(OvertimeRequestDTO item) => selected = item;
+
+    bool AllowDecision(OvertimeRequestDTO r)
+    {
+        if (r == null) return false;
+        if (r.Status != "Pending") return false;
+        if (!r.CreatedDate.HasValue) return false;
+
+        var created = r.CreatedDate.Value.ToDateTime(TimeOnly.MinValue);
+        var delta = DateTime.Today - created;
+        return delta.TotalDays <= 7;
+    }
+
+    async Task Approve()
+    {
+        if (selected == null) return;
+        // call your API here
+        NotificationService.Success("Đã duyệt");
+        //await LoadEmployeeOvertime(selectedEmployee);
+    }
+
+    async Task Deny()
+    {
+        if (selected == null) return;
+        // call your API here
+        NotificationService.Warning("Đã từ chối");
+        //await LoadEmployeeOvertime(selectedEmployee);
+    }
+
+
+
+}

@@ -1,0 +1,164 @@
+﻿@page "/payrun/{empId:int}/{month:int}/{year:int}"
+@inject IHttpClientFactory HttpFactory
+@using System.Net.Http.Json
+@using AttendanceManagementPayrollSystem.DTO
+
+<h3>Chi tiết bảng lương</h3>
+
+@if (isLoading)
+{
+    <p>Đang tải dữ liệu...</p>
+}
+else if (payRuns == null || !payRuns.Any())
+{
+    <p>Không tìm thấy dữ liệu.</p>
+}
+else
+{
+    <div class="row">
+        <!-- Bên trái: Bảng danh sách bảng lương -->
+        <div class="col-md-4">
+            @{
+                var CurrentEmployeeName = payRuns
+                .SelectMany(r => r.PayRunItems ?? new List<PayRunItemDto>())
+                .FirstOrDefault(x => x.EmpId == empId)?.EmpName ?? "Không xác định";
+            }
+            <h5>Nhân viên: @CurrentEmployeeName</h5>
+            <table class="table table-bordered table-hover align-middle shadow-sm">
+                <thead class="table-light">
+                    <tr>
+                        <th>Tên bảng lương</th>
+                        <th>Tháng/Năm</th>
+                        <th>Tên nhân viên</th>
+                        <th>Net Pay</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var run in payRuns)
+                    {
+                        if (run.PayRunItems != null && run.PayRunItems.Any())
+                        {
+                            @foreach (var item in run.PayRunItems)
+                            {
+                                <tr class="@(selectedEmpId == item.EmpId && selectedPayrunId == run.PayrollRunId ? "table-primary" : "")"
+                                    style="cursor:pointer"
+                                    @onclick="() => SelectEmployee(item.EmpId, run.PayrollRunId)">
+                                    <td>@run.Name</td>
+                                    <td>@($"{run.PeriodMonth}/{run.PeriodYear}")</td>
+                                    <td>@item.EmpName</td>
+                                    <td>@item.NetPay</td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td>@run.Name</td>
+                                <td>@($"{run.PeriodMonth}/{run.PeriodYear}")</td>
+                                <td colspan="2" class="text-muted text-center">Không có nhân viên trong bảng lương này.</td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Bên phải: Chi tiết -->
+        <div class="col-md-8">
+            @if (selectedItem != null)
+            {
+                <div class="card p-3 shadow-sm">
+                    <h4>@selectedItem.EmpName</h4>
+                    <p><strong>Gross Pay:</strong> @selectedItem.GrossPay</p>
+                    <p><strong>Deductions:</strong> @selectedItem.Deductions</p>
+                    <p><strong>Net Pay:</strong> @selectedItem.NetPay</p>
+                    <p><strong>Notes:</strong> @selectedItem.Notes</p>
+
+                    <h5 class="mt-3">Thành phần lương</h5>
+                    @if (selectedItem.Components != null && selectedItem.Components.Any())
+                    {
+                        <table class="table table-sm table-bordered">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Mã</th>
+                                    <th>Loại</th>
+                                    <th>Mô tả</th>
+                                    <th>Số tiền</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var c in selectedItem.Components)
+                                {
+                                    <tr>
+                                        <td>@c.ComponentCode</td>
+                                        <td>@c.ComponentType</td>
+                                        <td>@c.Description</td>
+                                        <td>@c.Amount</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                    else
+                    {
+                        <p><em>Không có chi tiết component.</em></p>
+                    }
+                </div>
+            }
+            else
+            {
+                <p class="text-muted mt-4">Chọn lịch sử lương tương ứng bên trái để xem chi tiết.</p>
+            }
+        </div>
+    </div>
+
+}
+
+@code {
+    [Parameter] public int empId { get; set; }
+    [Parameter] public int month { get; set; }
+    [Parameter] public int year { get; set; }
+
+    private List<PayRunPreviewDTO>? payRuns;
+    private bool isLoading = true;
+
+    private int? selectedEmpId;
+    private int? selectedPayrunId;
+    private PayRunItemDto? selectedItem;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var client = HttpFactory.CreateClient();
+            payRuns = await client.GetFromJsonAsync<List<PayRunPreviewDTO>>(
+                $"https://localhost:7088/api/pay-run/getpayrun/{empId}/{month}/{year}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Lỗi khi tải dữ liệu: " + ex.Message);
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void SelectEmployee(int empId, int payrunId)
+    {
+        // Nếu click lại cùng nhân viên trong cùng PayRun -> ẩn chi tiết
+        if (selectedEmpId == empId && selectedPayrunId == payrunId)
+        {
+            selectedEmpId = null;
+            selectedPayrunId = null;
+            selectedItem = null;
+        }
+        else
+        {
+            selectedEmpId = empId;
+            selectedPayrunId = payrunId;
+            var run = payRuns?.FirstOrDefault(r => r.PayrollRunId == payrunId);
+            selectedItem = run?.PayRunItems?.FirstOrDefault(i => i.EmpId == empId);
+        }
+    }
+}

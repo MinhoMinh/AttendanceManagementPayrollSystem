@@ -1,0 +1,26 @@
+﻿@inherits LayoutComponentBase
+
+<Layout>
+    <LayoutHeader>
+        <NavMenu />
+    </LayoutHeader>
+
+    <LayoutContent>
+        <div class="p-3">
+            @Body
+        </div>
+    </LayoutContent>
+</Layout>
+
+
+@code {
+    ThemeColorOptions themeColors = new()
+        {
+            Primary = "#97322D",
+            Secondary = "#FFE4A1",
+            Info = "#2F4858",
+            Warning = "#F9C74F",
+            Light = "#F4F1DE",
+            Danger = "#E63946"
+        };
+}

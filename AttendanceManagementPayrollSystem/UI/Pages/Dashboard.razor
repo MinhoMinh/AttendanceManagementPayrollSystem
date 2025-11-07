@@ -1,0 +1,122 @@
+﻿@page "/dashboard"
+
+@using AttendanceManagementPayrollSystem.UI.Components
+@using AttendanceManagementPayrollSystem.DTO
+@using System.Text.Json
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+
+<Layout>
+    <LayoutHeader>
+        <h4 class="m-2">Bảng điều khiển</h4>
+    </LayoutHeader>
+
+    <LayoutContent>
+        <div class="m-3">
+            <DashboardButtonGroup Buttons="@EmployeeService" GroupName="Dịch vụ nhân viên" />
+            <DashboardButtonGroup Buttons="@DepartmentHeadService" GroupName="Dịch vụ trưởng phòng" />
+            <DashboardButtonGroup Buttons="@CompanyService" GroupName="Dịch vụ công ty" />
+        </div>
+    </LayoutContent>
+
+    
+</Layout>
+
+<Toaster />
+
+@code {
+    bool toastVisible = false;
+    private bool isLoading = false;
+
+    private EmployeeDTO? Employee;
+
+    private List<DashboardButton> EmployeeService = new();
+    private List<DashboardButton> DepartmentHeadService = new();
+    private List<DashboardButton> CompanyService = new();
+
+    [Inject] INotificationService NotificationService { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+
+        try
+        {
+            var empJson = await JS.InvokeAsync<string>("localStorage.getItem", "employee");
+            if (!string.IsNullOrWhiteSpace(empJson))
+            {
+                Employee = JsonSerializer.Deserialize<EmployeeDTO>(empJson);
+            }
+        }
+        catch (Exception ex)
+        {
+            NotificationService.Warning("Không thể tìm thấy thông tin nhân viên!", "Lỗi");
+        }
+
+        BuildButtonGroups();
+        StateHasChanged();
+    }
+
+    private void BuildButtonGroups()
+    {
+        if (Employee == null) return;
+
+        EmployeeService = new()
+        {
+            new() { Text = "Lịch tổng hợp", ImageSrc="https://cdn-icons-png.flaticon.com/512/3062/3062634.png", OnClick = EventCallback.Factory.Create(this, NavigateAttendance), Visible = HasPermission("has_clockin") },
+            //new() { Text = "Self KPI", ImageSrc="https://cdn-icons-png.flaticon.com/512/3135/3135715.png", OnClick = EventCallback.Factory.Create(this, NavigateSelfKpi), Visible = HasPermission("has_kpi") },
+            new() { Text = "Lịch làm việc", ImageSrc="https://cdn-icons-png.flaticon.com/512/1077/1077976.png", OnClick = EventCallback.Factory.Create(this, NavigateSelfShift), Visible = HasPermission("has_shift") },
+            new() { Text = "Bảng lương cá nhân", ImageSrc = "https://cdn-icons-png.flaticon.com/512/3135/3135695.png", OnClick = EventCallback.Factory.Create(this, NavigateSelfPayItem), Visible = HasPermission("view_employee_payroll") },
+            new() { Text = "Gio vuot", ImageSrc="https://cdn-icons-png.flaticon.com/512/1077/1077976.png", OnClick = EventCallback.Factory.Create(this, NavigateSelfOvertime), Visible = HasPermission("has_overtime_request") },
+            
+        };
+
+        DepartmentHeadService = new()
+        {
+            //new() { Text = "Dep KPI", ImageSrc="https://cdn-icons-png.flaticon.com/512/1995/1995574.png", OnClick = EventCallback.Factory.Create(this, NavigateDepKpi), Visible = HasPermission("assign_kpi") },
+            new() { Text = "Gio vuot phong ban", ImageSrc="https://cdn-icons-png.flaticon.com/512/1077/1077976.png", OnClick = EventCallback.Factory.Create(this, NavigateHeadOvertime), Visible = true },
+
+        };
+
+        CompanyService = new()
+        {
+            new() { Text = "Cập nhật chấm công", ImageSrc = "https://cdn-icons-png.flaticon.com/512/1828/1828926.png", OnClick = EventCallback.Factory.Create(this, NavigateUploadClockins), Visible = HasPermission("upload_clockin") },
+            new() { Text = "Bảng lương", ImageSrc = "https://cdn-icons-png.flaticon.com/512/3135/3135695.png", OnClick = EventCallback.Factory.Create(this, NavigatePayRun), Visible = HasPermission("view_payroll_run") },
+            new() { Text = "Thiết lập ngày lễ", ImageSrc = "https://cdn-icons-png.flaticon.com/512/616/616408.png", OnClick = EventCallback.Factory.Create(this, NavigateHolidaySetup), Visible = HasPermission("edit_holiday_calendar") },
+            new() { Text = "Chính sách lương", ImageSrc = "https://cdn-icons-png.flaticon.com/512/709/709496.png", OnClick = EventCallback.Factory.Create(this, NavigateSalaryPolicy), Visible = HasPermission("edit_salary_policy") },
+            new() { Text = "Chính sách bảo hiểm/thuế", ImageSrc = "https://cdn-icons-png.flaticon.com/512/942/942799.png", OnClick = EventCallback.Factory.Create(this, NavigateInsuranceTaxPolicy), Visible = HasPermission("view_payroll_run") },
+        };
+
+    }
+
+    private bool HasPermission(string task)
+    {
+        if (Employee?.Permissions == null) return false;
+        return Employee.Permissions.Contains(task);
+    }
+
+    private void NavigateAttendance() => Navigation.NavigateTo("/attendance/self");
+    private void NavigateSelfKpi() => Navigation.NavigateTo("/kpi/self");
+    private void NavigateSelfShift() => Navigation.NavigateTo("/shift/self");
+    private void NavigateSelfOvertime() => Navigation.NavigateTo("/overtime/self");
+    private void NavigateSelfPayItem()
+    {
+        if (Employee == null) return;
+        int empId = Employee.EmpId;
+        int month = DateTime.Now.AddYears(-1).Month;
+        int year = DateTime.Now.AddYears(-1).Year;
+
+        Navigation.NavigateTo($"/payrun/{empId}/{month}/{year}");
+    }
+
+
+    private void NavigateDepKpi() => Navigation.NavigateTo("/kpi/head");
+    private void NavigateHeadOvertime() => Navigation.NavigateTo("/overtime/head");
+
+    private void NavigateUploadClockins() => Navigation.NavigateTo("/xlsupload");
+    private void NavigatePayRun() => Navigation.NavigateTo("/payruns");
+    private void NavigateHolidaySetup() => Navigation.NavigateTo("/department-holiday");
+    private void NavigateSalaryPolicy() => Navigation.NavigateTo("/salary-policies");
+    private void NavigateInsuranceTaxPolicy() => Navigation.NavigateTo("/dashboard");
+    
+}

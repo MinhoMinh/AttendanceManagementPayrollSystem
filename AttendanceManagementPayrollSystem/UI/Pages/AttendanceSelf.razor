@@ -121,10 +121,15 @@
                         }
                         else if (DayHolidays.Any())
                         {
-                            <ul class="list-unstyled">
+                            <ul class="list-unstyled p-2 rounded shadow-sm bg-light">
                                 @foreach (var holiday in DayHolidays)
                                 {
-                                    <li><strong>@holiday.HolidayName</strong> (@holiday.StartDate:dd/MM/yyyy - @holiday.EndDate:dd/MM/yyyy)</li>
+                                    <li class="mb-2 p-2 border-start border-3 border-primary bg-white rounded">
+                                        <div class="fw-bold text-dark">@holiday.HolidayName</div>
+                                        <small class="text-muted">
+                                            @holiday.StartDate:dd/MM/yyyy - @holiday.EndDate:dd/MM/yyyy
+                                        </small>
+                                    </li>
                                 }
                             </ul>
                         }
@@ -163,7 +168,7 @@
     private List<Tasks> ShownTasks = new();
 
     private DateTime today = DateTime.Today;
-    private DateTime SelectedDate = DateTime.Today;
+    private DateTime SelectedDate = DateTime.Today.AddMonths(-1);
     private DateTime? SelectedDay;
     private int _monthsToDisplay = 8;
     private int MonthsToDisplay
@@ -216,6 +221,8 @@
             };
 
             Employee = JsonSerializer.Deserialize<EmployeeDTO>(empJson);
+            SelectedDate = DateTime.Today.AddMonths(-1);
+
             StateHasChanged();
         }
     }
@@ -452,6 +459,15 @@
             .Where(c => c.Date.HasValue && c.Date.Value.Date == SelectedDay.Value.Date)
             .Take(3)
             .ToList();
+
+        if (MonthlyHolidays != null)
+        {
+            DayHolidays = MonthlyHolidays
+                .SelectMany(h => h.DepartmentHolidays)
+                .Where(dh => dh.StartDate.Date <= SelectedDay.Value.Date &&
+                             dh.EndDate.Date >= SelectedDay.Value.Date)
+                .ToList();
+        }
     }
 
     private void LoadDayAnnual()

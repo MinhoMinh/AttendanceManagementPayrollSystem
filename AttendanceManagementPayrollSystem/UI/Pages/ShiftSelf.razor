@@ -1,0 +1,222 @@
+﻿@page "/shift/self"
+@using System.Net.Http.Json
+@using AttendanceManagementPayrollSystem.DTO
+@using Microsoft.JSInterop
+@using System.Text.Json
+@using System.Globalization
+@inject NavigationManager Navigation
+@inject IHttpClientFactory ClientFactory
+@inject IJSRuntime JS
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+<style>
+    body {
+        font-family: 'Inter', sans-serif;
+    }
+    @@keyframes skeleton-pulse {
+        0%, 100%
+    {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+    }
+    .skeleton {
+        background-color: #e5e7eb;
+        animation: skeleton-pulse 1.5s ease-in-out infinite;
+    }
+    .card-hover {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+</style>
+<div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 py-8 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-6xl mx-auto">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">Lịch Ca Làm Việc Tuần Này</h1>
+            <p class="text-gray-600">Theo dõi chi tiết ca làm • Tăng ca • Giờ công</p>
+        </div>
+        @* Loading *@
+        @if (loading)
+        {
+            <div class="bg-white rounded-2xl shadow-lg p-6 card-hover">
+                <div class="space-y-6">
+                    <div class="flex justify-between items-center">
+                        <div class="h-8 w-64 bg-gray-200 rounded skeleton"></div>
+                        <div class="h-10 w-36 bg-gray-200 rounded skeleton"></div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-7 gap-4">
+                        @for (int i = 0; i < 7; i++)
+                        {
+                            <div class="border border-gray-200 rounded-xl p-4 text-center">
+                                <div class="h-5 w-16 bg-gray-200 rounded skeleton mx-auto"></div>
+                                <div class="h-8 w-8 bg-gray-200 rounded-full skeleton mx-auto mt-2"></div>
+                                <div class="h-12 w-full bg-gray-200 rounded skeleton mt-3"></div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+        @* No Data *@
+        else if (shift == null)
+        {
+            <div class="bg-white rounded-2xl shadow-lg p-12 text-center card-hover">
+                <div class="bg-gray-200 border-2 border-dashed rounded-xl w-28 h-28 mx-auto mb-6"></div>
+                <h3 class="text-xl font-semibold text-gray-700 mb-2">Chưa có lịch ca tuần này</h3>
+                <p class="text-gray-500">Vui lòng liên hệ quản lý để được phân công.</p>
+            </div>
+        }
+        @* Data *@
+        else
+        {
+            <div class="bg-white rounded-2xl shadow-lg overflow-hidden card-hover">
+                <!-- Header -->
+                <div class="bg-gradient-to-r from-indigo-600 to-blue-700 text-white p-6">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                            <h2 class="text-2xl font-bold">@employeeName</h2>
+                            <p class="text-indigo-100 text-sm">Mã NV: @employeeId • @currentWeekInfo</p>
+                        </div>
+                        <div class="mt-3 sm:mt-0">
+                            <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-white text-indigo-700">
+                                <svg class="w-4 h-4 mr-1.5" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
+                                </svg>
+                                Cập nhật: @(DateTime.Now.ToString("dd/MM HH:mm"))
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Weekly Grid -->
+                <div class="p-6">
+                    <div class="grid grid-cols-1 md:grid-cols-7 gap-4">
+                        @foreach (var day in GetAllDailyShifts())
+                        {
+                            var isToday = day.Date.Date == DateTime.Today;
+                            var isWeekend = day.Date.DayOfWeek == DayOfWeek.Saturday || day.Date.DayOfWeek == DayOfWeek.Sunday;
+                            var hasShift = day.ShiftDtos?.Any() == true;
+                            <div class="@(isToday ? "ring-2 ring-indigo-500 ring-offset-2" : "")
+                                                 @(isWeekend ? "bg-gray-50" : "bg-white")
+                                                 border @(hasShift ? "border-indigo-200" : "border-gray-200") rounded-xl p-4 text-center transition-all duration-200 hover:shadow-md">
+                                <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                    @(day.Date.ToString("ddd"))
+                                </div>
+                                <div class="text-2xl font-bold text-gray-800 mt-1">
+                                    @day.Date.Day
+                                </div>
+                                <div class="text-xs text-gray-500">
+                                    @(day.Date.ToString("dd/MM"))
+                                </div>
+                                @if (hasShift)
+                                {
+                                    <div class="mt-3 space-y-2">
+                                        @foreach (var s in day.ShiftDtos!)
+                                        {
+                                            var isOvertime = s.WorkUnits > 1.0m;
+                                            <!-- ĐÃ SỬA: CĂN GIỮA HOÀN HẢO -->
+                                            <div class="flex justify-center">
+                                                <div class="p-2 rounded-lg text-xs font-medium @(isOvertime ? "bg-amber-100 text-amber-800" : "bg-emerald-100 text-emerald-800")">
+                                                    <div class="w-32 min-w-32 text-xs font-semibold whitespace-nowrap overflow-hidden text-ellipsis text-center">
+                                                        @s
+                                                    </div>
+                                                    <div class="text-xs opacity-80 text-center mt-1">
+                                                        @(s.WorkHours.ToString("F1"))h • @(s.WorkUnits.ToString("F1"))c
+                                                    </div>
+                                                    @if (isOvertime)
+                                                    {
+                                                        <div class="text-xs font-bold text-center mt-1">Tăng ca</div>
+                                                    }
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                    <!-- Stats -->
+                    <div class="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div class="bg-blue-50 rounded-xl p-4 text-center">
+                            <div class="text-2xl font-bold text-blue-700">@TotalWorkingDays</div>
+                            <div class="text-xs text-blue-600 uppercase font-medium">Ngày làm</div>
+                        </div>
+                        <div class="bg-emerald-50 rounded-xl p-4 text-center">
+                            <div class="text-2xl font-bold text-emerald-700">@(TotalHours.ToString("F1"))</div>
+                            <div class="text-xs text-emerald-600 uppercase font-medium">Tổng giờ</div>
+                        </div>
+                        <div class="bg-amber-50 rounded-xl p-4 text-center">
+                            <div class="text-2xl font-bold text-amber-700">@OvertimeCount</div>
+                            <div class="text-xs text-amber-600 uppercase font-medium">Ca OT</div>
+                        </div>
+                        <div class="bg-purple-50 rounded-xl p-4 text-center">
+                            <div class="text-2xl font-bold text-purple-700">@LeaveDays</div>
+                            <div class="text-xs text-purple-600 uppercase font-medium">Ngày nghỉ</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+@code {
+    private WeeklyShiftDto? shift;
+    private string employeeName = "";
+    private string employeeId = "";
+    private string currentWeekInfo => $"Tuần {GetWeekNumber(DateTime.Today)}/{DateTime.Today.Year}";
+    private bool loading = true;
+    private bool initialized;
+    private int TotalWorkingDays => GetAllDailyShifts().Count(d => d.ShiftDtos?.Any() == true);
+    private double TotalHours => GetAllDailyShifts().Sum(d => d.ShiftDtos?.Sum(s => (double)s.WorkHours) ?? 0);
+    private int OvertimeCount => GetAllDailyShifts().Sum(d => d.ShiftDtos?.Count(s => s.WorkUnits > 1.0m) ?? 0);
+    private int LeaveDays => 7 - TotalWorkingDays;
+    private List<(DateTime Date, List<ShiftDto>? ShiftDtos)> GetAllDailyShifts()
+    {
+        var startOfWeek = DateTime.Today.AddDays(-(int)DateTime.Today.DayOfWeek);
+        var days = new List<(DateTime, List<ShiftDto>?)>();
+        for (int i = 0; i < 7; i++)
+        {
+            var date = startOfWeek.AddDays(i);
+            var dailyShift = shift?.GetDailyShift(date.DayOfWeek);
+            days.Add((date, dailyShift?.ShiftDtos));
+        }
+        return days;
+    }
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && !initialized)
+        {
+            initialized = true;
+            try
+            {
+                var empJson = await JS.InvokeAsync<string>("localStorage.getItem", "employee");
+                if (string.IsNullOrWhiteSpace(empJson)) { loading = false; StateHasChanged(); return; }
+                var emp = JsonSerializer.Deserialize<EmployeeDTO>(empJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                if (emp == null) { loading = false; StateHasChanged(); return; }
+                employeeId = emp.EmpId.ToString();
+                employeeName = emp.EmpName;
+                var client = ClientFactory.CreateClient();
+                client.BaseAddress = new Uri("http://localhost:5038/");
+                shift = await client.GetFromJsonAsync<WeeklyShiftDto>($"api/shift/self?empId={emp.EmpId}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error: {ex.Message}");
+            }
+            finally
+            {
+                loading = false;
+                StateHasChanged();
+            }
+        }
+    }
+    private int GetWeekNumber(DateTime date)
+    {
+        return CultureInfo.CurrentCulture.Calendar.GetWeekOfYear(date, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday);
+    }
+}

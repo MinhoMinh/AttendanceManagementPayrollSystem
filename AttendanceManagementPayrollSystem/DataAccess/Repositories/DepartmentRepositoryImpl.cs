@@ -1,4 +1,5 @@
-﻿using AttendanceManagementPayrollSystem.Models;
+﻿using AttendanceManagementPayrollSystem.DTO;
+using AttendanceManagementPayrollSystem.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
@@ -21,6 +22,22 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
                 .OrderBy(d => d.DepName)
                 .ToListAsync();
         }
+
+        public async Task<IEnumerable<Employee>> GetEmployees(int headId)
+        {
+            var headDepId = await _context.Employees
+                .Where(h => h.EmpId == headId)
+                .Select(h => h.DepId)
+                .FirstOrDefaultAsync();
+
+            if (headDepId == 0)
+                return Enumerable.Empty<Employee>();
+
+            return await _context.Employees
+                .Where(e => e.DepId == headDepId)
+                .ToListAsync();
+        }
+
 
         public async Task<Department?> GetByIdAsync(int id)
         {

@@ -19,7 +19,7 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
             builder.Services.AddScoped<HolidayCalendarRepository, HolidayCalendarRepositoryImpl>();
             builder.Services.AddScoped<DepartmentRepository, DepartmentRepositoryImpl>();
             builder.Services.AddScoped<SalaryPolicyRepository, SalaryPolicyRepositoryImpl>();
-
+            builder.Services.AddScoped<IOvertimeRepository, OvertimeRepositoryImpl>();
 
         }
 

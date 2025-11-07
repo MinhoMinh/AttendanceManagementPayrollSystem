@@ -99,34 +99,39 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
         public async Task<IEnumerable<HolidayCalendarDTO>> GetByEmployeeAsync(int empId, DateTime start, DateTime end)
         {
             return await _dbContext.HolidayCalendars
-        .Include(h => h.DepartmentHolidayCalenders)
-            .ThenInclude(dh => dh.Dep)
-        .Where(h => h.DepartmentHolidayCalenders.Any(dh =>
-            dh.Dep.Employees.Any(e => e.EmpId == empId) &&
-            dh.StartDate <= end &&
-            dh.EndDate >= start))
-        .OrderBy(h => h.HolidayName)
-        .Select(h => new HolidayCalendarDTO
-        {
-            HolidayId = h.HolidayId,
-            HolidayName = h.HolidayName,
-            PeriodYear = h.PeriodYear,
-            CreatedAt = h.CreatedAt,
-            DepartmentHolidays = h.DepartmentHolidayCalenders
-                .Where(dh => dh.StartDate <= end && dh.EndDate >= start)
-                .Select(dh => new DepartmentHolidayCalendarDTO
+                .Include(h => h.DepartmentHolidayCalenders)
+                    .ThenInclude(dh => dh.Dep)
+                .Where(h => h.DepartmentHolidayCalenders.Any(dh =>
+                    dh.Dep.Employees.Any(e => e.EmpId == empId) &&
+                    dh.StartDate <= end &&
+                    dh.EndDate >= start))
+                .OrderBy(h => h.HolidayName)
+                .Select(h => new HolidayCalendarDTO
                 {
-                    DepHolidayCalendarId = dh.DepHolidayCalendarId,
-                    DepId = dh.DepId,
-                    HolidayId = dh.HolidayId,
-                    StartDate = dh.StartDate,
-                    EndDate = dh.EndDate,
-                    DepName = dh.Dep.DepName,
-                    HolidayName = h.HolidayName
-                }).ToList()
-        })
-        .ToListAsync();
+                    HolidayId = h.HolidayId,
+                    HolidayName = h.HolidayName,
+                    PeriodYear = h.PeriodYear,
+                    CreatedAt = h.CreatedAt,
+                    DepartmentHolidays = h.DepartmentHolidayCalenders
+                        .Where(dh =>
+                            dh.StartDate <= end &&
+                            dh.EndDate >= start &&
+                            dh.Dep.Employees.Any(e => e.EmpId == empId)) // filter here
+                        .Select(dh => new DepartmentHolidayCalendarDTO
+                        {
+                            DepHolidayCalendarId = dh.DepHolidayCalendarId,
+                            DepId = dh.DepId,
+                            HolidayId = dh.HolidayId,
+                            StartDate = dh.StartDate,
+                            EndDate = dh.EndDate,
+                            DepName = dh.Dep.DepName,
+                            HolidayName = h.HolidayName
+                        })
+                        .ToList()
+                })
+                .ToListAsync();
         }
+
 
         /// <summary>
         /// Thêm mới ngày nghỉ lễ.

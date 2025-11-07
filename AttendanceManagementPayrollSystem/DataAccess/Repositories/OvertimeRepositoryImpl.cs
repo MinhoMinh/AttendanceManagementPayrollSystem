@@ -1,4 +1,5 @@
 ﻿using AttendanceManagementPayrollSystem.DataAccess.Repositories;
+using AttendanceManagementPayrollSystem.DTO;
 using AttendanceManagementPayrollSystem.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,15 +12,42 @@ public class OvertimeRepositoryImpl : IOvertimeRepository
         _context = context;
     }
 
-    public IEnumerable<OvertimeRequest> GetOvertimeByEmployeeId(int empId)
+    public async Task<IEnumerable<OvertimeRequest>> GetOvertimeByEmployeeId(
+    int empId,
+    DateOnly? startDate,
+    DateOnly? endDate)
     {
-        return _context.OvertimeRequests
+        var query = _context.OvertimeRequests
             .Include(o => o.OvertimeTypeNavigation)
             .Include(o => o.ApprovedByNavigation)
-            .Where(o => o.EmpId == empId)
+            .Include(o => o.LinkedPayrollRun)
+            .Where(o => o.EmpId == empId);
+
+        if (startDate.HasValue)
+            query = query.Where(o => o.ReqDate >= startDate.Value);
+
+        if (endDate.HasValue)
+            query = query.Where(o => o.ReqDate <= endDate.Value);
+
+        var list = await query
             .OrderByDescending(o => o.ReqDate)
-            .ToList();
+            .ToListAsync();
+
+        Console.WriteLine($"count {list.Count}");
+        return list;
     }
+
+    //public async Task<IGrouping<int, OvertimeRequestDTO>> GetOvertimeByHeadId(
+    //int empId,
+    //DateOnly? startDate,
+    //DateOnly? endDate)
+    //{
+
+    //}
+   
+
+
+
 
     public OvertimeRequest GetById(int id)
     {
@@ -55,5 +83,10 @@ public class OvertimeRepositoryImpl : IOvertimeRepository
         req.ApprovedBy = approverId;
         req.ApprovedDate = DateOnly.FromDateTime(DateTime.Now);
         _context.SaveChanges();
+    }
+
+    public IEnumerable<OvertimeRate> GetRates()
+    {
+        return _context.OvertimeRates;
     }
 }

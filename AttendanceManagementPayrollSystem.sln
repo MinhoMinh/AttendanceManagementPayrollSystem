@@ -5,7 +5,7 @@ VisualStudioVersion = 17.11.35312.102
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AttendanceManagementPayrollSystem", "AttendanceManagementPayrollSystem\AttendanceManagementPayrollSystem.csproj", "{3BBA1840-123F-4A58-B5CB-B6913A6CAF02}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AttendanceManagementPayrollSystem.Tests", "AttendanceManagementPayrollSystem.Tests\AttendanceManagementPayrollSystem.Tests.csproj", "{923EF075-AF23-4BAD-875B-C784B8E9309F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AttendanceManagementPayrollSystem.Tests", "AttendanceManagementPayrollSystem.Tests\AttendanceManagementPayrollSystem.Tests.csproj", "{923EF075-AF23-4BAD-875B-C784B8E9309F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

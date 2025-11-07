@@ -1,7 +1,7 @@
 ﻿using AttendanceManagementPayrollSystem.DataAccess.Repositories;
 using AttendanceManagementPayrollSystem.DTO;
 using AttendanceManagementPayrollSystem.Models;
-using AttendanceManagementPayrollSystem.Services;
+using AttendanceManagementPayrollSystem.Services.ServiceList;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AttendanceManagementPayrollSystem.Controllers

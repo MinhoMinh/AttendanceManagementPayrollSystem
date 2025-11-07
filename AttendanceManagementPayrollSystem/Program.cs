@@ -1,16 +1,10 @@
-using AttendanceManagementPayrollSystem.Components;
+using AttendanceManagementPayrollSystem.UI;
 using AttendanceManagementPayrollSystem.DataAccess.Repositories;
-using AttendanceManagementPayrollSystem.Models;
-using AttendanceManagementPayrollSystem.Services;
-using AttendanceManagementPayrollSystem.Services.Interfaces;
 using Blazorise;
 using Blazorise.Bootstrap5;
 using Blazorise.Icons.FontAwesome;
-using ClosedXML.Parser;
-using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using System;
+using AttendanceManagementPayrollSystem.Services.ServiceList;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -46,10 +40,7 @@ builder.Services.AddScoped<ShiftService, ShiftServiceImpl>();
 builder.Services.AddScoped<HolidayCalendarService, HolidayCalendarServiceImpl>();
 builder.Services.AddScoped<DepartmentService, DepartmentServiceImpl>();
 builder.Services.AddScoped<IOvertimeService, OvertimeService>();
-builder.Services.AddScoped<IOvertimeRepository, OvertimeRepositoryImpl>();
-
-
-
+builder.Services.AddScoped<SalaryPolicyService, SalaryPolicyServiceImpl>();
 
 
 builder.Services.AddControllers()
@@ -59,7 +50,14 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.WriteIndented = true;
     });
 
+builder.Services.AddControllers()
+    .AddJsonOptions(o =>
+    {
+        o.JsonSerializerOptions.Converters.Add(new DateOnlyJsonConverter());
+        o.JsonSerializerOptions.Converters.Add(new TimeOnlyJsonConverter());
+    });
 
+// Add Repository in here
 RepositoryManager.DoScoped(builder);
 
 builder.Services.AddHttpClient("ApiClient", client =>

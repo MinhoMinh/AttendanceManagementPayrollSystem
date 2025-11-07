@@ -48,7 +48,7 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label text-muted">Ngày hiệu lực</label>
-                            <p class="fw-bold">@salaryPolicy.EffectiveFrom:dd/MM/yyyy</p>
+                            <p class="fw-bold">@salaryPolicy.EffectiveFrom</p>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label text-muted">Trạng thái</label>
@@ -167,9 +167,16 @@
     private bool showEditModal = false;
     private bool isSaving = false;
 
-    protected override async Task OnInitializedAsync()
+    private bool hasRendered = false;
+    [Inject] INotificationService NotificationService { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        await LoadPolicyAsync();
+        if (firstRender)
+        {
+            hasRendered = true;
+            await LoadPolicyAsync();
+        }
     }
 
     private async Task LoadPolicyAsync()
@@ -178,10 +185,12 @@
         {
             var client = HttpFactory.CreateClient("ApiClient");
             salaryPolicy = await client.GetFromJsonAsync<SalaryPolicyViewDTO>("api/salarypolicy/getactivesalarypolicy");
+            if (salaryPolicy != null)
+                await InvokeAsync(StateHasChanged);
         }
         catch (Exception ex)
         {
-            await JS.InvokeVoidAsync("alert", $"Lỗi khi tải dữ liệu: {ex.Message}");
+            NotificationService.Error($"Lỗi khi tải dữ liệu: {ex.Message}");
         }
     }
 
@@ -218,11 +227,11 @@
 
             CloseModal();
             await LoadPolicyAsync();
-            await JS.InvokeVoidAsync("alert", "Cập nhật chính sách lương thành công!");
+            NotificationService.Success("Cập nhật chính sách lương thành công!");
         }
         catch (Exception ex)
         {
-            await JS.InvokeVoidAsync("alert", $"Lỗi khi lưu: {ex.Message}");
+            NotificationService.Error($"Lỗi khi lưu: {ex.Message}");
         }
         finally
         {

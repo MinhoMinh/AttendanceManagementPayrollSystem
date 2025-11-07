@@ -1,5 +1,7 @@
-﻿using AttendanceManagementPayrollSystem.Models;
-using AttendanceManagementPayrollSystem.Services.Interfaces;
+﻿using AttendanceManagementPayrollSystem.DTO;
+using AttendanceManagementPayrollSystem.Models;
+using AttendanceManagementPayrollSystem.Services.ServiceList;
+using Azure.Core;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AttendanceManagementPayrollSystem.Controllers
@@ -17,12 +19,12 @@ namespace AttendanceManagementPayrollSystem.Controllers
 
         // ✅ GET /api/overtime/history?empId=1&startDate=2025-10-01&endDate=2025-10-30
         [HttpGet("history")]
-        public IActionResult GetOvertimeHistory(
+        public async Task<IActionResult> GetOvertimeHistory(
             [FromQuery] int empId,
             [FromQuery] DateOnly? startDate,
             [FromQuery] DateOnly? endDate)
         {
-            var data = _service.GetOvertimeHistoryByEmployee(empId, startDate, endDate);
+            var data = await _service.GetOvertimeHistoryByEmployee(empId, startDate, endDate);
             return Ok(data);
         }
 
@@ -67,6 +69,26 @@ namespace AttendanceManagementPayrollSystem.Controllers
             _service.RejectOvertimeRequest(id, dto.ApproverId);
             return Ok(new { message = "Overtime request rejected." });
         }
+
+        //[HttpPost("headrequest")]
+        //public async ActionResult<IEnumerable<OvertimeRequestDTO>> GetRequestOvertimesByHead([FromQuery] int headId,
+        //    [FromQuery] DateOnly? startDate,
+        //    [FromQuery] DateOnly? endDate)
+        //{
+        //    var data = await _service.GetOvertimeHistoryByHead(headId, startDate, endDate);
+        //    return Ok(data);
+        //}
+
+
+        [HttpGet("rates")]
+        public ActionResult<IEnumerable<OvertimeRateDTO>> GetAll()
+        {
+            var data = _service.GetRates();
+
+            if (data == null) return NotFound();
+            return Ok(data);
+        }
+
     }
 
     // DTOs

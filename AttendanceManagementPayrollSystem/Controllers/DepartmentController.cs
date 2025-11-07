@@ -1,8 +1,8 @@
 ﻿using AttendanceManagementPayrollSystem.DTO;
 using Microsoft.AspNetCore.Mvc;
-using AttendanceManagementPayrollSystem.Services;
+using AttendanceManagementPayrollSystem.Services.ServiceList;
 
-[Route("api/[controller]")]
+[Route("api/department")]
 [ApiController]
 public class DepartmentController : ControllerBase
 {
@@ -18,5 +18,18 @@ public class DepartmentController : ControllerBase
     {
         var list = await _service.GetAllAsync();
         return Ok(list);
+    }
+
+    [HttpGet("employees")]
+    public async Task<ActionResult<List<EmployeeBasicDTO>>> GetEmployeesByHeadAsync([FromQuery] int headId)
+    {
+        // Optional: validate month/year
+
+        var employees = await _service.GetEmployeesAsync(headId);
+
+        if (employees == null)
+            return NotFound();
+
+        return Ok(employees);
     }
 }
