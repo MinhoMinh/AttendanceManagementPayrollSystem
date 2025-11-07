@@ -198,7 +198,8 @@ namespace AttendanceManagementPayrollSystem.Services.Mapper
                 WorkHours = component.WorkHours,
                 ScheduledHours = component.ScheduledHours,
                 WorkUnits = component.WorkUnits,
-                ScheduledUnits = component.ScheduledUnits
+                ScheduledUnits = component.ScheduledUnits,
+                OverridedWorkunits=component.OverridedWorkunits
             };
         }
     }

@@ -1,8 +1,12 @@
 ﻿@using AttendanceManagementPayrollSystem.DTO
+@using Blazorise
 
 <Card Class="mb-3 shadow-sm">
-    <CardHeader>
+    <CardHeader class="d-flex justify-content-between align-items-center">
         <strong>Ca làm</strong>
+        <button class="btn btn-warning btn-sm" @onclick="ReportThisAsync">
+            Báo cáo
+        </button>
     </CardHeader>
 
     <CardBody>
@@ -30,13 +34,34 @@
             </FieldBody>
         </Field>
 
-        <Field>
-            <FieldLabel>Công làm</FieldLabel>
-            <FieldBody>
-                @($"{(Component.WorkUnits ?? 0m):F2}/{(Component.ScheduledUnits ?? 0m):F2}")
-            </FieldBody>
-        </Field>
-
+        @if (Component.OverridedWorkunits is not null)
+        {
+            <Field>
+                <FieldLabel>Công làm (đã điều chỉnh)</FieldLabel>
+                <FieldBody>
+                    <span>
+                        <span class="fw-bold text-warning">
+                            @($"{Component.OverridedWorkunits:F2}")
+                        </span>
+                        <span class="text-muted">
+                            (@($"{(Component.WorkUnits ?? 0m):F2}"))
+                        </span>
+                        /@($"{(Component.ScheduledUnits ?? 0m):F2}")
+                    </span>
+                </FieldBody>
+            </Field>
+        }
+        else
+        {
+            <Field>
+                <FieldLabel>Công làm</FieldLabel>
+                <FieldBody>
+                    <span class="fw-bold text-primary">
+                        @($"{(Component.WorkUnits ?? 0m):F2}/{(Component.ScheduledUnits ?? 0m):F2}")
+                    </span>
+                </FieldBody>
+            </Field>
+        }
         <Field>
             <FieldLabel>Giờ vào / Giờ ra</FieldLabel>
             <FieldBody>
@@ -65,4 +90,11 @@
 
 @code {
     [Parameter] public ClockinComponentDto Component { get; set; }
+    [Parameter] public EventCallback<ClockinComponentDto> OnReportClicked { get; set; }
+
+    private async Task ReportThisAsync()
+    {
+        if (OnReportClicked.HasDelegate)
+            await OnReportClicked.InvokeAsync(Component);
+    }
 }

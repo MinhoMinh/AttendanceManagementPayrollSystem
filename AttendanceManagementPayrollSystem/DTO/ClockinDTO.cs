@@ -48,5 +48,7 @@
         public decimal? WorkUnits { get; set; }
 
         public decimal? ScheduledUnits { get; set; }
+
+        public decimal? OverridedWorkunits { get; set; }
     }
 }

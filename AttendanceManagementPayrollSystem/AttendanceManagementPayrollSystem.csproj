@@ -5,6 +5,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>60622681-235e-4252-83f4-c32fc35c828a</UserSecretsId>
+    <ScopedCssEnabled>true</ScopedCssEnabled>
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,8 +18,9 @@
     <PackageReference Include="Blazorise" Version="1.8.5" />
     <PackageReference Include="Blazorise.Bootstrap5" Version="1.8.5" />
     <PackageReference Include="Blazorise.Components" Version="1.8.5" />
-    <PackageReference Include="Blazorise.DataGrid" Version="1.8.5" />
     <PackageReference Include="Blazorise.Icons.FontAwesome" Version="1.8.5" />
+    <PackageReference Include="Blazorise.DataGrid" Version="1.8.5" />
+    <PackageReference Include="bootstrap" Version="5.3.8" />
     <PackageReference Include="ClosedXML" Version="0.105.0" />
     <PackageReference Include="ExcelDataReader" Version="3.8.0" />
     <PackageReference Include="ExcelDataReader.DataSet" Version="3.8.0" />

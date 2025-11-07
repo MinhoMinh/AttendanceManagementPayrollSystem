@@ -4,7 +4,7 @@
    "ContextNamespace": null,
    "FilterSchemas": false,
    "IncludeConnectionString": false,
-   "MinimumProductVersion": "2.6.1130",
+   "MinimumProductVersion": "2.6.1186",
    "ModelNamespace": null,
    "OutputContextPath": null,
    "OutputPath": "Models",
@@ -21,6 +21,10 @@
       },
       {
          "Name": "[dbo].[Clockin]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[ClockInAdjustmentRequest]",
          "ObjectType": 0
       },
       {
@@ -72,7 +76,7 @@
          "ObjectType": 0
       },
       {
-         "Name": "[dbo].[InsuranceRateSet]",
+         "Name": "[dbo].[InsuranceRate]",
          "ObjectType": 0
       },
       {
@@ -125,6 +129,10 @@
       },
       {
          "Name": "[dbo].[SalaryPolicy]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Tax]",
          "ObjectType": 0
       },
       {
