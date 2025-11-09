@@ -28,7 +28,9 @@
 </head>
 
 <body>
-    <Routes @rendermode="InteractiveServer" />
+    <Blazorise.ThemeProvider Theme="@theme">
+        <Routes @rendermode="InteractiveServer" />
+    </Blazorise.ThemeProvider>
 
     <!-- Core Scripts -->
     <script src="js/bootstrap.bundle.min.js"></script>
@@ -37,3 +39,40 @@
 </body>
 
 </html>
+
+
+@code {
+    readonly Theme theme = new()
+        {
+            ColorOptions = new()
+            {
+                Primary = "#97322D",   // deep wine
+                Secondary = "#FFE4A1",   // cream
+                Info = "#2F4858",   // cool anchor
+                Warning = "#F9C74F",   // warm accent
+                Light = "#F4F1DE",   // neutral
+                Danger = "#E63946",   // CTA
+            },
+            BackgroundOptions = new()
+            {
+                Body = "#F4F1DE",
+            },
+            TextColorOptions = new()
+            {
+                Primary = "#2F4858",
+                Secondary = "#97322D"
+            },
+            ButtonOptions = new()
+            {
+                BorderRadius = "0.5rem",
+            },
+            InputOptions = new()
+            {
+                BorderRadius = "0.5rem",
+            },
+            CardOptions = new()
+            {
+                BorderRadius = "0.75rem",
+            }
+        };
+}

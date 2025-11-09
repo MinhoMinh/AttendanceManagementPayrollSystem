@@ -84,7 +84,9 @@
             new() { Text = "Bảng lương", ImageSrc = "https://cdn-icons-png.flaticon.com/512/3135/3135695.png", OnClick = EventCallback.Factory.Create(this, NavigatePayRun), Visible = HasPermission("view_payroll_run") },
             new() { Text = "Thiết lập ngày lễ", ImageSrc = "https://cdn-icons-png.flaticon.com/512/616/616408.png", OnClick = EventCallback.Factory.Create(this, NavigateHolidaySetup), Visible = HasPermission("edit_holiday_calendar") },
             new() { Text = "Chính sách lương", ImageSrc = "https://cdn-icons-png.flaticon.com/512/709/709496.png", OnClick = EventCallback.Factory.Create(this, NavigateSalaryPolicy), Visible = HasPermission("edit_salary_policy") },
-            new() { Text = "Chính sách bảo hiểm/thuế", ImageSrc = "https://cdn-icons-png.flaticon.com/512/942/942799.png", OnClick = EventCallback.Factory.Create(this, NavigateInsuranceTaxPolicy), Visible = HasPermission("view_payroll_run") },
+            new() { Text = "Chính sách bảo hiểm/thuế", ImageSrc = "https://cdn-icons-png.flaticon.com/512/942/942799.png", OnClick = EventCallback.Factory.Create(this, NavigateInsuranceTaxPolicy), Visible = HasPermission("edit_tax_insurance") },
+
+        
         };
 
     }
@@ -117,6 +119,6 @@
     private void NavigatePayRun() => Navigation.NavigateTo("/payruns");
     private void NavigateHolidaySetup() => Navigation.NavigateTo("/department-holiday");
     private void NavigateSalaryPolicy() => Navigation.NavigateTo("/salary-policies");
-    private void NavigateInsuranceTaxPolicy() => Navigation.NavigateTo("/dashboard");
+    private void NavigateInsuranceTaxPolicy() => Navigation.NavigateTo("/rates-tax");
     
 }

@@ -33,52 +33,28 @@
                         </Div>
                     </FieldBody>
                 </Field>
-
+        }
+        else if (SelectedView == DisplayedView.Annual)
+        {
+            <Div Class="d-flex flex-row align-items-start gap-2">
                 <Field>
-                    <FieldLabel>Loại hiển thị</FieldLabel>
+                    <FieldLabel>Ngày bắt đầu</FieldLabel>
                     <FieldBody>
-                        <Div Class="d-flex flex-row align-items-center gap-3">
-                            <Check TValue="bool" @bind-Checked="ShowCongMonthly">Công</Check>
-                            <Check TValue="bool" @bind-Checked="ShowGioVuotMonthly">Giờ vượt</Check>
-                            <Check TValue="bool" @bind-Checked="ShowNgayNghiMonthly">Ngày nghỉ</Check>
-                            <Check TValue="bool" @bind-Checked="ShowNgayLeMonthly">Ngày lễ</Check>
+                        <Div Class="d-flex flex-column picker-container" Position="Position.Relative">
+                            <DatePicker TValue="DateTime?"
+                                        Date="@SelectedDate"
+                                            DateChanged="@(value => OnAnnualDateChanged(value))"
+                                        DisplayFormat="dd/MM/yyyy" />
                         </Div>
                     </FieldBody>
+                    <FieldHelp>Format: DD/MM/YYYY</FieldHelp>
                 </Field>
-        }
-            else if (SelectedView == DisplayedView.Annual)
-            {
-                <Div Class="d-flex flex-row align-items-start gap-2">
-                    <Field>
-                        <FieldLabel>Ngày bắt đầu</FieldLabel>
-                        <FieldBody>
-                            <Div Class="d-flex flex-column picker-container" Position="Position.Relative">
-                                <DatePicker TValue="DateTime?"
-                                            Date="@SelectedDate"
-                                            DateChanged="@(value => OnAnnualDateChanged(value))"
-                                            DisplayFormat="dd/MM/yyyy" />
-                            </Div>
-                        </FieldBody>
-                        <FieldHelp>Format: DD/MM/YYYY</FieldHelp>
-                    </Field>
-                    <Field>
-                        <FieldLabel>Số tháng hiển thị</FieldLabel>
-                        <NumericEdit TValue="int" @bind-Value="MonthsToDisplay" Min="1" Max="12" />
-                    </Field>
-                </Div>
-
                 <Field>
-                    <FieldLabel>Loại hiển thị</FieldLabel>
-                    <RadioGroup TValue="string"
-                                CheckedValue="@AnnualViewType"
-                                CheckedValueChanged="@OnAnnualViewTypeChanged">
-                        <Radio Value="@("Cong")">Công</Radio>
-                        <Radio Value="@("GioVuot")">Giờ vượt</Radio>
-                        <Radio Value="@("NgayNghi")">Ngày nghỉ</Radio>
-                        <Radio Value="@("NgayLe")">Ngày lễ</Radio>
-                    </RadioGroup>
+                    <FieldLabel>Số tháng hiển thị</FieldLabel>
+                    <NumericEdit TValue="int" @bind-Value="MonthsToDisplay" Min="1" Max="12" />
                 </Field>
-            }
+            </Div>
+        }
         </Div>
     </CardBody>
 </Card>
@@ -87,13 +63,14 @@
     <!-- Left: Calendar view -->
     <div class="col-md-10 col-12">
         <Card>
-            <CardHeader>Lịch</CardHeader>
+            <CardHeader>Calendar</CardHeader>
             <CardBody>
                 <!-- Optional info above calendar -->
-                <p class="mb-2"><strong>Employee:</strong> @Employee?.EmpName</p>
+                <p class="mb-2"><strong>Employee:</strong> John Doe</p>
+                <p class="mb-2"><strong>Department:</strong> HR</p>
 
-                <CalendarContainer DisplayedView="SelectedView" FirstDate="@SelectedDate" TasksList="@ShownTasks.ToArray()">
-                    <AnnualView Months="@MonthsToDisplay" TaskClick="ViewDay" />
+                <CalendarContainer DisplayedView="SelectedView" FirstDate="@SelectedDate" TasksList="@MonthlyTasks.ToArray()">
+                    <AnnualView Months="@MonthsToDisplay" />
                     <MonthlyView TaskClick="ViewDay" />
                 </CalendarContainer>
             </CardBody>
@@ -103,39 +80,25 @@
     <!-- Right: Day details -->
     <div class="col-md-2 col-12 mt-2 mt-md-0">
         <Card>
-            <CardHeader>Chi tiết</CardHeader>
+            <CardHeader>Chi tiết chấm công</CardHeader>
             <CardBody>
                 @if (SelectedDay != null)
                 {
                     <div>
                         <p><strong>Ngày:</strong> @SelectedDay.Value.ToString("dd/MM/yyyy")</p>
 
-                        @if (DayClockins.Any())
+                        @if (DayClockins != null && DayClockins.Any())
                         {
                             <div class="d-flex flex-column gap-2">
-                                @foreach (var comp in DayClockins)
+                                @foreach (var comp in DayClockins.Take(3))
                                 {
-                                    <ClockinDayView Component="@comp" />
+                                    <ClockinDayView Component="@comp" OnReportClicked="OpenReportModal"/>
                                 }
                             </div>
                         }
-                        else if (DayHolidays.Any())
-                        {
-                            <ul class="list-unstyled p-2 rounded shadow-sm bg-light">
-                                @foreach (var holiday in DayHolidays)
-                                {
-                                    <li class="mb-2 p-2 border-start border-3 border-primary bg-white rounded">
-                                        <div class="fw-bold text-dark">@holiday.HolidayName</div>
-                                        <small class="text-muted">
-                                            @holiday.StartDate:dd/MM/yyyy - @holiday.EndDate:dd/MM/yyyy
-                                        </small>
-                                    </li>
-                                }
-                            </ul>
-                        }
                         else
                         {
-                            <p>Không có dữ liệu</p>
+                            <p>Không có dữ liệu chấm công</p>
                         }
                     </div>
                 }
@@ -146,12 +109,16 @@
             </CardBody>
         </Card>
     </div>
-
 </div>
+
+<ClockinReportModal @ref="reportModal" />
+
 
 
 @code {
-    private DisplayedView _selectedView = DisplayedView.Annual;
+    private ClockinReportModal? reportModal;
+
+    private DisplayedView _selectedView = DisplayedView.Monthly;
     private DisplayedView SelectedView
     {
         get => _selectedView;
@@ -165,10 +132,11 @@
         }
     }
 
-    private List<Tasks> ShownTasks = new();
+    private List<Tasks> MonthlyTasks = new();
+    private List<Tasks> AnnuallyTasks = new();
 
     private DateTime today = DateTime.Today;
-    private DateTime SelectedDate = DateTime.Today.AddMonths(-1);
+    private DateTime SelectedDate = DateTime.Today;
     private DateTime? SelectedDay;
     private int _monthsToDisplay = 8;
     private int MonthsToDisplay
@@ -186,9 +154,6 @@
         }
     }
 
-    private string AnnualViewType = "Cong";
-
-
     private void OnMonthsToDisplayChanged(int oldValue, int newValue)
     {
         if (newValue > oldValue)
@@ -197,14 +162,29 @@
 
     private EmployeeDTO? Employee;
     private ClockinDTO? MonthlyClockin;
-    private List<HolidayCalendarDTO>? MonthlyHolidays = new();
     private List<ClockinDTO>? AnnualClockins = new();
-    private List<HolidayCalendarDTO>? AnnualHolidays = new();
-    //private Dictionary<DateTime, DailyDetailDTO> DayData = new();
-    //private Dictionary<DateTime, ClockinComponentDto> ComponentData = new();
+    private Dictionary<DateTime, DailyDetailDTO> DayData = new();
+    private Dictionary<DateTime, ClockinComponentDto> ComponentData = new();
 
     [Inject] INotificationService NotificationService { get; set; }
 
+
+    // protected override void OnInitialized()
+    // {
+    //     MonthlyTasks = new()
+    //     {
+    //         new Tasks { ID = 1, DateStart = SelectedDate.AddDays(8), DateEnd = SelectedDate.AddDays(8), Code = "8.0/8.0", Caption = "Lorem ipsum dolor sit amet" },
+    //         new Tasks { ID = 2, DateStart = SelectedDate.AddDays(8), DateEnd = SelectedDate.AddDays(8), Code = "8.0/8.0", Caption = "Lorem ipsum dolor sit amet" },
+    //         new Tasks { ID = 3, DateStart = SelectedDate.AddDays(-3), DateEnd = SelectedDate.AddDays(-3), Code = "7.5/8.0", Caption = "Fusce quis purus eu ante" },
+    //         new Tasks { ID = 4, DateStart = SelectedDate.AddDays(-7), DateEnd = SelectedDate.AddDays(-7), Code = "4.0/8.0" },
+    //         new Tasks { ID = 5, DateStart = SelectedDate.AddDays(-2), DateEnd = SelectedDate.AddDays(-2), Code = "8.0/8.0", Caption = "Ut sit amet turpis eget" }
+    //     };
+
+    //     foreach (var task in MonthlyTasks)
+    //     {
+    //         task.Color = task.Code == "8.0/8.0" ? "#19C319" : "#FF6B6B";
+    //     }
+    // }
 
     private bool _initialized;
 
@@ -221,20 +201,10 @@
             };
 
             Employee = JsonSerializer.Deserialize<EmployeeDTO>(empJson);
-            SelectedDate = DateTime.Today.AddMonths(-1);
-
             StateHasChanged();
         }
     }
 
-    Task OnAnnualViewTypeChanged(string value)
-    {
-        AnnualViewType = value;
-
-        SetAnnualData();
-
-        return Task.CompletedTask;
-    }
 
     private async Task OnMonthlyDateChanged(DateTime? value)
     {
@@ -264,15 +234,12 @@
         SelectedDate = normalized;
 
         if (monthChanged)
-            await LoadAnnualData();
+            await LoadMonthlyData();
     }
 
     private void OnSelectedViewChanged(DisplayedView newValue)
     {
-        if (newValue == DisplayedView.Annual)
-        {
-            SetAnnualData(); // refresh tasks using current AnnualViewType
-        }
+
     }
 
     private async Task LoadMonthlyData()
@@ -284,8 +251,6 @@
         };
 
         var client = HttpFactory.CreateClient("ApiClient");
-
-        // 1) Clockins
         var response = await client.GetFromJsonAsync<ClockinDTO>($"api/clockin/employee?empId={Employee.EmpId}&month={SelectedDate.Month}&year={SelectedDate.Year}");
         if (response == null)
         {
@@ -295,297 +260,60 @@
 
         MonthlyClockin = response;
 
-        ShownTasks.Clear();
+        MonthlyTasks.Clear();
         int id = 1;
-
-        var monthStart = new DateTime(SelectedDate.Year, SelectedDate.Month, 1);
-        var monthEnd = monthStart.AddMonths(1).AddDays(-1);
-
-        var holidays = await client.GetFromJsonAsync<IEnumerable<HolidayCalendarDTO>>(
-            $"/api/holidaycalendar/employee/{Employee.EmpId}/range?start={monthStart:O}&end={monthEnd:O}");
-
-        MonthlyHolidays = holidays?.ToList() ?? new List<HolidayCalendarDTO>();
 
         //NotificationService.Warning($"check record count {MonthlyClockin.DailyRecords[0].}", "Debug");
 
-        // foreach (var record in MonthlyClockin.DailyRecords)
+        foreach (var record in MonthlyClockin.DailyRecords)
+        {
+            if (record.ScheduledHour != null)
+            {
+                bool isFull = (record.ActualHour ?? 0m) >= (record.ScheduledHour ?? 0m);
+                string color = isFull ? "#90EE90" : "#FFB6C1";
+
+                MonthlyTasks.Add(new Tasks
+                    {
+                        ID = id++,
+                        DateStart = new DateTime(MonthlyClockin.Date.Year, MonthlyClockin.Date.Month, record.Day),
+                        DateEnd = new DateTime(MonthlyClockin.Date.Year, MonthlyClockin.Date.Month, record.Day),
+                        Code = $"Giờ làm: {(record.ActualHour ?? 0m):F2}/{(record.ScheduledHour ?? 0m):F2}",
+                        Caption = "Lorem ipsum dolor sit amet",
+                        Color = color,
+                    });
+            }
+        }
+
+        // DayData.Clear();
+
+        // foreach (var c in Clockin.DailyRecords)
         // {
-        //     if (record.ScheduledHour != null)
-        //     {
-        //         bool isFull = (record.ActualHour ?? 0m) >= (record.ScheduledHour ?? 0m);
-        //         string color = isFull ? "#90EE90" : "#FFB6C1";
-
-        //         ShownTasks.Add(new Tasks
-        //             {
-        //                 ID = id++,
-        //                 DateStart = new DateTime(MonthlyClockin.Date.Year, MonthlyClockin.Date.Month, record.Day),
-        //                 DateEnd = new DateTime(MonthlyClockin.Date.Year, MonthlyClockin.Date.Month, record.Day),
-        //                 Code = $"Giờ làm: {(record.ActualHour ?? 0m):F2}/{(record.ScheduledHour ?? 0m):F2}",
-        //                 Caption = "Lorem ipsum dolor sit amet",
-        //                 Color = color,
-        //             });
-        //     }
+        //     DayData[new DateTime(periodYear, periodMonth, c.Day)] = c;
         // }
-
-        SetMonthlyData();
-    }
-
-    private async Task LoadAnnualData()
-    {
-        if (Employee == null)
-        {
-            NotificationService.Warning("Không tìm thấy thông tin nhân viên!", "Lỗi");
-            return;
-        };
-
-        var client = HttpFactory.CreateClient("ApiClient");
-
-        // 1. Get clockins
-        var response = await client.GetFromJsonAsync<IEnumerable<ClockinDTO>>($"/api/clockin/employee/period?employeeId={Employee.EmpId}&startDate={SelectedDate}&months={MonthsToDisplay}");
-
-        if (response == null)
-        {
-            NotificationService.Warning("Không tìm thấy thông tin chấm công của nhân viên!", "Lỗi");
-            return;
-        }
-        AnnualClockins = response.ToList();
-
-        // 2. Get holidays
-        var endDate = SelectedDate.AddMonths(MonthsToDisplay);
-        var response2 = await client.GetFromJsonAsync<IEnumerable<HolidayCalendarDTO>>(
-            $"/api/holidaycalendar/employee/{Employee.EmpId}/range?start={SelectedDate:O}&end={endDate:O}");
-
-        if (response2 == null)
-        {
-            NotificationService.Warning("Không tìm thấy lịch nghỉ của nhân viên!", "Lỗi");
-            return;
-        }
-        AnnualHolidays = response2.ToList();
-
-        SetAnnualData();
-    }
-
-    private async Task SetAnnualData()
-    {
-        ShownTasks.Clear();
-        int id = 1;
-
-        switch (AnnualViewType)
-        {
-            case "Cong":
-                if (AnnualClockins != null)
-                    foreach (var clockin in AnnualClockins)
-                    {
-                        foreach (var record in clockin.DailyRecords)
-                        {
-                            if (record.ScheduledHour != null)
-                            {
-                                bool isFull = (record.ActualHour ?? 0m) >= (record.ScheduledHour ?? 0m);
-                                string color = isFull ? "#90EE90" : "#FFB6C1";
-
-                                ShownTasks.Add(new Tasks
-                                {
-                                    ID = id++,
-                                    DateStart = new DateTime(clockin.Date.Year, clockin.Date.Month, record.Day),
-                                    DateEnd = new DateTime(clockin.Date.Year, clockin.Date.Month, record.Day),
-                                    Code = $"Giờ làm: {(record.ActualHour ?? 0m):F2}/{(record.ScheduledHour ?? 0m):F2}",
-                                    Caption = "Lorem ipsum dolor sit amet",
-                                    Color = color,
-                                });
-                            }
-                        }
-                    }
-                break;
-
-            case "GioVuot":
-
-                break;
-
-            case "NgayNghi":
-
-                break;
-
-            case "NgayLe":
-                if (AnnualHolidays != null)
-                    foreach (var holiday in AnnualHolidays)
-                    {
-                        if (holiday.DepartmentHolidays.Count == 0) continue;
-
-                        var depholiday = holiday.DepartmentHolidays[0];
-                        ShownTasks.Add(new Tasks
-                            {
-                                ID = id++,
-                                DateStart = new DateTime(depholiday.StartDate.Year, depholiday.StartDate.Month, depholiday.StartDate.Day),
-                                DateEnd = new DateTime(depholiday.EndDate.Year, depholiday.EndDate.Month, depholiday.EndDate.Day),
-                                Code = $"Nghỉ lễ: {depholiday.HolidayName}",
-                                Caption = "Lorem ipsum dolor sit amet",
-                                Color = "lightblue"
-                            });
-                    }
-
-                break;
-        }
-
-        await InvokeAsync(StateHasChanged);
     }
 
     private List<ClockinComponentDto> DayClockins = new();
-    private List<DepartmentHolidayCalendarDTO> DayHolidays = new();
 
     private async Task ViewDay(ClickTaskParameter taskParams)
     {
+        if (MonthlyClockin == null) return;
         SelectedDay = taskParams.Day;
-
-        DayClockins.Clear();
-        DayHolidays.Clear();
-
-        if (SelectedView == DisplayedView.Monthly)
-        {
-            LoadDayMonthly();
-        }
-        else if (SelectedView == DisplayedView.Annual)
-        {
-            LoadDayAnnual();
-        }
-
-        await InvokeAsync(StateHasChanged);
-    }
-
-    private void LoadDayMonthly()
-    {
-        if (MonthlyClockin == null || SelectedDay == null) return;
 
         DayClockins = MonthlyClockin.Components
             .Where(c => c.Date.HasValue && c.Date.Value.Date == SelectedDay.Value.Date)
             .Take(3)
             .ToList();
 
-        if (MonthlyHolidays != null)
-        {
-            DayHolidays = MonthlyHolidays
-                .SelectMany(h => h.DepartmentHolidays)
-                .Where(dh => dh.StartDate.Date <= SelectedDay.Value.Date &&
-                             dh.EndDate.Date >= SelectedDay.Value.Date)
-                .ToList();
-        }
+        await InvokeAsync(StateHasChanged);
     }
 
-    private void LoadDayAnnual()
+    private async Task OpenReportModal(ClockinComponentDto comp)
     {
-        if (SelectedDay == null) return;
-
-        // Cong + GioVuot: use clockins
-        if (AnnualViewType == "Cong" || AnnualViewType == "GioVuot")
-        {
-            if (AnnualClockins == null) return;
-
-            DayClockins = AnnualClockins
-                .SelectMany(c => c.Components)
-                .Where(c => c.Date.HasValue && c.Date.Value.Date == SelectedDay.Value.Date)
-                .Take(3)
-                .ToList();
-        }
-
-        // NgayLe + NgayNghi: use holidays
-        if ((AnnualViewType == "NgayLe" || AnnualViewType == "NgayNghi") && AnnualHolidays != null)
-        {
-            DayHolidays = AnnualHolidays
-                .SelectMany(h => h.DepartmentHolidays)
-                .Where(dh => dh.StartDate.Date <= SelectedDay.Value.Date &&
-                             dh.EndDate.Date >= SelectedDay.Value.Date)
-                .ToList();
-        }
+        if (reportModal != null)
+            await reportModal.ShowAsync(comp);
+        else
+            Console.WriteLine("⚠️ reportModal chưa được khởi tạo!");
     }
 
-    private bool _showCongMonthly = true;
-    private bool ShowCongMonthly
-    {
-        get => _showCongMonthly;
-        set
-        {
-            _showCongMonthly = value;
-            SetMonthlyData();
-        }
-    }
 
-    private bool _showGioVuotMonthly;
-    private bool ShowGioVuotMonthly
-    {
-        get => _showGioVuotMonthly;
-        set
-        {
-            _showGioVuotMonthly = value;
-            SetMonthlyData();
-        }
-    }
-
-    private bool _showNgayLeMonthly;
-    private bool ShowNgayLeMonthly
-    {
-        get => _showNgayLeMonthly;
-        set
-        {
-            _showNgayLeMonthly = value;
-            SetMonthlyData();
-        }
-    }
-
-    private bool _showNgayNghiMonthly;
-    private bool ShowNgayNghiMonthly
-    {
-        get => _showNgayNghiMonthly;
-        set
-        {
-            _showNgayNghiMonthly = value;
-            SetMonthlyData();
-        }
-    }
-
-    private void SetMonthlyData()
-    {
-        if (MonthlyClockin == null) return;
-
-        ShownTasks.Clear();
-        int id = 1;
-
-        // Công (work hours)
-        if (ShowCongMonthly)
-        {
-            foreach (var r in MonthlyClockin.DailyRecords.Where(r => r.ScheduledHour != null))
-            {
-                bool isFull = (r.ActualHour ?? 0m) >= (r.ScheduledHour ?? 0m);
-                ShownTasks.Add(new Tasks
-                    {
-                        ID = id++,
-                        DateStart = new DateTime(MonthlyClockin.Date.Year, MonthlyClockin.Date.Month, r.Day),
-                        DateEnd = new DateTime(MonthlyClockin.Date.Year, MonthlyClockin.Date.Month, r.Day),
-                        Code = $"Giờ làm: {(r.ActualHour ?? 0m):F2}/{(r.ScheduledHour ?? 0m):F2}",
-                        Caption = "",
-                        Color = isFull ? "#90EE90" : "#FFB6C1"
-                    });
-            }
-        }
-
-        if (ShowNgayLeMonthly && MonthlyHolidays != null)
-            foreach (var holiday in MonthlyHolidays)
-            {
-                if (holiday.DepartmentHolidays.Count == 0) continue;
-
-                var depholiday = holiday.DepartmentHolidays[0];
-                ShownTasks.Add(new Tasks
-                    {
-                        ID = id++,
-                        DateStart = new DateTime(depholiday.StartDate.Year, depholiday.StartDate.Month, depholiday.StartDate.Day),
-                        DateEnd = new DateTime(depholiday.EndDate.Year, depholiday.EndDate.Month, depholiday.EndDate.Day),
-                        Code = $"Nghỉ lễ: {depholiday.HolidayName}",
-                        Caption = "Lorem ipsum dolor sit amet",
-                        Color = "lightblue"
-                    });
-            }
-
-        // Giờ vượt, Ngày nghỉ, Ngày lễ:
-        // add your own projections here based on your DTOs when available
-        // if (ShowGioVuotMonthly) { ... }
-        // if (ShowNgayNghiMonthly) { ... }
-    }
 }

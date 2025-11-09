@@ -1,6 +1,6 @@
 ﻿using AttendanceManagementPayrollSystem.DataAccess.Repositories;
 using AttendanceManagementPayrollSystem.DTO;
-using AttendanceManagementPayrollSystem.Services;
+using AttendanceManagementPayrollSystem.Services.ServiceList;
 using Blazorise.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using System.Reflection.Metadata.Ecma335;

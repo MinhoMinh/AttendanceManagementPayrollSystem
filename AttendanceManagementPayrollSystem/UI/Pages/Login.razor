@@ -13,6 +13,7 @@
 
 <Layout>
     <Container class="mt-5 d-flex justify-content-center">
+
         <Card Style="width:400px;">
             <CardHeader>
                 <h4 class="text-center mb-0">Đăng nhập</h4>
@@ -31,24 +32,32 @@
 
                     <Field>
                         <Label for="username">Tên đăng nhập</Label>
-                        <TextEdit @bind-Text="loginRequest.Username" Placeholder="Nhập tên đăng nhập" />
+                        <TextEdit @bind-Text="loginRequest.Username"
+                                  Placeholder="Nhập tên đăng nhập" />
                     </Field>
 
                     <Field>
                         <Label for="password">Mật khẩu</Label>
-                        <TextEdit @bind-Text="loginRequest.Password" Placeholder="Nhập mật khẩu" TextRole="TextRole.Password" />
+                        <TextEdit @bind-Text="loginRequest.Password"
+                                  Placeholder="Nhập mật khẩu"
+                                  TextRole="Password" />
                     </Field>
 
                     <div class="d-flex justify-content-end mt-3">
-                        <Button Color="Color.Primary" Type="ButtonType.Submit" Size="Size.Large" FullWidth="true">
+                        <Button Color="Color.Primary"
+                                Type="ButtonType.Submit"
+                                Size="Size.Large"
+                                FullWidth="true">
                             Đăng nhập
                         </Button>
                     </div>
                 </EditForm>
             </CardBody>
         </Card>
+
     </Container>
 </Layout>
+
 
 @code {
     private LoginRequest loginRequest = new();
