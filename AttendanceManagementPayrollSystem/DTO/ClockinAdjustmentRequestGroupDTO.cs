@@ -1,0 +1,1 @@
+﻿namespace AttendanceManagementPayrollSystem.DTO { public class ClockinAdjustmentRequestGroupDTO { public string Department { get; set; } = string.Empty; public List<ClockinAdjustmentRequestDTO> pending { get; set; } = new(); public List<ClockinAdjustmentRequestDTO> approved { get; set; } = new(); public List<ClockinAdjustmentRequestDTO> denied { get; set; } = new(); } }
