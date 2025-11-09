@@ -7,7 +7,6 @@
 *.pdb
 *.props
 *.targets
-*.cs
 *.Up2Date
 *.cache
 *.BuildWithSkipAnalyzers

@@ -1,0 +1,4 @@
+﻿namespace AttendanceManagementPayrollSystem.DTO
+{
+    public class TaxGroupDTO { public List<TaxDTO> Inactive { get; set; } = new(); public List<TaxDTO> Active { get; set; } = new(); public List<TaxDTO> Upcoming { get; set; } = new(); }
+}
