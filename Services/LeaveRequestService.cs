@@ -1,5 +1,5 @@
 ﻿using System.Threading.Tasks;
-using AttendanceManagementPayrollSystem.DTOs;
+using AttendanceManagementPayrollSystem.DTO;
 
 namespace AttendanceManagementPayrollSystem.Services
 {

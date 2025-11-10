@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace AttendanceManagementPayrollSystem.DTOs
+namespace AttendanceManagementPayrollSystem.DTO 
 {
     public class LeaveRequestDTO
     {

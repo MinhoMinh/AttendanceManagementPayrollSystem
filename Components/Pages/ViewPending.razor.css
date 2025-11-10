@@ -1,28 +1,114 @@
-﻿h3 {
-    margin-bottom: 1rem;
-    color: #2c3e50;
+﻿/* ===== Nền toàn trang ===== */
+body, .page {
+    background: linear-gradient(160deg, #B08968 0%, #cfa27d 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.table {
-    background-color: #ffffff;
-    border-radius: 8px;
+/* ===== Khung chính ===== */
+.pending-card {
+    width: 800px;
+    background: #FFE4A1;
+    padding: 2rem 2.5rem;
+    border-radius: 18px;
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.25), inset 0 0 8px rgba(255, 255, 255, 0.3);
+    animation: fadeIn 0.5s ease;
+}
+
+h3 {
+    text-align: center;
+    color: #97322D;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.2);
+}
+
+/* ===== Bảng ===== */
+.pending-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #fff;
+    border-radius: 10px;
     overflow: hidden;
+    box-shadow: 0 6px 15px rgba(151, 50, 45, 0.2);
 }
 
-    .table th {
-        background-color: #007bff;
+    .pending-table th {
+        background: linear-gradient(135deg, #97322D, #b5443d);
         color: white;
+        padding: 0.8rem;
         text-align: center;
     }
 
-    .table td {
-        vertical-align: middle;
+    .pending-table td {
+        padding: 0.6rem;
+        text-align: center;
+        border-bottom: 1px solid #ccc;
     }
 
-button {
-    min-width: 90px;
+/* ===== Buttons ===== */
+.btn-approve, .btn-reject {
+    padding: 0.3rem 0.6rem;
+    font-weight: 600;
+    border-radius: 8px;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
 }
 
-.alert {
-    margin-top: 10px;
+.btn-approve {
+    background: linear-gradient(135deg, #28a745, #218838);
+}
+
+    .btn-approve:hover {
+        background: linear-gradient(135deg, #218838, #28a745);
+        transform: translateY(-2px);
+    }
+
+.btn-reject {
+    background: linear-gradient(135deg, #dc3545, #b02a37);
+}
+
+    .btn-reject:hover {
+        background: linear-gradient(135deg, #b02a37, #dc3545);
+        transform: translateY(-2px);
+    }
+
+/* ===== Status colors ===== */
+.status-approved td {
+    background-color: #d4edda;
+}
+
+.status-rejected td {
+    background-color: #f8d7da;
+}
+
+.status-pending td {
+    background-color: #fff3cd;
+}
+
+/* ===== Error Box ===== */
+.error-box {
+    margin-top: 1rem;
+    color: #721c24;
+    background-color: #f8d7da;
+    padding: 0.8rem;
+    border-radius: 8px;
+    text-align: center;
+}
+
+/* ===== Animation ===== */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }

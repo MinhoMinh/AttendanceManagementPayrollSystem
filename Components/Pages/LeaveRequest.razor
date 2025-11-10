@@ -2,12 +2,13 @@
 @inject IHttpClientFactory HttpFactory
 @inject IJSRuntime JS
 
-<h3>Leave Request Form</h3>
+<h2>Leave Request Form</h2>
 
 <div class="leave-request-container">
-    <div class="mb-3">
-        <label class="form-label">Leave Type</label>
-        <select class="form-select" @bind="selectedTypeId">
+
+    <div class="input-group">
+        <label>Leave Type</label>
+        <select class="input-control" @bind="selectedTypeId">
             <option value="">-- Select Type --</option>
             @foreach (var type in leaveTypes)
             {
@@ -16,27 +17,27 @@
         </select>
     </div>
 
-    <div class="mb-3">
-        <label class="form-label">Start Date</label>
-        <input type="date" class="form-control" @bind="startDate" />
+    <div class="input-group">
+        <label>Start Date</label>
+        <input type="date" class="input-control" @bind="startDate" />
     </div>
 
-    <div class="mb-3">
-        <label class="form-label">End Date</label>
-        <input type="date" class="form-control" @bind="endDate" />
+    <div class="input-group">
+        <label>End Date</label>
+        <input type="date" class="input-control" @bind="endDate" />
     </div>
 
-    <div class="mb-3">
-        <label class="form-label">Reason</label>
-        <textarea class="form-control" @bind="reason"></textarea>
+    <div class="input-group">
+        <label>Reason</label>
+        <textarea class="input-control" @bind="reason"></textarea>
     </div>
 
-    <div class="mb-3">
-        <label class="form-label">Details</label>
-        <textarea class="form-control" @bind="details"></textarea>
+    <div class="input-group">
+        <label>Details</label>
+        <textarea class="input-control" @bind="details"></textarea>
     </div>
 
-    <button class="btn btn-primary w-100" @onclick="SubmitRequest">Submit Request</button>
+    <button class="submit-btn w-100" @onclick="SubmitRequest">Submit Request</button>
 </div>
 
 @code {

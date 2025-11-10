@@ -1,4 +1,4 @@
-﻿using AttendanceManagementPayrollSystem.DTOs;
+﻿using AttendanceManagementPayrollSystem.DTO;
 using AttendanceManagementPayrollSystem.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

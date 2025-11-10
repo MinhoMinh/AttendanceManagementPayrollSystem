@@ -1,4 +1,4 @@
-﻿namespace AttendanceManagementPayrollSystem.DTOs
+﻿namespace AttendanceManagementPayrollSystem.DTO 
 {
     public class LeaveRequestStatusDTO
     {

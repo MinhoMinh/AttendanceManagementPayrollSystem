@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AttendanceManagementPayrollSystem.DataAccess.Repositories;
-using AttendanceManagementPayrollSystem.DTOs;
+using AttendanceManagementPayrollSystem.DTO;
 using AttendanceManagementPayrollSystem.Models;
 
 namespace AttendanceManagementPayrollSystem.Services
