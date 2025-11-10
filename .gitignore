@@ -12,5 +12,7 @@
 *.props
 *.targets
 *.exe
+*.Up2Date
+*.cache
 *.BuildWithSkipAnalyzers
 /AttendanceManagementPayrollSystem/.vs
