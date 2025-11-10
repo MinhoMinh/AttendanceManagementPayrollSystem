@@ -1,6 +1,6 @@
 ﻿using AttendanceManagementPayrollSystem.DTO;
 
-namespace AttendanceManagementPayrollSystem.Services
+namespace AttendanceManagementPayrollSystem.Services.ServiceList
 {
     public interface ClockinComponentService
     {

@@ -2,7 +2,7 @@
 using AttendanceManagementPayrollSystem.DTO;
 using AttendanceManagementPayrollSystem.Models;
 
-namespace AttendanceManagementPayrollSystem.Services
+namespace AttendanceManagementPayrollSystem.Services.ServiceList
 {
     public class ClockInAdjustmentRequestServiceImpl : ClockInAdjustmentRequestService
     {
@@ -57,29 +57,29 @@ namespace AttendanceManagementPayrollSystem.Services
 
         public async Task<List<ClockinAdjustmentRequestGroupDTO>> GetClockinAdjustmentRequestGroupByDepID()
         {
-            return await this.clockInAdjustmentRequestRepository.GetGroupByDepID();
+            return await clockInAdjustmentRequestRepository.GetGroupByDepID();
         }
 
         public async Task<List<ClockinAdjustmentRequestGroupDTO>> GetClockinAdjustmentRequestGroupByDepIdAndDateRange(DateTime from, DateTime to)
         {
-            return await this.clockInAdjustmentRequestRepository.GetGroupByDepIdAndDateRange(from, to);
+            return await clockInAdjustmentRequestRepository.GetGroupByDepIdAndDateRange(from, to);
         }
 
         public async Task<List<IGrouping<int?, ClockInAdjustmentRequest>>> GetGroupByDepIDTest()
         {
-            return await this.clockInAdjustmentRequestRepository.GetGroupByDepIDTest();
+            return await clockInAdjustmentRequestRepository.GetGroupByDepIDTest();
         }
 
         public async Task<bool> RespondAsync(ClockinAdjustmentRespondDTO dto)
         {
-            var req = await this.clockInAdjustmentRequestRepository.GetAdjustmentRequestByIdAsync(dto.RequestId);
+            var req = await clockInAdjustmentRequestRepository.GetAdjustmentRequestByIdAsync(dto.RequestId);
             if (req == null) return false;
 
             req.Status = dto.status;
             req.Comment = dto.Comment;
             req.ApproverId = dto.ApproverId;
 
-            await this.clockInAdjustmentRequestRepository.UpdateAsync(req);
+            await clockInAdjustmentRequestRepository.UpdateAsync(req);
             return true;
         }
     }

@@ -16,3 +16,4 @@
 *.cache
 *.BuildWithSkipAnalyzers
 /AttendanceManagementPayrollSystem/.vs
+/AttendanceManagementPayrollSystem/obj

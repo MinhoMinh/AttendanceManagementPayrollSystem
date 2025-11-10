@@ -1,8 +1,7 @@
-﻿
-using AttendanceManagementPayrollSystem.DataAccess.Repositories;
+﻿using AttendanceManagementPayrollSystem.DataAccess.Repositories;
 using AttendanceManagementPayrollSystem.DTO;
 
-namespace AttendanceManagementPayrollSystem.Services
+namespace AttendanceManagementPayrollSystem.Services.ServiceList
 {
     public class ClockinComponentServiceImpl : ClockinComponentService
     {
@@ -15,13 +14,13 @@ namespace AttendanceManagementPayrollSystem.Services
 
         public async Task<bool> UpdateByRespond(ClockinComponentRespondDTO dto)
         {
-            var req = await this.clockinComponentRepository.GetById(dto.Id);
+            var req = await clockinComponentRepository.GetById(dto.Id);
 
             if (req == null) return false;
 
             req.OverridedWorkunits = dto.OverridedWorkunits;
 
-            await this.clockinComponentRepository.UpdateAsync(req);
+            await clockinComponentRepository.UpdateAsync(req);
             return true;
         }
     }

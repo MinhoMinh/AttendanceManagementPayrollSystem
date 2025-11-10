@@ -1,6 +1,6 @@
 ﻿using AttendanceManagementPayrollSystem.DTO;
 using AttendanceManagementPayrollSystem.Models;
-using AttendanceManagementPayrollSystem.Services;
+using AttendanceManagementPayrollSystem.Services.ServiceList;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 

@@ -1,7 +1,7 @@
 ﻿using AttendanceManagementPayrollSystem.DTO;
 using AttendanceManagementPayrollSystem.Models;
 
-namespace AttendanceManagementPayrollSystem.Services
+namespace AttendanceManagementPayrollSystem.Services.ServiceList
 {
     public interface ClockInAdjustmentRequestService
     {
