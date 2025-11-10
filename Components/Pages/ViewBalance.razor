@@ -4,25 +4,28 @@
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
 
-<h3>Employee Balance</h3>
+<div class="page-wrapper">
+    <div class="balance-card-wrapper">
+        <h3>Employee Balance</h3>
 
-@if (balance == null)
-{
-    <p>Loading...</p>
-}
-else
-{
-    <div class="balance-container">
-        <div class="balance-card">
-            <p><b>PTO:</b> @balance.PtoAvailable / @balance.PtoTotal used: @balance.PtoUsed</p>
-            <p><b>Sick:</b> @balance.SickAvailable / @balance.SickTotal used: @balance.SickUsed</p>
-            <p><b>Vacation:</b> @balance.VacationAvailable / @balance.VacationTotal used: @balance.VacationUsed</p>
-            <p><b>Overtime:</b> @balance.OvertimeAvailable / @balance.OvertimeTotal used: @balance.OvertimeUsed</p>
-            <p><small>Last updated: @balance.LastUpdated?.ToString("dd/MM/yyyy HH:mm")</small></p>
-        </div>
-        <button class="btn btn-primary w-100 mt-3" @onclick="NavigateLeaveRequest">Go to Leave Request</button>
+        @if (balance == null)
+        {
+            <p>Loading...</p>
+        }
+        else
+        {
+            <div class="balance-card">
+                <p><b>PTO:</b> @balance.PtoAvailable / @balance.PtoTotal used: @balance.PtoUsed</p>
+                <p><b>Sick:</b> @balance.SickAvailable / @balance.SickTotal used: @balance.SickUsed</p>
+                <p><b>Vacation:</b> @balance.VacationAvailable / @balance.VacationTotal used: @balance.VacationUsed</p>
+                <p><b>Overtime:</b> @balance.OvertimeAvailable / @balance.OvertimeTotal used: @balance.OvertimeUsed</p>
+                <p><small>Last updated: @balance.LastUpdated?.ToString("dd/MM/yyyy HH:mm")</small></p>
+            </div>
+
+            <button class="btn-go-leave" @onclick="NavigateLeaveRequest">Go to Leave Request</button>
+        }
     </div>
-}
+</div>
 
 @code {
     private EmployeeBalanceDto? balance;

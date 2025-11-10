@@ -1,61 +1,68 @@
-﻿/* ===== Container toàn trang ===== */
-body, .page {
-    background: linear-gradient(160deg, #B08968 0%, #cfa27d 100%);
+﻿/* ===== Nền full màn hình ===== */
+body, .page-wrapper {
+    margin: 0;
+    padding: 0;
     min-height: 100vh;
+    width: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
-    flex-direction: column;
+    background: linear-gradient(160deg, #B08968 0%, #cfa27d 100%);
+    font-family: 'Poppins', sans-serif;
 }
 
-/* ===== Tiêu đề ===== */
-h3 {
-    text-align: center;
-    color: #97322D;
-    font-weight: 700;
-    letter-spacing: 1px;
-    margin-bottom: 1.5rem;
-    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
-}
-
-/* ===== Khung chính ===== */
-.balance-container {
+/* ===== Wrapper card ===== */
+.balance-card-wrapper {
     width: 400px;
-    background: #FFE4A1;
-    padding: 2rem 2rem;
-    border-radius: 18px;
-    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.25), inset 0 0 8px rgba(255, 255, 255, 0.3);
+    max-width: 90%;
     display: flex;
     flex-direction: column;
-    align-items: center; /* Căn giữa nội dung */
-    text-align: center; /* Căn giữa text bên trong */
+    align-items: center;
+    gap: 20px;
     animation: fadeIn 0.5s ease;
 }
 
+    /* ===== Tiêu đề ===== */
+    .balance-card-wrapper h3 {
+        text-align: center;
+        color: #97322D;
+        font-weight: 700;
+        font-size: 28px;
+        margin-bottom: 20px;
+        text-shadow: 1px 1px 3px rgba(0,0,0,0.2);
+    }
+
+/* ===== Card chính ===== */
 .balance-card {
     width: 100%;
-    background-color: #fff7e1;
-    border-radius: 12px;
-    padding: 16px;
-    box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+    background-color: #FFECC7;
+    border-radius: 25px;
+    padding: 25px;
+    box-shadow: 0 14px 32px rgba(0,0,0,0.25), inset 0 0 12px rgba(255,255,255,0.45);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
     color: #97322D;
     font-weight: 600;
-    text-align: center; /* Căn giữa nội dung */
+    text-align: center;
 }
 
 /* ===== Nút ===== */
-.balance-container .btn {
-    background: linear-gradient(135deg, #97322D, #b5443d);
+.btn-go-leave {
+    width: 100%;
+    padding: 12px;
+    border-radius: 18px;
     border: none;
-    color: white;
-    padding: 0.8rem 1.2rem;
     font-weight: 600;
-    border-radius: 10px;
+    font-size: 16px;
+    color: white;
+    cursor: pointer;
+    background: linear-gradient(135deg, #97322D, #b5443d);
     transition: all 0.3s ease;
     box-shadow: 0 6px 15px rgba(151, 50, 45, 0.3);
 }
 
-    .balance-container .btn:hover {
+    .btn-go-leave:hover {
         background: linear-gradient(135deg, #b5443d, #97322D);
         transform: translateY(-3px);
         box-shadow: 0 10px 20px rgba(151, 50, 45, 0.4);
@@ -72,4 +79,12 @@ h3 {
         opacity: 1;
         transform: translateY(0);
     }
+}
+
+/* ===== Loading & p text ===== */
+p {
+    text-align: center;
+    color: #97322D;
+    opacity: 0.8;
+    font-style: italic;
 }

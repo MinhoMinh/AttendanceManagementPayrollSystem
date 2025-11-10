@@ -2,43 +2,46 @@
 @inject IHttpClientFactory HttpFactory
 @inject IJSRuntime JS
 
-<h2>Leave Request Form</h2>
+<div class="page-wrapper">
+    <div class="form-panel">
+        <h2>Leave Request Form</h2>
 
-<div class="leave-request-container">
+        <div class="input-group">
+            <label>Leave Type</label>
+            <select class="input-control" @bind="selectedTypeId">
+                <option value="">-- Select Type --</option>
+                @foreach (var type in leaveTypes)
+                {
+                    <option value="@type.Id">@type.Name</option>
+                }
+            </select>
+        </div>
 
-    <div class="input-group">
-        <label>Leave Type</label>
-        <select class="input-control" @bind="selectedTypeId">
-            <option value="">-- Select Type --</option>
-            @foreach (var type in leaveTypes)
-            {
-                <option value="@type.Id">@type.Name</option>
-            }
-        </select>
+        <div class="input-group">
+            <label>Start Date</label>
+            <input type="date" class="input-control" @bind="startDate" />
+        </div>
+
+        <div class="input-group">
+            <label>End Date</label>
+            <input type="date" class="input-control" @bind="endDate" />
+        </div>
+
+        <div class="input-group">
+            <label>Reason</label>
+            <textarea class="input-control" @bind="reason"></textarea>
+        </div>
+
+        <div class="input-group">
+            <label>Details</label>
+            <textarea class="input-control" @bind="details"></textarea>
+        </div>
+
+        <button class="submit-btn" @onclick="SubmitRequest">Submit Request</button>
     </div>
-
-    <div class="input-group">
-        <label>Start Date</label>
-        <input type="date" class="input-control" @bind="startDate" />
-    </div>
-
-    <div class="input-group">
-        <label>End Date</label>
-        <input type="date" class="input-control" @bind="endDate" />
-    </div>
-
-    <div class="input-group">
-        <label>Reason</label>
-        <textarea class="input-control" @bind="reason"></textarea>
-    </div>
-
-    <div class="input-group">
-        <label>Details</label>
-        <textarea class="input-control" @bind="details"></textarea>
-    </div>
-
-    <button class="submit-btn w-100" @onclick="SubmitRequest">Submit Request</button>
 </div>
+
+
 
 @code {
     private int? selectedTypeId;

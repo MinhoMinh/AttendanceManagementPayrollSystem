@@ -1,9 +1,11 @@
 ﻿@page "/viewpending"
 @using AttendanceManagementPayrollSystem.DTO
+@using System.Text.Json
 @inject IHttpClientFactory ClientFactory
 @inject NavigationManager Navigation
+@inject IJSRuntime JS
 
-<div class="pending-container">
+<div class="page-wrapper">
     <div class="pending-card">
         <h3>Pending Leave Requests</h3>
 
@@ -20,7 +22,7 @@
             <table class="pending-table">
                 <thead>
                     <tr>
-                        <th>Request ID</th>
+                        <th>#</th>
                         <th>Employee ID</th>
                         <th>Start Date</th>
                         <th>End Date</th>
@@ -30,10 +32,10 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var r in requests)
+                    @foreach (var (r, index) in requests.Select((value, i) => (value, i + 1)))
                     {
                         <tr class="@GetStatusClass(r.Status)">
-                            <td>@r.ReqId</td>
+                            <td>@index</td>
                             <td>@r.EmpId</td>
                             <td>@r.StartDate.ToShortDateString()</td>
                             <td>@r.EndDate.ToShortDateString()</td>
@@ -60,9 +62,15 @@
     private List<LeaveRequestDTO>? requests;
     private bool isLoading = true;
     private string errorMessage = string.Empty;
+    private EmployeeDTO? Employee;
+
 
     protected override async Task OnInitializedAsync()
     {
+        var empJson = await JS.InvokeAsync<string>("localStorage.getItem", "employee");
+        if (string.IsNullOrWhiteSpace(empJson)) return;
+
+        Employee = JsonSerializer.Deserialize<EmployeeDTO>(empJson);
         await LoadPendingRequestsAsync();
     }
 
@@ -91,7 +99,7 @@
         try
         {
             var client = ClientFactory.CreateClient("ApiClient");
-            var dto = new LeaveRequestStatusDTO { ReqId = id, Status = status };
+            var dto = new LeaveRequestStatusDTO { ReqId = id, Status = status, ApprovedBy = Employee.EmpId};
             var res = await client.PutAsJsonAsync("api/LeaveRequest/update-status", dto);
 
             if (res.IsSuccessStatusCode)
