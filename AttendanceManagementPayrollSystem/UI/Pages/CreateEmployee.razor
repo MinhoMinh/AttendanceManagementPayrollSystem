@@ -1,0 +1,167 @@
+﻿@page "/employee/create"
+@using System.ComponentModel.DataAnnotations
+@inject HttpClient Http
+
+<div class="d-flex justify-content-center mt-5">
+    <div class="card p-4 shadow" style="width: 400px;">
+        <h3 class="text-center mb-4">Tạo tài khoản nhân viên</h3>
+
+        @if (isLoading)
+        {
+            <p class="text-center">Đang tải phòng ban...</p>
+        }
+        else
+        {
+            <EditForm Model="@employee" OnValidSubmit="@HandleSubmit">
+                <DataAnnotationsValidator />
+                <Blazorise.ValidationSummary />
+
+                <div class="mb-3">
+                    <label class="form-label">Tên nhân viên</label>
+                    <InputText @bind-Value="employee.EmpName" class="form-control" />
+                    <ValidationMessage For="@(() => employee.EmpName)" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Tên đăng nhập</label>
+                    <InputText @bind-Value="employee.Username" class="form-control" />
+                    <ValidationMessage For="@(() => employee.Username)" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Mật khẩu</label>
+                    <InputText @bind-Value="employee.Password" type="password" class="form-control" />
+                    <ValidationMessage For="@(() => employee.Password)" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Số điện thoại</label>
+                    <InputText @bind-Value="employee.EmpPhoneNumber" class="form-control" />
+                    <ValidationMessage For="@(() => employee.EmpPhoneNumber)" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Ngày sinh</label>
+                    <InputDate @bind-Value="employee.EmpDob" class="form-control" />
+                    <ValidationMessage For="@(() => employee.EmpDob)" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Phòng ban</label>
+                    <InputSelect @bind-Value="employee.DepId" class="form-select">
+                        <option value="">-- Chọn phòng ban --</option>
+                        @foreach (var dep in departments)
+                        {
+                            <option value="@dep.DepId">@dep.DepName</option>
+                        }
+                    </InputSelect>
+                    <ValidationMessage For="@(() => employee.DepId)" />
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100">Thêm tài khoản</button>
+            </EditForm>
+        }
+    </div>
+</div>
+
+@if (showToast)
+{
+    <div class="toast-fixed">
+        <div class="alert @toastClass alert-dismissible fade show" role="alert">
+            @toastMessage
+            <button type="button" class="btn-close" @onclick="() => showToast = false"></button>
+        </div>
+    </div>
+}
+
+<style>
+    .toast-fixed {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+    }
+</style>
+
+@code {
+    private EmployeeCreateDTO employee = new();
+    private List<DepartmentDTO> departments = new();
+    private bool isLoading = true;
+
+    private bool showToast = false;
+    private string toastMessage;
+    private string toastClass = "alert-success";
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            departments = await Http.GetFromJsonAsync<List<DepartmentDTO>>("https://localhost:7088/api/department");
+        }
+        catch
+        {
+            ShowToast("Không thể tải danh sách phòng ban.", "alert-danger");
+        }
+        isLoading = false;
+    }
+
+    private async Task HandleSubmit()
+    {
+        var response = await Http.PostAsJsonAsync("https://localhost:7088/api/employee", employee);
+
+        if (response.IsSuccessStatusCode)
+        {
+            ShowToast("Tài khoản mới được tạo thành công.", "alert-success");
+            employee = new EmployeeCreateDTO(); // reset form
+        }
+        else
+        {
+            var errorContent = await response.Content.ReadAsStringAsync();
+            ShowToast($"Tạo tài khoản thất bại: {errorContent}", "alert-danger");
+        }
+    }
+
+    private void ShowToast(string message, string cssClass)
+    {
+        toastMessage = message;
+        toastClass = cssClass;
+        showToast = true;
+
+        _ = Task.Run(async () =>
+        {
+            await Task.Delay(3000); // hiển thị 3 giây
+            showToast = false;
+            StateHasChanged();
+        });
+    }
+
+    public class EmployeeCreateDTO
+    {
+        [Required(ErrorMessage = "Tên nhân viên là bắt buộc.")]
+        public string EmpName { get; set; }
+
+        [Required(ErrorMessage = "Ngày sinh là bắt buộc.")]
+        public DateTime? EmpDob { get; set; }
+
+        [Required(ErrorMessage = "Số điện thoại là bắt buộc.")]
+        [Phone(ErrorMessage = "Số điện thoại không hợp lệ.")]
+        public string EmpPhoneNumber { get; set; }
+
+        [Required(ErrorMessage = "Phòng ban là bắt buộc.")]
+        public int? DepId { get; set; }
+
+        [Required(ErrorMessage = "Tên đăng nhập là bắt buộc.")]
+        public string Username { get; set; }
+
+        [Required(ErrorMessage = "Mật khẩu là bắt buộc.")]
+        [MinLength(6, ErrorMessage = "Mật khẩu tối thiểu 6 ký tự.")]
+        public string Password { get; set; }
+    }
+
+    public class DepartmentDTO
+    {
+        public int DepId { get; set; }
+        public string DepName { get; set; }
+    }
+}
+
