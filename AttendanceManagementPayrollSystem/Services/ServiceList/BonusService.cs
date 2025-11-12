@@ -9,6 +9,7 @@ namespace AttendanceManagementPayrollSystem.Services.ServiceList
         Task<IEnumerable<BonusDTO>> GetAllAsync();
         Task AssignAsync(AssignBonusRequest request);
         Task<DepartmentBonusViewDTO> GetByDepartmentAsync(int depId);
+        Task CreateAsync(BonusCreateRequest request);
     }
 
     public class BonusServiceImpl : BonusService
@@ -33,6 +34,27 @@ namespace AttendanceManagementPayrollSystem.Services.ServiceList
                 }).ToListAsync();
 
             return list;
+        }
+
+        public async Task CreateAsync(BonusCreateRequest request)
+        {
+            // Chuyển DateTime sang DateOnly (lấy ngày đầu tháng)
+            var bonusPeriod = DateOnly.FromDateTime(request.BonusPeriod);
+
+            // Đảm bảo luôn là ngày đầu tháng
+            bonusPeriod = new DateOnly(bonusPeriod.Year, bonusPeriod.Month, 1);
+
+            var bonus = new Bonus
+            {
+                BonusName = request.BonusName,
+                BonusAmount = request.BonusAmount,
+                BonusPeriod = bonusPeriod,
+                CreatedAt = DateTime.Now
+                // Đã xóa CreatedBy theo yêu cầu
+            };
+
+            _context.Bonuses.Add(bonus);
+            await _context.SaveChangesAsync();
         }
 
         public async Task AssignAsync(AssignBonusRequest request)

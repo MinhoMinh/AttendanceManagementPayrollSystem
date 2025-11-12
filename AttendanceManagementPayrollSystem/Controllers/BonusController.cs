@@ -28,6 +28,12 @@ namespace AttendanceManagementPayrollSystem.Controllers
             await _service.AssignAsync(request); // bỏ createdBy
             return Ok(new { success = true });
         }
+        [HttpPost("create")]
+        public async Task<IActionResult> CreateAsync([FromBody] BonusCreateRequest request)
+        {
+            await _service.CreateAsync(request);
+            return Ok(new { success = true });
+        }
 
 
         [HttpGet("department/{depId:int}")]
