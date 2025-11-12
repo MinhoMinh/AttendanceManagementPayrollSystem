@@ -11,45 +11,6 @@
     <Container Class="mt-4">
         <h3>Phân bổ thưởng theo phòng ban</h3>
 
-        <Row Class="mb-3">
-            <Column>
-                <Field>
-                    <Label>Loại thưởng</Label>
-                    <Select TValue="int" @bind-SelectedValue="selectedBonusId">
-                        @foreach (var b in bonuses)
-                        {
-                            <SelectItem Value="@b.BonusId">@($"{b.BonusName} - {b.BonusAmount:N0}")</SelectItem>
-                        }
-                    </Select>
-                </Field>
-            </Column>
-            <Column>
-                <Field>
-                    <Label>Số tiền (có thể sửa)</Label>
-                    <NumericEdit TValue="decimal?" @bind-Value="overrideAmount" />
-                </Field>
-            </Column>
-            <Column>
-                <Field>
-                    <Label>Tháng/Năm</Label>
-                    <div class="d-flex gap-2">
-                        <Select TValue="int" @bind-SelectedValue="periodMonth">
-                            @for (var m = 1; m <= 12; m++)
-                            {
-                                <SelectItem Value="@m">@m</SelectItem>
-                            }
-                        </Select>
-                        <Select TValue="int" @bind-SelectedValue="periodYear">
-                            @foreach (var y in years)
-                            {
-                                <SelectItem Value="@y">@y</SelectItem>
-                            }
-                        </Select>
-                    </div>
-                </Field>
-            </Column>
-        </Row>
-
         @if (groups.Count == 0)
         {
             <p>Đang tải dữ liệu...</p>
@@ -110,28 +71,25 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach (var eb in depView.Employees)
+                                        @foreach (var eb in depView.Employees.Where(e => e.Bonuses != null && e.Bonuses.Count > 0))
                                         {
                                             <tr>
                                                 <td>@eb.EmpName</td>
                                                 <td>
-                                                    @if (eb.Bonuses.Count == 0)
-                                                    {
-                                                        <span class="text-muted">-</span>
-                                                    }
-                                                    else
-                                                    {
-                                                        <ul class="mb-0">
-                                                            @foreach (var b in eb.Bonuses)
-                                                            {
-                                                                <li>@b.BonusName - @b.BonusAmount.ToString("N0") @(b.BonusPeriod.HasValue ? $"({b.BonusPeriod.Value.Month}/{b.BonusPeriod.Value.Year})" : "")</li>
-                                                            }
-                                                        </ul>
-                                                    }
+                                                    <ul class="mb-0">
+                                                        @foreach (var b in eb.Bonuses)
+                                                        {
+                                                            <li>
+                                                                @b.BonusName - @b.BonusAmount.ToString("N0")
+                                                                @(b.BonusPeriod.HasValue ? $"({b.BonusPeriod.Value.Month}/{b.BonusPeriod.Value.Year})" : "")
+                                                            </li>
+                                                        }
+                                                    </ul>
                                                 </td>
                                             </tr>
                                         }
                                     </tbody>
+
                                 </table>
                             </div>
                         }
@@ -157,27 +115,6 @@
                     }
                 </Select>
             </Field>
-            <Field>
-                <Label>Số tiền</Label>
-                <NumericEdit TValue="decimal?" @bind-Value="modalAmount" />
-            </Field>
-            <Field>
-                <Label>Tháng/Năm</Label>
-                <div class="d-flex gap-2">
-                    <Select TValue="int" @bind-SelectedValue="modalMonth">
-                        @for (var m = 1; m <= 12; m++)
-                        {
-                            <SelectItem Value="@m">@m</SelectItem>
-                        }
-                    </Select>
-                    <Select TValue="int" @bind-SelectedValue="modalYear">
-                        @foreach (var y in years)
-                        {
-                            <SelectItem Value="@y">@y</SelectItem>
-                        }
-                    </Select>
-                </div>
-            </Field>
         </Fields>
     </ModalBody>
     <ModalFooter>
@@ -194,9 +131,7 @@
 
     private int selectedBonusId;
     private decimal? overrideAmount;
-    private int periodMonth = DateTime.Today.Month;
-    private int periodYear = DateTime.Today.Year;
-    private List<int> years = Enumerable.Range(DateTime.Today.Year - 2, 6).ToList();
+    private DateTime periodPeriod = DateTime.Today; // sửa lại kiểu DateTime
 
     // modal state
     private bool assignModalVisible;
@@ -204,9 +139,6 @@
     private int modalDepId;
     private string modalEmpName = "";
     private int modalBonusId;
-    private decimal? modalAmount;
-    private int modalMonth;
-    private int modalYear;
 
     protected override async Task OnInitializedAsync()
     {
@@ -222,7 +154,7 @@
         selectedBonusId = bonuses.FirstOrDefault()?.BonusId ?? 0;
         overrideAmount = bonuses.FirstOrDefault()?.BonusAmount;
 
-        // Auto-load current bonuses per department so the list is visible immediately
+        // Auto-load current bonuses per department
         foreach (var dep in groups)
         {
             await LoadDepartmentBonuses(dep.DepId);
@@ -246,21 +178,17 @@
             EmpIds = empIds,
             BonusId = selectedBonusId,
             OverrideAmount = overrideAmount,
-            PeriodMonth = periodMonth,
-            PeriodYear = periodYear,
+            PeriodMonth = periodPeriod.Month,
+            PeriodYear = periodPeriod.Year,
             DepId = g.DepId
         };
 
         var res = await client.PostAsJsonAsync("api/bonus/assign", req);
         if (res.IsSuccessStatusCode)
         {
-            // Clear selections
             foreach (var id in empIds) selected[id] = false;
         }
     }
-
-    private bool GetSelected(int empId) => selected.TryGetValue(empId, out var v) && v;
-    private void SetSelected(int empId, bool value) => selected[empId] = value;
 
     private void OpenAssignModal(int depId, EmployeeBasicDTO emp)
     {
@@ -268,16 +196,11 @@
         modalDepId = depId;
         modalEmpName = emp.EmpName;
         modalBonusId = bonuses.FirstOrDefault()?.BonusId ?? 0;
-        modalAmount = bonuses.FirstOrDefault()?.BonusAmount;
-        modalMonth = periodMonth;
-        modalYear = periodYear;
+
         assignModalVisible = true;
     }
 
-    private void CloseAssignModal()
-    {
-        assignModalVisible = false;
-    }
+    private void CloseAssignModal() => assignModalVisible = false;
 
     private async Task ConfirmAssign()
     {
@@ -288,17 +211,14 @@
         {
             EmpIds = new List<int> { modalEmpId },
             BonusId = modalBonusId,
-            OverrideAmount = modalAmount,
-            PeriodMonth = modalMonth,
-            PeriodYear = modalYear,
             DepId = modalDepId
         };
+
 
         var res = await client.PostAsJsonAsync("api/bonus/assign", req);
         if (res.IsSuccessStatusCode)
         {
             assignModalVisible = false;
-            // refresh bonus view if opened
             if (deptBonusViews.ContainsKey(modalDepId))
             {
                 await LoadDepartmentBonuses(modalDepId);
@@ -333,9 +253,7 @@
         }
         catch
         {
-            // ignore loading error for this department to avoid breaking the page
+            // ignore
         }
     }
 }
-
-

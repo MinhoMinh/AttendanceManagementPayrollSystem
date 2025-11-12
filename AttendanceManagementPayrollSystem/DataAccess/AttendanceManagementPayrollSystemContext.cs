@@ -109,6 +109,7 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
         {
             entity.HasKey(e => e.BonusId).HasName("PK_Bonus");
             entity.ToTable("Bonus");
+
             entity.Property(e => e.BonusId).HasColumnName("bonus_id");
             entity.Property(e => e.BonusName)
                 .IsRequired()
@@ -126,11 +127,6 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
             entity.Property(e => e.CreatedAt)
                 .HasColumnType("datetime")
                 .HasColumnName("created_at");
-            entity.Property(e => e.CreatedBy).HasColumnName("created_by");
-
-            entity.HasOne(d => d.CreatedByNavigation).WithMany()
-                .HasForeignKey(d => d.CreatedBy)
-                .HasConstraintName("FK_Bonus_Employee");
         });
 
         modelBuilder.Entity<EmpBonus>(entity =>

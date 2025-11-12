@@ -1,4 +1,4 @@
-using AttendanceManagementPayrollSystem.DTO;
+﻿using AttendanceManagementPayrollSystem.DTO;
 using AttendanceManagementPayrollSystem.Services.ServiceList;
 using Microsoft.AspNetCore.Mvc;
 
@@ -25,11 +25,10 @@ namespace AttendanceManagementPayrollSystem.Controllers
         [HttpPost("assign")]
         public async Task<IActionResult> AssignAsync([FromBody] AssignBonusRequest request)
         {
-            // In a real app, get current user id from auth; here default to 1
-            int createdBy = 1;
-            await _service.AssignAsync(request, createdBy);
+            await _service.AssignAsync(request); // bỏ createdBy
             return Ok(new { success = true });
         }
+
 
         [HttpGet("department/{depId:int}")]
         public async Task<ActionResult<DepartmentBonusViewDTO>> GetByDepartmentAsync([FromRoute] int depId)

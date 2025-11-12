@@ -11,10 +11,7 @@ public partial class Bonus
 	public string BonusName { get; set; }
 	public decimal BonusAmount { get; set; }
 	public DateTime? CreatedAt { get; set; }
-	public int? CreatedBy { get; set; }
 	public DateOnly? BonusPeriod { get; set; }
-
-	public virtual Employee CreatedByNavigation { get; set; }
 	public virtual ICollection<EmpBonus> EmpBonuses { get; set; } = new List<EmpBonus>();
 }
 

@@ -1,12 +1,13 @@
-using AttendanceManagementPayrollSystem.DTO;
+﻿using AttendanceManagementPayrollSystem.DTO;
 using AttendanceManagementPayrollSystem.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace AttendanceManagementPayrollSystem.Services.ServiceList
 {
     public interface BonusService
     {
         Task<IEnumerable<BonusDTO>> GetAllAsync();
-        Task AssignAsync(AssignBonusRequest request, int createdBy);
+        Task AssignAsync(AssignBonusRequest request);
         Task<DepartmentBonusViewDTO> GetByDepartmentAsync(int depId);
     }
 
@@ -21,7 +22,7 @@ namespace AttendanceManagementPayrollSystem.Services.ServiceList
 
         public async Task<IEnumerable<BonusDTO>> GetAllAsync()
         {
-            var list = _context.Bonuses
+            var list = await _context.Bonuses
                 .OrderByDescending(b => b.BonusPeriod)
                 .Select(b => new BonusDTO
                 {
@@ -29,65 +30,31 @@ namespace AttendanceManagementPayrollSystem.Services.ServiceList
                     BonusName = b.BonusName,
                     BonusAmount = b.BonusAmount,
                     BonusPeriod = b.BonusPeriod
-                });
+                }).ToListAsync();
 
-            return await Task.FromResult(list.ToList());
+            return list;
         }
 
-        public async Task AssignAsync(AssignBonusRequest request, int createdBy)
+        public async Task AssignAsync(AssignBonusRequest request)
         {
             var bonus = await _context.Bonuses.FindAsync(request.BonusId);
-            if (bonus == null) throw new ArgumentException("Bonus not found");
+            if (bonus == null)
+                throw new ArgumentException("Bonus not found");
 
-            var bonusPeriod = new DateOnly(request.PeriodYear, request.PeriodMonth, 1);
-
+            // Gán thưởng cho từng nhân viên trong request
             foreach (var empId in request.EmpIds.Distinct())
             {
-                var rel = new EmpBonus
-                {
-                    EmpId = empId,
-                    BonusId = request.BonusId,
-                    DepId = request.DepId
-                };
-                _context.EmpBonuses.Add(rel);
-            }
+                var exists = await _context.EmpBonuses.AnyAsync(eb =>
+                    eb.EmpId == empId && eb.BonusId == request.BonusId && eb.DepId == request.DepId);
 
-            // if overriding amount or period, create a new bonus entry scoped to that period
-            if (request.OverrideAmount.HasValue || bonus.BonusPeriod != bonusPeriod)
-            {
-                int? createdByValue = null;
-                try
+                if (!exists)
                 {
-                    // Use createdBy only if such employee exists; otherwise leave null to avoid FK error
-                    if (await _context.Employees.FindAsync(createdBy) != null)
-                        createdByValue = createdBy;
-                }
-                catch
-                {
-                    createdByValue = null;
-                }
-
-                var customBonus = new Bonus
-                {
-                    BonusName = $"{bonus.BonusName} ({request.PeriodMonth}/{request.PeriodYear})",
-                    BonusAmount = request.OverrideAmount ?? bonus.BonusAmount,
-                    BonusPeriod = bonusPeriod,
-                    CreatedAt = DateTime.Now,
-                    CreatedBy = createdByValue
-                };
-                _context.Bonuses.Add(customBonus);
-                await _context.SaveChangesAsync();
-
-                // re-link EmpBonus to the custom bonus
-                foreach (var empId in request.EmpIds.Distinct())
-                {
-                    var rel = new EmpBonus
+                    _context.EmpBonuses.Add(new EmpBonus
                     {
                         EmpId = empId,
-                        BonusId = customBonus.BonusId,
+                        BonusId = request.BonusId,
                         DepId = request.DepId
-                    };
-                    _context.EmpBonuses.Add(rel);
+                    });
                 }
             }
 
@@ -96,40 +63,44 @@ namespace AttendanceManagementPayrollSystem.Services.ServiceList
 
         public async Task<DepartmentBonusViewDTO> GetByDepartmentAsync(int depId)
         {
-            var dep = await _context.Departments.FindAsync(depId);
+            // Load phòng ban và nhân viên
+            var dep = await _context.Departments
+                .Include(d => d.Employees)
+                .FirstOrDefaultAsync(d => d.DepId == depId);
+
             if (dep == null)
-            {
                 return new DepartmentBonusViewDTO
                 {
                     DepId = depId,
                     DepName = $"Dep #{depId}",
                     Employees = new List<EmployeeBonusViewDTO>()
                 };
-            }
 
-            try
+            // Lấy tất cả nhân viên phòng ban, join với EmpBonus + Bonus (left join để lấy nhân viên chưa có bonus)
+            var rows = await (from e in _context.Employees
+                              where e.DepId == depId
+                              join eb in _context.EmpBonuses on e.EmpId equals eb.EmpId into ebs
+                              from eb in ebs.DefaultIfEmpty()
+                              join b in _context.Bonuses on eb.BonusId equals b.BonusId into bs
+                              from b in bs.DefaultIfEmpty()
+                              orderby e.EmpName
+                              select new { e.EmpId, e.EmpName, Bonus = b }).ToListAsync();
+
+            var dict = new Dictionary<int, EmployeeBonusViewDTO>();
+            foreach (var r in rows)
             {
-                // join Emp_Bonus -> Bonus + Employee
-                var rows = (from eb in _context.EmpBonuses.AsQueryable()
-                            join e in _context.Employees on eb.EmpId equals e.EmpId
-                            join b in _context.Bonuses on eb.BonusId equals b.BonusId
-                            where (eb.DepId != null && eb.DepId == depId)
-                                  || (eb.DepId == null && e.DepId == depId)
-                            orderby e.EmpName
-                            select new { e.EmpId, e.EmpName, Bonus = b }).ToList();
-
-                var dict = new Dictionary<int, EmployeeBonusViewDTO>();
-                foreach (var r in rows)
+                if (!dict.TryGetValue(r.EmpId, out var dto))
                 {
-                    if (!dict.TryGetValue(r.EmpId, out var dto))
+                    dto = new EmployeeBonusViewDTO
                     {
-                        dto = new EmployeeBonusViewDTO
-                        {
-                            EmpId = r.EmpId,
-                            EmpName = r.EmpName
-                        };
-                        dict[r.EmpId] = dto;
-                    }
+                        EmpId = r.EmpId,
+                        EmpName = r.EmpName
+                    };
+                    dict[r.EmpId] = dto;
+                }
+
+                if (r.Bonus != null)
+                {
                     dto.Bonuses.Add(new BonusDTO
                     {
                         BonusId = r.Bonus.BonusId,
@@ -138,27 +109,14 @@ namespace AttendanceManagementPayrollSystem.Services.ServiceList
                         BonusPeriod = r.Bonus.BonusPeriod
                     });
                 }
+            }
 
-                return new DepartmentBonusViewDTO
-                {
-                    DepId = dep.DepId,
-                    DepName = dep.DepName,
-                    Employees = dict.Values
-                        .OrderBy(x => x.EmpName)
-                        .ToList()
-                };
-            }
-            catch
+            return new DepartmentBonusViewDTO
             {
-                // In case table Emp_Bonus doesn't exist or any other SQL issue, return empty view for resilience
-                return new DepartmentBonusViewDTO
-                {
-                    DepId = dep.DepId,
-                    DepName = dep.DepName,
-                    Employees = new List<EmployeeBonusViewDTO>()
-                };
-            }
+                DepId = dep.DepId,
+                DepName = dep.DepName,
+                Employees = dict.Values.OrderBy(x => x.EmpName).ToList()
+            };
         }
     }
 }
-
