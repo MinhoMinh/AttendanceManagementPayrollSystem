@@ -49,5 +49,22 @@ namespace AttendanceManagementPayrollSystem.Services.ServiceList
                 DepName = dep.DepName
             };
         }
+
+        public async Task<IEnumerable<DepartmentEmployeeGroupDTO>> GetAllWithEmployeesAsync()
+        {
+            var departments = await _departmentRepo.GetAllAsync();
+            return departments.Select(d => new DepartmentEmployeeGroupDTO
+            {
+                DepId = d.DepId,
+                DepName = d.DepName,
+                Employees = d.Employees
+                    .OrderBy(e => e.EmpName)
+                    .Select(e => new EmployeeBasicDTO
+                    {
+                        EmpId = e.EmpId,
+                        EmpName = e.EmpName
+                    }).ToList()
+            });
+        }
     }
 }

@@ -5,6 +5,19 @@ namespace AttendanceManagementPayrollSystem.Services.Helper
 {
     public class PayRunCalculator
     {
+        public static PayRunItemDto CalculatePay(Employee employee)
+        {
+            // Provide sensible defaults for tests or simple usage
+            var today = DateTime.Today;
+            var periodStart = new DateTime(today.Year, today.Month, 1);
+            var periodEnd = periodStart.AddMonths(1).AddDays(-1);
+
+            WeeklyShiftDto? defaultShift = null;
+            List<DepartmentHolidayCalendarDTO> noHolidays = new();
+
+            return CalculatePay(employee, defaultShift, noHolidays, periodStart, periodEnd);
+        }
+
         public static PayRunItemDto CalculatePay(Employee employee, 
             WeeklyShiftDto shift, List<DepartmentHolidayCalendarDTO> holidays,
             DateTime periodStart, DateTime periodEnd)

@@ -43,6 +43,7 @@ builder.Services.AddScoped<IOvertimeService, OvertimeService>();
 builder.Services.AddScoped<SalaryPolicyService, SalaryPolicyServiceImpl>();
 builder.Services.AddScoped<TaxService, TaxServiceImpl>();
 builder.Services.AddScoped<InsuranceRateService, InsuranceRateServiceImpl>();
+builder.Services.AddScoped<BonusService, BonusServiceImpl>();
 //builder.Services.AddScoped<ClockInAdjustmentRequestService, ClockInAdjustmentRequestServiceImpl>();
 //builder.Services.AddScoped<ClockinComponentService, ClockinComponentServiceImpl>();
 
