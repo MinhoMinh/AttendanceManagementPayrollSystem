@@ -1,5 +1,9 @@
 {
   "dependencies": {
+    "mssql5": {
+      "restored": true,
+      "restoreTime": "2025-11-12T08:41:49.6051923Z"
+    },
     "mssql1": {
       "restored": true,
       "restoreTime": "2025-10-13T11:54:44.5047428Z"
@@ -7,6 +11,10 @@
     "secrets1": {
       "restored": true,
       "restoreTime": "2025-10-13T11:54:44.290615Z"
+    },
+    "mssql6": {
+      "restored": true,
+      "restoreTime": "2025-11-12T08:44:22.3747126Z"
     }
   },
   "parameters": {}

@@ -24,6 +24,16 @@
       "secretStore": "LocalSecretsFile",
       "type": "mssql.local",
       "connectionId": "ConnectionStrings:DatabaseConnection3"
+    },
+    "mssql5": {
+      "secretStore": "LocalSecretsFile",
+      "type": "mssql.local",
+      "connectionId": "ConnectionStrings:DatabaseConnection4"
+    },
+    "mssql6": {
+      "secretStore": "LocalSecretsFile",
+      "type": "mssql.local",
+      "connectionId": "ConnectionStrings:DatabaseConnection5"
     }
   }
 }
