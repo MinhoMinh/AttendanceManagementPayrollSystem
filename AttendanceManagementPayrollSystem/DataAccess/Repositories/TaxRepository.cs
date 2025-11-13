@@ -8,6 +8,7 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
         Task<List<TaxDTO>> GetTaxDTOs();
         Task<TaxDTO?> GetActiveTaxDTO();
         Task<Tax?> GetActiveTax();
+        Task<Tax?> GetActiveTaxInTime(DateTime start, DateTime end);
         Task<bool> AddTaxAsync(TaxEditDTO dto);
         Task<TaxGroupDTO> GetTaxGroupAsync();
         Task<Tax?> GetByIdAsync(int id);

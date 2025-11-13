@@ -1,5 +1,6 @@
 ﻿using AttendanceManagementPayrollSystem.DTO;
 using AttendanceManagementPayrollSystem.Models;
+using AttendanceManagementPayrollSystem.Services.Helper;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AttendanceManagementPayrollSystem.Services.ServiceList
@@ -15,6 +16,8 @@ namespace AttendanceManagementPayrollSystem.Services.ServiceList
         Task<PayRunDto?> GetPayRunAsync(int id);
 
         Task<bool> ContainsValidPayRunInPeriod(int month, int year);
+
+        Task<PayRunContext> GetPayRunContext(int month, int year);
 
         Task<bool> ApproveFirst(int approverId, int payRunId);
 

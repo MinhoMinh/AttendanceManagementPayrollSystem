@@ -93,6 +93,8 @@
 
     const int MAX_FILESIZE = 5_000 * 1024;
 
+    [Inject] INotificationService NotificationService { get; set; }
+
     public async Task UploadFile(InputFileChangeEventArgs e)
     {
         var file = e.File;
@@ -142,6 +144,7 @@
         if (Clockins == null || !Clockins.Any())
         {
             Status = "No clock-in data to upload.";
+            NotificationService.Warning("Không thể tìm thấy thông tin!", "Lỗi");
             return;
         }
 
@@ -151,9 +154,9 @@
             var response = await client.PostAsJsonAsync("api/clockin/upload-clockin", Clockins);
 
             if (response.IsSuccessStatusCode)
-                Status = "Clock-ins uploaded successfully.";
+                NotificationService.Success("Cập nhật thông tin thành công!");
             else
-                Status = $"Failed: {response.ReasonPhrase}";
+                NotificationService.Warning($"{response.ReasonPhrase}", "Lỗi");
         }
         catch (Exception ex)
         {

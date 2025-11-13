@@ -16,13 +16,58 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
             await this._context.SaveChangesAsync();
         }
 
+
         public async Task<List<int>> GetActiveIds()
         {
             DateOnly now = DateOnly.FromDateTime(DateTime.Now);
-            return await _context.InsuranceRates.Where(i => i.EffectiveFrom <= now && (i.EffectiveTo == null || i.EffectiveTo >= now) && i.IsActive == true)
+            return await _context.InsuranceRates.Where(i => i.EffectiveFrom <= now && i.IsActive == true)
                                           .Select(r => r.RateSetId)
                                           .ToListAsync();
 
+        }
+
+        //public async Task<List<InsuranceRate>> GetActiveInsurancesInTime(DateTime start, DateTime end)
+        //{
+        //    var result = await _context.InsuranceRates
+        //        .Where(i =>
+        //            i.IsActive
+        //            && i.EffectiveFrom.ToDateTime(TimeOnly.MinValue) <= end
+        //            && (i.EffectiveTo == null ||
+        //                i.EffectiveTo.Value.ToDateTime(TimeOnly.MaxValue) >= start)
+        //            && (i.Category == "Unemployee" ||
+        //                i.Category == "Society" ||
+        //                i.Category == "Health")
+        //        )
+        //        .OrderByDescending(i => i.RateSetId)
+        //        .ToListAsync();
+
+        //    // keep only newest per category
+        //    var picked = result
+        //        .GroupBy(i => i.Category)
+        //        .Select(g => g.First())
+        //        .ToList();
+
+        //    return picked;
+        //}
+
+        public async Task<List<InsuranceRate>> GetActiveInsurancesInTime(DateTime start, DateTime end)
+        {
+            return _context.InsuranceRates
+                .Where(i => i.IsActive)
+                .AsEnumerable()   // switch to client eval
+                .Where(i =>
+                    i.EffectiveFrom.ToDateTime(TimeOnly.MinValue) <= end &&
+                    (
+                        i.EffectiveTo == null ||
+                        i.EffectiveTo.Value.ToDateTime(TimeOnly.MaxValue) >= start
+                    ) &&
+                    (
+                        i.Category == "Unemployee" ||
+                        i.Category == "Society" ||
+                        i.Category == "Health"
+                    )
+                )
+                .ToList();
         }
 
         public async Task<List<InsuranceRateDTO>> GetActiveInsuranceRateDTO()

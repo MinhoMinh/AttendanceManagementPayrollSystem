@@ -23,6 +23,33 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
                 .ToListAsync();
         }
 
+        public async Task<Dictionary<string, List<EmployeeBasicDTO>>> GetEmployeesByDepAsync()
+        {
+            // Load employees + department info first
+            var data = await _context.Employees
+                .Include(e => e.Dep)
+                .ToListAsync();
+
+            // Group safely. If no department or no name, use "Unknown"
+            var result = data
+                .GroupBy(e => string.IsNullOrWhiteSpace(e.Dep?.DepName)
+                    ? "Unknown"
+                    : e.Dep.DepName)
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.Select(x => new EmployeeBasicDTO
+                    {
+                        EmpId = x.EmpId,
+                        EmpName = x.EmpName
+                        // map more fields if needed
+                    }).ToList()
+                );
+
+            return result;
+        }
+
+
+
         public async Task<IEnumerable<Employee>> GetEmployees(int headId)
         {
             var headDepId = await _context.Employees

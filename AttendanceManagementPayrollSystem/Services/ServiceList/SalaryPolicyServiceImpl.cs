@@ -15,7 +15,7 @@ namespace AttendanceManagementPayrollSystem.Services.ServiceList
 
         public Task<SalaryPolicyViewDTO?> GetActiveSalaryPolicyAsync()
         {
-            return salaryPolicyRepository.GetActiveSalaryPolicyAsync();
+            return salaryPolicyRepository.GetActiveSalaryPolicyDTOAsync();
         }
 
         public async Task<IEnumerable<SalaryPolicyViewDTO>> GetAllAsync()

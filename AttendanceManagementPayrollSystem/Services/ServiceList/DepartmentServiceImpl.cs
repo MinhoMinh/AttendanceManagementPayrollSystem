@@ -23,6 +23,11 @@ namespace AttendanceManagementPayrollSystem.Services.ServiceList
             });
         }
 
+        public async Task<Dictionary<string, List<EmployeeBasicDTO>>> GetEmployeesByDepAsync()
+        {
+            return await _departmentRepo.GetEmployeesByDepAsync();
+        }
+
         public async Task<IEnumerable<EmployeeBasicDTO>> GetEmployeesAsync(int headId)
         {
             var employees = await _departmentRepo.GetEmployees(headId);

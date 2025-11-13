@@ -32,4 +32,18 @@ public class DepartmentController : ControllerBase
 
         return Ok(employees);
     }
+
+    [HttpGet("employees-by-dep")]
+    public async Task<ActionResult<Dictionary<string, List<EmployeeBasicDTO>>>> GetEmployeesByDepAsync()
+
+    {
+        // Optional: validate month/year
+
+        var employees = await _service.GetEmployeesByDepAsync();
+
+        if (employees == null)
+            return NotFound();
+
+        return Ok(employees);
+    }
 }

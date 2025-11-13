@@ -9,7 +9,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Components\Pages\" />
     <Folder Include="Views\" />
     <None Include="efpt.config.json.user" />
   </ItemGroup>

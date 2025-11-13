@@ -26,7 +26,7 @@
                     <FieldLabel>Chọn tháng/năm</FieldLabel>
                     <FieldBody>
                         <Div Class="d-flex flex-column picker-container" Position="Position.Relative">
-                        <DatePicker TValue="DateTime?"
+                        <Blazorise.DatePicker TValue="DateTime?"
                                     Date="@SelectedDate"
                                         DateChanged="@(value => OnMonthlyDateChanged(value))"
                                     DisplayFormat="MM/yyyy" />
@@ -53,7 +53,7 @@
                         <FieldLabel>Ngày bắt đầu</FieldLabel>
                         <FieldBody>
                             <Div Class="d-flex flex-column picker-container" Position="Position.Relative">
-                                <DatePicker TValue="DateTime?"
+                                <Blazorise.DatePicker TValue="DateTime?"
                                             Date="@SelectedDate"
                                             DateChanged="@(value => OnAnnualDateChanged(value))"
                                             DisplayFormat="dd/MM/yyyy" />

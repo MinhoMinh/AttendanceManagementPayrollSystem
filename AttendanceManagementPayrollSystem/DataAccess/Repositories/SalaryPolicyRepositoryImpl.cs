@@ -10,7 +10,7 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
         {
         }
 
-        public async Task<SalaryPolicyViewDTO?> GetActiveSalaryPolicyAsync()
+        public async Task<SalaryPolicyViewDTO?> GetActiveSalaryPolicyDTOAsync()
         {
             return await _context.SalaryPolicies.Where(s => s.IsActive == true)
                                                 .Select(s => new SalaryPolicyViewDTO
@@ -23,6 +23,11 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
                                                     WorkUnitValue=s.WorkUnitValue,
                                                     YearlyPto=s.YearlyPto
                                                 }).FirstOrDefaultAsync();
+        }
+
+        public async Task<SalaryPolicy?> GetActiveSalaryPolicyAsync()
+        {
+            return await _context.SalaryPolicies.Where(s => s.IsActive == true).FirstOrDefaultAsync();
         }
 
         public async Task<IEnumerable<SalaryPolicyViewDTO>> GetAllAsync()

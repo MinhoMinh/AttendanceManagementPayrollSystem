@@ -1,48 +1,44 @@
-﻿
-@using System.Globalization
+﻿@using System.Globalization
 @using AttendanceManagementPayrollSystem.DTO
-
 
 @code {
     [Parameter] public PayRunItemDto? Item { get; set; }
+
+    private static readonly CultureInfo viVn = new("vi-VN");
 }
 
 @if (Item == null)
 {
-    <p>No data.</p>
+    <p>Không có dữ liệu.</p>
 }
 else
 {
     <div class="card p-3 mb-3">
-        <h4>Pay Run Item</h4>
+        <h4>Mục bảng lương</h4>
         <table class="table table-sm">
-            <tr><th>ID</th><td>@Item.ItemId</td></tr>
-            <tr><th>Employee</th><td>@Item.EmpName</td></tr>
-            <tr><th>Gross Pay</th><td>@Item.GrossPay.ToString("C", CultureInfo.CurrentCulture)</td></tr>
-            <tr><th>Deductions</th><td>@Item.Deductions.ToString("C", CultureInfo.CurrentCulture)</td></tr>
-            <tr><th>Net Pay</th><td>@Item.NetPay.ToString("C", CultureInfo.CurrentCulture)</td></tr>
-            <tr><th>Notes</th><td>@Item.Notes</td></tr>
+            <tr><th>Nhân viên</th><td>@Item.EmpName</td></tr>
+            <tr><th>Lương gộp</th><td>@Item.GrossPay.ToString("C0", viVn)</td></tr>
+            <tr><th>Khấu trừ</th><td>@Item.Deductions.ToString("C0", viVn)</td></tr>
+            <tr><th>Lương thực nhận</th><td>@Item.NetPay.ToString("C0", viVn)</td></tr>
+            <tr><th>Ghi chú</th><td>@Item.Notes</td></tr>
         </table>
     </div>
 
     <div class="card p-3">
-        <h5>Components</h5>
+        <h5>Thành phần</h5>
         @if (Item.Components == null || !Item.Components.Any())
         {
-            <p>No components.</p>
+            <p>Không có thành phần.</p>
         }
         else
         {
             <table class="table table-bordered table-sm">
                 <thead>
                     <tr>
-                        <th>Type</th>
-                        <th>Code</th>
-                        <th>Description</th>
-                        <th>Amount</th>
-                        <th>Taxable</th>
-                        <th>Insurable</th>
-                        <th>Created</th>
+                        <th>Loại</th>
+                        <th>Mã</th>
+                        <th>Mô tả</th>
+                        <th>Số tiền</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -52,10 +48,7 @@ else
                             <td>@c.ComponentType</td>
                             <td>@c.ComponentCode</td>
                             <td>@c.Description</td>
-                            <td>@c.Amount.ToString("C", CultureInfo.CurrentCulture)</td>
-                            <td>@(c.Taxable == true ? "Yes" : "No")</td>
-                            <td>@(c.Insurable == true ? "Yes" : "No")</td>
-                            <td>@c.CreatedAt?.ToShortDateString()</td>
+                            <td>@c.Amount.ToString("C0", viVn)</td>
                         </tr>
                     }
                 </tbody>

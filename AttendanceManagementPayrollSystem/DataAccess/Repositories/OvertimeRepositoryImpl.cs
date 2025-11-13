@@ -37,14 +37,26 @@ public class OvertimeRepositoryImpl : IOvertimeRepository
         return list;
     }
 
-    //public async Task<IGrouping<int, OvertimeRequestDTO>> GetOvertimeByHeadId(
-    //int empId,
-    //DateOnly? startDate,
-    //DateOnly? endDate)
-    //{
+    public async Task<Dictionary<int, List<OvertimeRequest>>> GetApprovedOvertimes(
+    DateOnly startDate,
+    DateOnly endDate)
+    {
+        var list = await _context.OvertimeRequests
+            .Include(o => o.OvertimeTypeNavigation)
+            .Where(o => o.ReqDate >= startDate)
+            .Where(o => o.ReqDate <= endDate)
+            .Where(o => o.Status == "Approved")
+            .OrderByDescending(o => o.ReqDate)
+            .ToListAsync();
 
-    //}
-   
+        //Console.WriteLine($"count {list.Count}");
+
+        return list
+            .GroupBy(o => o.EmpId)
+            .ToDictionary(g => g.Key, g => g.ToList());
+    }
+
+
 
 
 

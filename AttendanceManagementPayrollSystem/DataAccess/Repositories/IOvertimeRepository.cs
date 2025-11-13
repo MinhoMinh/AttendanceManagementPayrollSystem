@@ -6,6 +6,8 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
     public interface IOvertimeRepository
     {
         Task<IEnumerable<OvertimeRequest>> GetOvertimeByEmployeeId(int empId, DateOnly? startDate, DateOnly? endDate);
+
+        Task<Dictionary<int, List<OvertimeRequest>>> GetApprovedOvertimes(DateOnly startDate, DateOnly endDate);
         OvertimeRequest GetById(int id);
         void Create(OvertimeRequest request);
         void Approve(int reqId, int approverId);

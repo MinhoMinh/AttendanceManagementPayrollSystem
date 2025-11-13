@@ -1,7 +1,8 @@
 ﻿@using AttendanceManagementPayrollSystem.DTO
+@using Blazorise
 
 @code {
-    [Parameter] public List<PayRunItemDto>? Items { get; set; }
+    [Parameter] public Dictionary<string, List<PayRunItemDto>>? Groups { get; set; }
     [Parameter] public EventCallback<PayRunItemDto> OnItemSelected { get; set; }
 
     private async Task SelectItem(PayRunItemDto item)
@@ -11,38 +12,44 @@
     }
 }
 
-@if (Items == null || Items.Count == 0)
+@if (Groups == null || Groups.Count == 0)
 {
-    <p>No pay run items.</p>
+    <p>Không có mục bảng lương.</p>
 }
 else
 {
-    <div class="card p-3">
-        <h5>Pay Run Items</h5>
-        <table class="table table-bordered table-sm">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Employee</th>
-                    <th>Gross</th>
-                    <th>Deductions</th>
-                    <th>Net</th>
-                    <th>Notes</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var item in Items)
-                {
-                    <tr style="cursor:pointer" @onclick="@(() => SelectItem(item))">
-                        <td>@item.ItemId</td>
-                        <td>@item.EmpName</td>
-                        <td>@item.GrossPay.ToString("C")</td>
-                        <td>@item.Deductions.ToString("C")</td>
-                        <td>@item.NetPay.ToString("C")</td>
-                        <td>@item.Notes</td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div>
+    @foreach (var grp in Groups)
+    {
+        <Card class="mb-3">
+            <CardHeader>
+                <strong>@grp.Key</strong>
+            </CardHeader>
+
+            <CardBody>
+                <table class="table table-bordered table-sm">
+                    <thead>
+                        <tr>
+                            <th>Nhân viên</th>
+                            <th>Lương gộp</th>
+                            <th>Khấu trừ</th>
+                            <th>Lương thực nhận</th>
+                            <th>Ghi chú</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in grp.Value)
+                        {
+                            <tr style="cursor:pointer" @onclick="@(() => SelectItem(item))">
+                                <td>@item.EmpName</td>
+                                <td>@item.GrossPay.ToString("C")</td>
+                                <td>@item.Deductions.ToString("C")</td>
+                                <td>@item.NetPay.ToString("C")</td>
+                                <td>@item.Notes</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </CardBody>
+        </Card>
+    }
 }

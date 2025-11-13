@@ -1,143 +1,308 @@
-﻿@using System.Text.Json
-@page "/payruns/generate"
+﻿@page "/payruns/generate"
+@using System.Text.Json
 @using AttendanceManagementPayrollSystem.DTO
+@using AttendanceManagementPayrollSystem.Services.Helper
 @using AttendanceManagementPayrollSystem.UI.Components
 @inject IHttpClientFactory HttpFactory
 @inject IJSRuntime JS
 
-<div class="mb-3">
-    <div class="d-flex align-items-center justify-content-between mb-3">
-        <div class="d-flex align-items-center gap-2">
+<div class="row">
+    <div class="col-3">
+
+        <div class="d-flex align-items-center gap-2 mb-3">
             <MonthYearPicker @bind-SelectedMonth="periodMonth" @bind-SelectedYear="periodYear" />
-            <button class="btn btn-primary" @onclick="Generate">Generate</button>
+            <button class="btn btn-primary" @onclick="Preview">Preview</button>
         </div>
 
-        @if (payRun != null)
+        @if (context != null)
         {
-            <button class="btn btn-success" @onclick="Confirm" disabled="@isConfirming">@confirmButtonText</button>
+            <div class="card p-2 mb-2">
+
+                <h6 class="fw-bold border-bottom pb-1">Khoảng</h6>
+                <table class="table table-sm">
+                    <tbody>
+                        <tr><td>Bắt đầu</td><td>@context.PeriodStart.ToShortDateString()</td></tr>
+                        <tr><td>Kết thúc</td><td>@context.PeriodEnd.ToShortDateString()</td></tr>
+                    </tbody>
+                </table>
+
+                <h6 class="fw-bold border-bottom pb-1">Chính sách lương</h6>
+                @if (!HasSalary)
+                {
+                    <div class="text-danger small">Không có dữ liệu chính sách lương</div>
+                }
+                else
+                {
+                    <table class="table table-sm">
+                        <tbody>
+                            <tr><td>Tên</td><td>@context.SalaryPolicy.SalaryPolicyName</td></tr>
+                            <tr><td>Giá trị công</td><td>@context.SalaryPolicy.WorkUnitValue</td></tr>
+                            <tr><td>Hiệu lực từ</td><td>@context.SalaryPolicy.EffectiveFrom</td></tr>
+                        </tbody>
+                    </table>
+                }
+
+                <h6 class="fw-bold border-bottom pb-1">Thuế</h6>
+                @if (!HasTax)
+                {
+                    <div class="text-danger small">Không có dữ liệu thuế</div>
+                }
+                else
+                {
+                    <table class="table table-sm">
+                        <tbody>
+                            <tr><td>Tên</td><td>@context.Tax.TaxName</td></tr>
+                            <tr><td>Hiệu lực từ</td><td>@context.Tax.EffectiveFrom</td></tr>
+                        </tbody>
+                    </table>
+                }
+
+                <h6 class="fw-bold border-bottom pb-1">Bảo hiểm</h6>
+                @if (!HasSocial || !HasHealth || !HasUnemployee)
+                {
+                    <div class="text-danger small">Thiếu dữ liệu bảo hiểm</div>
+                }
+
+                <table class="table table-sm">
+                    <thead>
+                        <tr><th>Loại</th><th>Tỉ lệ</th></tr>
+                    </thead>
+                    <tbody>
+                        @if (HasSocial)
+                        {
+                            <tr><td>Xã hội</td><td>@context.SocialInsurance.EmployeeRate</td></tr>
+                        }
+                        else
+                        {
+                            <tr><td>Xã hội</td><td class="text-danger">Thiếu</td></tr>
+                        }
+
+                        @if (HasHealth)
+                        {
+                            <tr><td>Sức khoẻ</td><td>@context.HealthInsurance.EmployeeRate</td></tr>
+                        }
+                        else
+                        {
+                            <tr><td>Sức khoẻ</td><td class="text-danger">Thiếu</td></tr>
+                        }
+
+                        @if (HasUnemployee)
+                        {
+                            <tr><td>Thất nghiệp</td><td>@context.UnemployeeInsurance.EmployeeRate</td></tr>
+                        }
+                        else
+                        {
+                            <tr><td>Thất nghiệp</td><td class="text-danger">Thiếu</td></tr>
+                        }
+                    </tbody>
+                </table>
+
+                <h6 class="fw-bold border-bottom pb-1">Ngày lễ</h6>
+                @if (context.Holidays == null)
+                {
+                    <div class="text-muted small">Không có dữ liệu</div>
+                }
+                else
+                {
+                    <table class="table table-sm">
+                        <thead>
+                            <tr><th>Thời gian</th><th>Tên</th></tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var h in context.Holidays)
+                            {
+                                <tr>
+                                    <td>@h.PeriodYear</td>
+                                    <td>@h.HolidayName</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+
+            </div>
+        }
+
+        @if (ContextValid)
+        {
+            <button class="btn btn-success mt-2" @onclick="Confirm" disabled="@isConfirming">
+                @confirmButtonText
+            </button>
+        }
+        else
+        {
+            if (context != null)
+            {
+                <div class="alert alert-warning mt-2">
+                    Dữ liệu thiếu, không thể xác nhận
+                </div>
+            }
+            
         }
     </div>
 
-    @if (!string.IsNullOrEmpty(statusMessage))
-    {
-        <div class="alert alert-info mt-2">@statusMessage</div>
-    }
+    <div class="col-9">
+        @if (payRun != null)
+        {
+            <div class="row">
+                <div class="col-12">
+                    <PayRunDetails PayRun="@payRun" />
+                </div>
+                <div class="col-7">
+                    <PayRunItemList Groups="@groups"
+                        OnItemSelected="@SelectItem" />
+                </div>
+                <div class="col-5">
+                    <PayRunItemDetails Item="@selectedItem" />
+                </div>
+            </div>
+        }
+        else
+        {
+            <p>Không có lượt trả tiền nào được tải.</p>
+        }
+    </div>
 </div>
 
-@if (payRun != null)
-{
-    <div class="row">
-        <div class="col-2">
-            <PayRunDetails PayRun="@payRun" />
-        </div>
-
-        <div class="col-8">
-            <PayRunItemList Items="@payRun.PayRunItems" OnItemSelected="@SelectItem" />
-        </div>
-
-        <div class="col-2">
-            <PayRunItemDetails Item="@selectedItem" />
-        </div>
-    </div>
-}
-else
-{
-    <p>No pay run loaded.</p>
-}
-
-
-
 @code {
-    private string statusMessage = string.Empty;
+    //private string statusMessage = string.Empty;
     private bool isConfirming = false;
-    private string confirmButtonText = "Confirm";
+    private string confirmButtonText = "Xác nhận";
     private int periodMonth = DateTime.Now.AddMonths(-1).Month;
     private int periodYear = DateTime.Now.AddMonths(-1).Year;
 
     private EmployeeDTO? Employee;
-
     private PayRunDto? payRun;
-
+    Dictionary<string, List<PayRunItemDto>>? groups;
     private PayRunItemDto? selectedItem;
+    private PayRunContext? context;
+
+    [Inject] INotificationService NotificationService { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
         var empJson = await JS.InvokeAsync<string>("localStorage.getItem", "employee");
-        if (string.IsNullOrWhiteSpace(empJson)) return;
+        if (!string.IsNullOrWhiteSpace(empJson))
+            Employee = JsonSerializer.Deserialize<EmployeeDTO>(empJson);
 
-        Employee = JsonSerializer.Deserialize<EmployeeDTO>(empJson);
     }
 
-    private async Task Generate()
+    private async Task Preview()
     {
         if (Employee == null) return;
+        //statusMessage = string.Empty;
 
         try
         {
             var client = HttpFactory.CreateClient("ApiClient");
+            var url = $"api/pay-run/context?periodMonth={periodMonth}&periodYear={periodYear}";
 
-            var response = await client.PostAsJsonAsync("api/pay-run/generate", new PayRunRequest
-                {
-                    Name = "Pay Run test",
-                    PeriodMonth = periodMonth,
-                    PeriodYear = periodYear,
-                    CreatedBy = Employee.EmpId
-                });
+            var response = await client.PostAsync(url, null);
+
             if (response.IsSuccessStatusCode)
             {
-                payRun = await response.Content.ReadFromJsonAsync<PayRunDto>();
+                context = await response.Content.ReadFromJsonAsync<PayRunContext>();
             }
             else
             {
-                payRun = null;
-                Console.WriteLine($"Error: {response.StatusCode}");
+                context = null;
+                NotificationService.Warning("Không thể tìm thấy ngữ cảnh tạo bảng lương!", "Lỗi");
+
             }
         }
         catch (Exception ex)
         {
-            payRun = null;
-            Console.WriteLine($"Exception: {ex.Message}");
+            context = null;
+            //statusMessage = $"Exception: {ex.Message}";
+            NotificationService.Warning(ex.Message, "Lỗi");
         }
     }
 
     private async Task Confirm()
     {
-        if (payRun == null) return;
-
+        if (context == null) return;
         isConfirming = true;
-        confirmButtonText = "Confirming...";
-        statusMessage = string.Empty;
+        confirmButtonText = "Đang xác nhận...";
 
         try
         {
-
             var client = HttpFactory.CreateClient("ApiClient");
-            var response = await client.PostAsJsonAsync("api/pay-run/save", payRun);
+            var genResp = await client.PostAsJsonAsync("api/pay-run/generate", new
+            {
+                Name = $"Bảng lương định kì",
+                PeriodMonth = periodMonth,
+                PeriodYear = periodYear,
+                CreatedBy = Employee?.EmpId
+            });
 
-            if (response.IsSuccessStatusCode)
+            if (!genResp.IsSuccessStatusCode)
             {
-                statusMessage = "Pay run confirmed successfully.";
-                confirmButtonText = "Confirmed";
-            }
-            else
-            {
-                var errorDetails = await response.Content.ReadAsStringAsync();
-                statusMessage = $"Error: {response.StatusCode} - {errorDetails}";
+                var errorText = await genResp.Content.ReadAsStringAsync();
+                NotificationService.Warning($"{genResp.StatusCode} - {errorText}", "Lỗi");
                 isConfirming = false;
-                confirmButtonText = "Confirm";
+                confirmButtonText = "Xác nhận";
+
+                return;
             }
+
+            var employeesByDep =
+                    await client.GetFromJsonAsync<Dictionary<string, List<EmployeeBasicDTO>>>(
+                        "api/department/employees-by-dep");
+
+
+            payRun = await genResp.Content.ReadFromJsonAsync<PayRunDto>();
+            
+            
+            groups =
+                employeesByDep.ToDictionary(
+                    kv => kv.Key,
+                    kv =>
+                        payRun.PayRunItems
+                        .Where(x => kv.Value.Any(e => e.EmpId == x.EmpId))
+                        .ToList()
+                );
+
+            // items not in group
+            var unassigned = payRun.PayRunItems
+                .Where(x => !employeesByDep.Values.SelectMany(e => e).Any(e => e.EmpId == x.EmpId))
+                .ToList();
+
+            if (unassigned.Count > 0)
+                groups["Unknown"] = unassigned;
+
+            var emptyKeys = groups
+                .Where(kv => kv.Value == null || kv.Value.Count == 0)
+                .Select(kv => kv.Key)
+                .ToList();
+
+            foreach (var key in emptyKeys)
+                groups.Remove(key);
+
+            foreach (var kvp in groups)
+                NotificationService.Success($"key:{kvp.Key} value count {kvp.Value.Count}");
+
+
+            NotificationService.Success("Tạo thành công!");
+            confirmButtonText = "Đã xác nhận";
+
         }
         catch (Exception ex)
         {
-            statusMessage = $"Exception: {ex.Message}";
+            //statusMessage = $"Exception: {ex.Message}";
+            NotificationService.Warning(ex.Message, "Lỗi");
             isConfirming = false;
-            confirmButtonText = "Confirm";
+            confirmButtonText = "Xác nhận";
         }
     }
 
+    private void SelectItem(PayRunItemDto item) => selectedItem = item;
 
-    private void SelectItem(PayRunItemDto item)
-    {
-        selectedItem = item;
-    }
+    private bool HasSalary => context?.SalaryPolicy != null;
+    private bool HasTax => context?.Tax != null;
+    private bool HasSocial => context?.SocialInsurance != null;
+    private bool HasHealth => context?.HealthInsurance != null;
+    private bool HasUnemployee => context?.UnemployeeInsurance != null;
+
+    private bool ContextValid =>
+    HasSalary && HasTax && HasSocial && HasHealth && HasUnemployee;
 }

@@ -1,0 +1,43 @@
+﻿@using AttendanceManagementPayrollSystem.DTO
+@using Blazorise
+
+<Card Class="mb-3 shadow-sm">
+    <CardHeader class="d-flex justify-content-between align-items-center">
+        <strong>Lịch nghỉ</strong>
+    </CardHeader>
+
+    <CardBody>
+
+        <Field>
+            <FieldLabel>Tên ngày nghỉ</FieldLabel>
+            <FieldBody>
+                @if (!string.IsNullOrWhiteSpace(HolidayInfo.HolidayName))
+                {
+                    <span>@HolidayInfo.HolidayName</span>
+                }
+                else
+                {
+                    <span>Không có dữ liệu</span>
+                }
+            </FieldBody>
+        </Field>
+
+        <Field>
+            <FieldLabel>Thời gian</FieldLabel>
+            <FieldBody>
+                <div class="d-flex flex-row gap-2">
+                    <span>@HolidayInfo.StartDate.ToString("dd/MM/yyyy")</span>
+                    <span>-</span>
+                    <span>@HolidayInfo.EndDate.ToString("dd/MM/yyyy")</span>
+                </div>
+            </FieldBody>
+        </Field>
+
+
+    </CardBody>
+</Card>
+
+@code {
+    [Parameter] public DepartmentHolidayCalendarDTO HolidayInfo { get; set; }
+
+}

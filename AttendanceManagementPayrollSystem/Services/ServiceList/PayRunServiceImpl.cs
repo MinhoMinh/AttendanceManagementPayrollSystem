@@ -12,19 +12,51 @@ namespace AttendanceManagementPayrollSystem.Services.ServiceList
         private readonly PayRunRepository _payRunRepo;
         private readonly ClockinRepository _clockinRepo;
         private readonly EmployeeRepository _employeeRepo;
+        private readonly IOvertimeRepository _overtimeRepo;
         private readonly HolidayCalendarRepository _holidayRepo;
+        private readonly SalaryPolicyRepository _salaryPolicyRepo;
+        private readonly TaxRepository _taxRepo;
+        private readonly InsuranceRateRepository _insuranceRepo;
 
         private readonly ShiftService _shiftService;
 
-
-        public PayRunServiceImpl(ShiftService shiftService, ClockinRepository clockinRepo,
-            PayRunRepository payrollRepo, EmployeeRepository empRepo, HolidayCalendarRepository holidayRepo)
+        public PayRunServiceImpl(ShiftService shiftService, SalaryPolicyRepository salaryPolicyRepo, ClockinRepository clockinRepo,
+            PayRunRepository payrollRepo, EmployeeRepository empRepo, HolidayCalendarRepository holidayRepo, 
+            IOvertimeRepository overtimeRepo, TaxRepository taxRepo, InsuranceRateRepository insuranceRepo)
         {
+            _salaryPolicyRepo = salaryPolicyRepo;
             _shiftService = shiftService;
             _clockinRepo = clockinRepo;
+            _overtimeRepo = overtimeRepo;
             _payRunRepo = payrollRepo;
             _employeeRepo = empRepo;
             _holidayRepo = holidayRepo;
+            _overtimeRepo = overtimeRepo;
+            _taxRepo = taxRepo;
+            _insuranceRepo = insuranceRepo;
+        }
+
+        public async Task<PayRunContext> GetPayRunContext(int month, int year) 
+        {
+            Console.WriteLine($"{month} {year}");
+            var periodStart = new DateTime(year, month, 1);
+            var periodEnd = periodStart.AddMonths(1).AddDays(-1);
+
+            var salaryPolicy = await _salaryPolicyRepo.GetActiveSalaryPolicyAsync();
+
+            var holidays = await _holidayRepo.GetByRangeAsync(periodStart, periodEnd);
+
+            var tax = await _taxRepo.GetActiveTaxInTime(periodStart, periodEnd);
+
+            var insurances = await _insuranceRepo.GetActiveInsurancesInTime(periodStart, periodEnd);
+
+            var socialInsurance = insurances.FirstOrDefault(x => x.Category == "Society");
+            var healthInsurance = insurances.FirstOrDefault(x => x.Category == "Health");
+            var unemployeeInsurance = insurances.FirstOrDefault(x => x.Category == "Unemployee");
+
+
+            return new PayRunContext(salaryPolicy, tax, socialInsurance, healthInsurance, unemployeeInsurance, holidays,
+                periodStart, periodEnd);
         }
 
         public async Task<PayRunDto> GenerateRegularPayRun(string name, int month, int year, int createdBy)
@@ -43,27 +75,40 @@ namespace AttendanceManagementPayrollSystem.Services.ServiceList
                 Type = "Monthly"
             };
 
-            var periodStart = new DateTime(year, month, 1);
-            var periodEnd = periodStart.AddMonths(1).AddDays(-1);
+            var context = await GetPayRunContext(month, year);
+
+            var periodStart = context.PeriodStart;
+            var periodEnd = context.PeriodEnd;
+
+            //var salaryPolicy = await _salaryPolicyRepo.GetActiveSalaryPolicyAsync();
 
             var employees = await _payRunRepo.GetEmployeesWithComponents(month, year);
 
+            var overtimeDict = await _overtimeRepo.GetApprovedOvertimes(DateOnly.FromDateTime(periodStart), DateOnly.FromDateTime(periodEnd));
+
             var shiftDictionary = await _shiftService.GetWeeklyShiftDtos(employees.Select(e => e.EmpId));
 
-            var holidays = await _holidayRepo.GetByRangeAsync(periodStart, periodEnd);
+            //var holidays = await _holidayRepo.GetByRangeAsync(periodStart, periodEnd);
+            var holidays = context.Holidays;
 
             foreach (var employee in employees)
             {
+
                 // find shift for employee
                 shiftDictionary.TryGetValue(employee.EmpId, out var shift);
 
-                // filter holidays by employee’s department
-                var empHolidays = holidays
-                    .SelectMany(h => h.DepartmentHolidays)
-                    .Where(dhc => dhc.DepId == employee.DepId)
-                    .ToList();
+                overtimeDict.TryGetValue(employee.EmpId, out var overtimes);
 
-                var payItem = PayRunCalculator.CalculatePay(employee, shift, empHolidays, periodStart, periodEnd);
+                // filter holidays by employee’s department (done in calculator)
+                //var empHolidays = holidays
+                //    .SelectMany(h => h.DepartmentHolidays)
+                //    .Where(dhc => dhc.DepId == employee.DepId)
+                //    .ToList();
+
+                //var context = new PayRunContext(salaryPolicy, tax, socialInsurance, healthInsurance, unemployeeInsurance,
+                //    empHolidays, periodStart, periodEnd);
+
+                var payItem = PayRunCalculator.CalculatePay(context, employee, shift, overtimes);
                 payRunDto.PayRunItems.Add(payItem);
             }
 
@@ -97,6 +142,8 @@ namespace AttendanceManagementPayrollSystem.Services.ServiceList
             return await _payRunRepo.GetPayRunByEmpIdAndDateAsync(empId, periodMonth, periodYear);
 
         }
+        
+
         private PayRunBasicDto ToBasicDTO(PayRun run)
         {
             var dto = new PayRunBasicDto

@@ -1,5 +1,6 @@
 ﻿using AttendanceManagementPayrollSystem.DTO;
 using AttendanceManagementPayrollSystem.Models;
+using AttendanceManagementPayrollSystem.Services.Helper;
 using AttendanceManagementPayrollSystem.Services.ServiceList;
 using Azure.Core;
 using DocumentFormat.OpenXml.Office2016.Excel;
@@ -150,5 +151,17 @@ namespace AttendanceManagementPayrollSystem.Controllers
 
             return Ok(result);
         }
+
+        [HttpPost("context")]
+        public async Task<ActionResult<PayRunContext>> GetPayRunContext([FromQuery]int periodMonth,[FromQuery] int periodYear)
+        {
+            var result = await _service.GetPayRunContext(periodMonth, periodYear);
+
+            if (result == null)
+                return NotFound();
+
+            return Ok(result);
+        }
+
     }
 }

@@ -158,6 +158,33 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
             return await _context.Taxes.Where(t => t.IsActive == true).FirstOrDefaultAsync();
         }
 
+        //public async Task<Tax?> GetActiveTaxInTime(DateTime start, DateTime end)
+        //{
+        //    return await _context.Taxes
+        //        .Where(t => t.IsActive
+        //            && t.EffectiveFrom.ToDateTime(TimeOnly.MinValue) <= end
+        //            && (
+        //                t.EffectiveTo == null ||
+        //                t.EffectiveTo.Value.ToDateTime(TimeOnly.MaxValue) >= start
+        //            ))
+        //        .OrderByDescending(t => t.TaxId)
+        //        .FirstOrDefaultAsync();
+        //}
+        public async Task<Tax?> GetActiveTaxInTime(DateTime start, DateTime end)
+        {
+            return _context.Taxes
+                .Where(t => t.IsActive)
+                .AsEnumerable() // forces client evaluation
+                .Where(t =>
+                    t.EffectiveFrom.ToDateTime(TimeOnly.MinValue) <= end &&
+                    (
+                        t.EffectiveTo == null ||
+                        t.EffectiveTo.Value.ToDateTime(TimeOnly.MaxValue) >= start
+                    ))
+                .OrderByDescending(t => t.TaxId)
+                .FirstOrDefault();
+        }
+
         public async Task RemoveBracketsAsync(int taxId)
         {
             var brackets = _context.TaxBrackets.Where(b => b.TaxId == taxId);

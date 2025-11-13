@@ -7,7 +7,8 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
     {
         Task<IEnumerable<SalaryPolicyViewDTO>> GetAllAsync();
         Task<SalaryPolicy> UpdateSalaryPolicyAsync(SalaryPolicy updatedSalaryPolicy);
-        Task<SalaryPolicyViewDTO?> GetActiveSalaryPolicyAsync();
+        Task<SalaryPolicyViewDTO?> GetActiveSalaryPolicyDTOAsync();
+        Task<SalaryPolicy?> GetActiveSalaryPolicyAsync();
         Task<List<SalaryPolicyViewDTO>> GetInactiveSalaryPolicyAsync();
 
     }
