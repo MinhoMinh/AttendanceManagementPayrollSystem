@@ -4,7 +4,6 @@
 *.cache
 *.json
 *.txt
-*.css
 *.pdb
 *.editorconfig
 *.Up2Date
@@ -15,5 +14,9 @@
 *.Up2Date
 *.cache
 *.BuildWithSkipAnalyzers
+*.rz.scp.css
+*.styles.css
+*.bundle.scp.css
 /AttendanceManagementPayrollSystem/.vs
 /AttendanceManagementPayrollSystem/obj
+AttendanceManagementPayrollSystem/obj/Debug/net8.0/AttendanceManagementPayrollSystem.AssemblyInfo.cs

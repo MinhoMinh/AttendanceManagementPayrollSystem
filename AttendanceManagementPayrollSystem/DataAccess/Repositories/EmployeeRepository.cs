@@ -1,7 +1,8 @@
-﻿using AttendanceManagementPayrollSystem.Models;
+﻿using AttendanceManagementPayrollSystem.DTO;
+using AttendanceManagementPayrollSystem.Models;
 using DocumentFormat.OpenXml.Spreadsheet;
-using System.Linq.Expressions;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
@@ -17,6 +18,11 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
         Task<Employee?> FindByUsernameAsync(string username); // ✅ Thêm mới
         Task LoadRoles(Employee employee);
         Task <int> GetIdByClockId(int clockId);
+        Task<List<EmployeeBasicDTO>> GetAllEmployeeBasic();
+        Task AddBalenceForNewEmployee(EmployeeBalance eb);
 
+        Task<IEnumerable<Employee>> GetAllEmployeesAsync();
+
+        Task<IEnumerable<EmployeeGroupByDepartmentDTO>> GetEmployeesGroupedByDepartmentAsync();
     }
 }

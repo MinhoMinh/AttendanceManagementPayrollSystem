@@ -18,18 +18,33 @@ namespace AttendanceManagementPayrollSystem.Controllers
         }
 
 
-        // GET: api/<EmployeeController>
-        [HttpGet]
-        public IEnumerable<string> Get()
+        [HttpGet("basic")]
+        public async Task<IActionResult> GetAllEmployeeBasic()
         {
-            return new string[] { "value1", "value2" };
+            var employees = await this.employeeService.GetAllEmployeeBasic();
+            return Ok(employees);
+        }
+
+        [HttpGet("getallforview")]
+        public async Task<IActionResult> GetAllForView()
+        {
+            var employees = await this.employeeService.GetAllEmployeesAsync();
+            return Ok(employees);
+        }
+
+        [HttpGet("getgroupbydepforview")]
+        public async Task<IActionResult> GetGroupByDepForView()
+        {
+            var employees = await this.employeeService.GetEmployeesGroupedByDepartmentAsync();
+            return Ok(employees);
         }
 
         // GET api/<EmployeeController>/5
-        [HttpGet("{id}")]
-        public string Get(int id)
+        [HttpGet("view/{id}")]
+        public async Task<IActionResult> GetEmployeeForViewById(int id)
         {
-            return "value";
+            var employees = await this.employeeService.GetEmployeeViewByIdAsync(id);
+            return Ok(employees);
         }
 
         // POST api/<EmployeeController>
@@ -37,7 +52,6 @@ namespace AttendanceManagementPayrollSystem.Controllers
         public async Task<IActionResult> CreateAccount([FromBody] EmployeeCreateDTO dto)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
-            Console.WriteLine("aaaaaaaaaaaaaaaaaaaaaa");
             try
             {
                 await employeeService.CreateAsync(dto);

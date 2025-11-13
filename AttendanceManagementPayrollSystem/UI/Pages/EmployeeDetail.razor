@@ -1,0 +1,682 @@
+﻿@page "/employees/detail/{Id:int}"
+@using AttendanceManagementPayrollSystem.DTO
+@inject IHttpClientFactory HttpFactory
+@inject NavigationManager Nav
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+
+<style>
+    :root {
+        --primary-cream: #FFE4A1;
+        --primary-red: #97322D;
+        --primary-red-dark: #7A2823;
+        --primary-red-light: #B23D37;
+    }
+
+    .employee-detail-wrapper {
+        background: linear-gradient(135deg, #FFF8E7 0%, #FFF 100%);
+        min-height: 100vh;
+        padding: 2rem;
+    }
+
+    .back-button {
+        background: white;
+        border: 2px solid var(--primary-cream);
+        color: var(--primary-red);
+        padding: 0.6rem 1.5rem;
+        border-radius: 10px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+        .back-button:hover {
+            background: var(--primary-red);
+            color: var(--primary-cream);
+            border-color: var(--primary-red);
+            transform: translateX(-5px);
+        }
+
+    .profile-header {
+        background: linear-gradient(135deg, var(--primary-red) 0%, var(--primary-red-dark) 100%);
+        color: var(--primary-cream);
+        padding: 2.5rem;
+        border-radius: 20px;
+        box-shadow: 0 8px 30px rgba(151, 50, 45, 0.3);
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .profile-header::before {
+            content: "";
+            position: absolute;
+            top: -50px;
+            right: -50px;
+            width: 200px;
+            height: 200px;
+            background: rgba(255, 228, 161, 0.1);
+            border-radius: 50%;
+        }
+
+        .profile-header::after {
+            content: "";
+            position: absolute;
+            bottom: -30px;
+            left: -30px;
+            width: 150px;
+            height: 150px;
+            background: rgba(255, 228, 161, 0.08);
+            border-radius: 50%;
+        }
+
+    .profile-content {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+    }
+
+    .profile-avatar {
+        width: 120px;
+        height: 120px;
+        background: var(--primary-cream);
+        color: var(--primary-red);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        font-weight: 700;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        border: 5px solid rgba(255, 228, 161, 0.3);
+        flex-shrink: 0;
+    }
+
+    .profile-info h2 {
+        margin: 0 0 0.5rem 0;
+        font-size: 2rem;
+        font-weight: 700;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .profile-meta {
+        display: flex;
+        gap: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .profile-meta-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+        .profile-meta-item i {
+            font-size: 1.2rem;
+        }
+
+    .info-section {
+        background: white;
+        padding: 2rem;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        margin-bottom: 1.5rem;
+    }
+
+    .section-title {
+        color: var(--primary-red);
+        font-size: 1.3rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 3px solid var(--primary-cream);
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .info-item {
+        background: linear-gradient(135deg, rgba(255, 228, 161, 0.1) 0%, white 100%);
+        padding: 1.25rem;
+        border-radius: 12px;
+        border-left: 4px solid var(--primary-red);
+        transition: all 0.3s ease;
+    }
+
+        .info-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(151, 50, 45, 0.15);
+        }
+
+    .info-label {
+        color: #666;
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+        .info-label i {
+            color: var(--primary-red);
+        }
+
+    .info-value {
+        color: var(--primary-red-dark);
+        font-size: 1.1rem;
+        font-weight: 600;
+    }
+
+    .balance-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .balance-card {
+        background: white;
+        border-radius: 15px;
+        padding: 1.75rem;
+        border: 2px solid transparent;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .balance-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 6px;
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+
+        .balance-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
+        }
+
+            .balance-card:hover::before {
+                width: 100%;
+                opacity: 0.1;
+            }
+
+        .balance-card.pto::before {
+            background: #0d6efd;
+        }
+
+        .balance-card.pto:hover {
+            border-color: #0d6efd;
+        }
+
+        .balance-card.sick::before {
+            background: #198754;
+        }
+
+        .balance-card.sick:hover {
+            border-color: #198754;
+        }
+
+        .balance-card.vacation::before {
+            background: #ffc107;
+        }
+
+        .balance-card.vacation:hover {
+            border-color: #ffc107;
+        }
+
+        .balance-card.overtime::before {
+            background: var(--primary-red);
+        }
+
+        .balance-card.overtime:hover {
+            border-color: var(--primary-red);
+        }
+
+    .balance-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .balance-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: white;
+    }
+
+    .balance-card.pto .balance-icon {
+        background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+    }
+
+    .balance-card.sick .balance-icon {
+        background: linear-gradient(135deg, #198754 0%, #146c43 100%);
+    }
+
+    .balance-card.vacation .balance-icon {
+        background: linear-gradient(135deg, #ffc107 0%, #cc9a06 100%);
+    }
+
+    .balance-card.overtime .balance-icon {
+        background: linear-gradient(135deg, var(--primary-red) 0%, var(--primary-red-dark) 100%);
+    }
+
+    .balance-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin: 0;
+    }
+
+    .balance-stats {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .balance-stat {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem;
+        background: rgba(0, 0, 0, 0.02);
+        border-radius: 8px;
+    }
+
+    .balance-stat-label {
+        color: #666;
+        font-size: 0.9rem;
+    }
+
+    .balance-stat-value {
+        font-weight: 600;
+        font-size: 1.1rem;
+    }
+
+    .balance-card.pto .balance-stat-value {
+        color: #0d6efd;
+    }
+
+    .balance-card.sick .balance-stat-value {
+        color: #198754;
+    }
+
+    .balance-card.vacation .balance-stat-value {
+        color: #ffc107;
+    }
+
+    .balance-card.overtime .balance-stat-value {
+        color: var(--primary-red);
+    }
+
+    .progress-bar-custom {
+        height: 8px;
+        background: rgba(0, 0, 0, 0.05);
+        border-radius: 10px;
+        overflow: hidden;
+        margin-top: 0.75rem;
+    }
+
+    .progress-fill {
+        height: 100%;
+        border-radius: 10px;
+        transition: width 0.5s ease;
+    }
+
+    .footer-info {
+        background: linear-gradient(90deg, var(--primary-cream) 0%, rgba(255, 228, 161, 0.3) 100%);
+        padding: 1rem 1.5rem;
+        border-radius: 10px;
+        border-left: 4px solid var(--primary-red);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 2rem;
+    }
+
+        .footer-info i {
+            color: var(--primary-red);
+            margin-right: 0.5rem;
+        }
+
+    .loading-spinner {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 60vh;
+    }
+
+    .spinner {
+        width: 60px;
+        height: 60px;
+        border: 5px solid var(--primary-cream);
+        border-top: 5px solid var(--primary-red);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @@keyframes spin {
+        0%
+
+    {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+
+    }
+
+    .error-card {
+        background: white;
+        padding: 3rem;
+        border-radius: 15px;
+        text-align: center;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        margin: 3rem auto;
+        max-width: 500px;
+    }
+
+        .error-card i {
+            font-size: 5rem;
+            color: var(--primary-red);
+            margin-bottom: 1.5rem;
+        }
+
+        .error-card h4 {
+            color: var(--primary-red);
+            margin-bottom: 1rem;
+        }
+
+    @@media (max-width: 768px) {
+        .profile-content
+
+    {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .profile-meta {
+        justify-content: center;
+    }
+
+    }
+</style>
+
+<div class="employee-detail-wrapper">
+    @if (isLoading)
+    {
+        <div class="loading-spinner">
+            <div class="spinner"></div>
+            <p class="mt-3 text-muted">Đang tải thông tin nhân viên...</p>
+        </div>
+    }
+    else if (employee == null)
+    {
+        <div class="error-card">
+            <i class="bi bi-exclamation-triangle"></i>
+            <h4>Không tìm thấy thông tin</h4>
+            <p class="text-muted mb-4">Nhân viên này không tồn tại hoặc đã bị xóa khỏi hệ thống.</p>
+            <button class="btn btn-custom-primary" @onclick="GoBack">
+                <i class="bi bi-arrow-left"></i> Quay lại danh sách
+            </button>
+        </div>
+    }
+    else
+    {
+        <button class="back-button" @onclick="GoBack">
+            <i class="bi bi-arrow-left"></i> Quay lại danh sách
+        </button>
+
+        <!-- Profile Header -->
+        <div class="profile-header">
+            <div class="profile-content">
+                <div class="profile-avatar">
+                    @GetInitials(employee.EmpName)
+                </div>
+                <div class="profile-info">
+                    <h2>@employee.EmpName</h2>
+                    <div class="profile-meta">
+                        <div class="profile-meta-item">
+                            <i class="bi bi-hash"></i>
+                            <span>ID: @employee.EmpId</span>
+                        </div>
+                        <div class="profile-meta-item">
+                            <i class="bi bi-person-badge"></i>
+                            <span>@employee.Username</span>
+                        </div>
+                        <div class="profile-meta-item">
+                            <i class="bi bi-building"></i>
+                            <span>@(string.IsNullOrEmpty(employee.DepName) ? "Chưa có phòng ban" : employee.DepName)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Personal Information -->
+        <div class="info-section">
+            <h3 class="section-title">
+                <i class="bi bi-person-lines-fill"></i>
+                Thông tin cá nhân
+            </h3>
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">
+                        <i class="bi bi-calendar-event"></i>
+                        Ngày sinh
+                    </div>
+                    <div class="info-value">@(employee.EmpDob?.ToString("dd/MM/yyyy") ?? "Chưa cập nhật")</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">
+                        <i class="bi bi-telephone"></i>
+                        Số điện thoại
+                    </div>
+                    <div class="info-value">@(string.IsNullOrEmpty(employee.EmpPhoneNumber) ? "Chưa cập nhật" : employee.EmpPhoneNumber)</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">
+                        <i class="bi bi-building-fill"></i>
+                        Phòng ban
+                    </div>
+                    <div class="info-value">@(string.IsNullOrEmpty(employee.DepName) ? "Chưa có" : employee.DepName)</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">
+                        <i class="bi bi-key"></i>
+                        Tên đăng nhập
+                    </div>
+                    <div class="info-value">@employee.Username</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Leave & Overtime Balances -->
+        <div class="info-section">
+            <h3 class="section-title">
+                <i class="bi bi-calendar-check"></i>
+                Thông tin nghỉ phép & làm thêm
+            </h3>
+            <div class="balance-grid">
+                <!-- PTO Card -->
+                <div class="balance-card pto">
+                    <div class="balance-header">
+                        <div class="balance-icon">
+                            <i class="bi bi-calendar-day"></i>
+                        </div>
+                        <h4 class="balance-title" style="color: #0d6efd;">Nghỉ có lương (PTO)</h4>
+                    </div>
+                    <div class="balance-stats">
+                        <div class="balance-stat">
+                            <span class="balance-stat-label">Đã sử dụng</span>
+                            <span class="balance-stat-value">@employee.Pto.Used ngày</span>
+                        </div>
+                        <div class="balance-stat">
+                            <span class="balance-stat-label">Còn lại</span>
+                            <span class="balance-stat-value">@employee.Pto.Remaining ngày</span>
+                        </div>
+                        <div class="balance-stat">
+                            <span class="balance-stat-label">Tổng cộng</span>
+                            <span class="balance-stat-value">@employee.Pto.Total ngày</span>
+                        </div>
+                    </div>
+                    <div class="progress-bar-custom">
+                        <div class="progress-fill" style="width: @GetPercentage(employee.Pto.Used, employee.Pto.Total)%; background: #0d6efd;"></div>
+                    </div>
+                </div>
+
+                <!-- Sick Leave Card -->
+                <div class="balance-card sick">
+                    <div class="balance-header">
+                        <div class="balance-icon">
+                            <i class="bi bi-heart-pulse"></i>
+                        </div>
+                        <h4 class="balance-title" style="color: #198754;">Nghỉ ốm</h4>
+                    </div>
+                    <div class="balance-stats">
+                        <div class="balance-stat">
+                            <span class="balance-stat-label">Đã sử dụng</span>
+                            <span class="balance-stat-value">@employee.Sick.Used ngày</span>
+                        </div>
+                        <div class="balance-stat">
+                            <span class="balance-stat-label">Còn lại</span>
+                            <span class="balance-stat-value">@employee.Sick.Remaining ngày</span>
+                        </div>
+                        <div class="balance-stat">
+                            <span class="balance-stat-label">Tổng cộng</span>
+                            <span class="balance-stat-value">@employee.Sick.Total ngày</span>
+                        </div>
+                    </div>
+                    <div class="progress-bar-custom">
+                        <div class="progress-fill" style="width: @GetPercentage(employee.Sick.Used, employee.Sick.Total)%; background: #198754;"></div>
+                    </div>
+                </div>
+
+                <!-- Vacation Card -->
+                <div class="balance-card vacation">
+                    <div class="balance-header">
+                        <div class="balance-icon">
+                            <i class="bi bi-sun"></i>
+                        </div>
+                        <h4 class="balance-title" style="color: #ffc107;">Nghỉ phép</h4>
+                    </div>
+                    <div class="balance-stats">
+                        <div class="balance-stat">
+                            <span class="balance-stat-label">Đã sử dụng</span>
+                            <span class="balance-stat-value">@employee.Vacation.Used ngày</span>
+                        </div>
+                        <div class="balance-stat">
+                            <span class="balance-stat-label">Còn lại</span>
+                            <span class="balance-stat-value">@employee.Vacation.Remaining ngày</span>
+                        </div>
+                        <div class="balance-stat">
+                            <span class="balance-stat-label">Tổng cộng</span>
+                            <span class="balance-stat-value">@employee.Vacation.Total ngày</span>
+                        </div>
+                    </div>
+                    <div class="progress-bar-custom">
+                        <div class="progress-fill" style="width: @GetPercentage(employee.Vacation.Used, employee.Vacation.Total)%; background: #ffc107;"></div>
+                    </div>
+                </div>
+
+                <!-- Overtime Card -->
+                <div class="balance-card overtime">
+                    <div class="balance-header">
+                        <div class="balance-icon">
+                            <i class="bi bi-clock-history"></i>
+                        </div>
+                        <h4 class="balance-title" style="color: var(--primary-red);">Làm thêm giờ</h4>
+                    </div>
+                    <div class="balance-stats">
+                        <div class="balance-stat">
+                            <span class="balance-stat-label">Đã sử dụng</span>
+                            <span class="balance-stat-value">@employee.Overtime.Used giờ</span>
+                        </div>
+                        <div class="balance-stat">
+                            <span class="balance-stat-label">Còn lại</span>
+                            <span class="balance-stat-value">@employee.Overtime.Remaining giờ</span>
+                        </div>
+                        <div class="balance-stat">
+                            <span class="balance-stat-label">Tổng cộng</span>
+                            <span class="balance-stat-value">@employee.Overtime.Total giờ</span>
+                        </div>
+                    </div>
+                    <div class="progress-bar-custom">
+                        <div class="progress-fill" style="width: @GetPercentage(employee.Overtime.Used, employee.Overtime.Total)%; background: var(--primary-red);"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer Info -->
+        <div class="footer-info">
+            <span>
+                <i class="bi bi-clock"></i>
+                Cập nhật lần cuối: <strong>@(employee.LastUpdated?.ToString("dd/MM/yyyy HH:mm") ?? "Chưa có thông tin")</strong>
+            </span>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private EmployeeViewDTO? employee;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var client = HttpFactory.CreateClient("ApiClient");
+        var response = await client.GetAsync($"api/employee/view/{Id}");
+        if (response.IsSuccessStatusCode)
+        {
+            employee = await response.Content.ReadFromJsonAsync<EmployeeViewDTO>();
+        }
+        isLoading = false;
+    }
+
+    private void GoBack() => Nav.NavigateTo("/employees/group");
+
+    private string GetInitials(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            return "?";
+
+        var words = name.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (words.Length == 1)
+            return words[0].Substring(0, Math.Min(2, words[0].Length)).ToUpper();
+
+        return (words[0][0].ToString() + words[^1][0].ToString()).ToUpper();
+    }
+
+    private double GetPercentage(double used, double total)
+    {
+        if (total == 0) return 0;
+        return Math.Min((used / total) * 100, 100);
+    }
+}

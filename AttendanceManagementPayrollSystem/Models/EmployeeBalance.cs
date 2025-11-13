@@ -7,8 +7,6 @@ namespace AttendanceManagementPayrollSystem.Models;
 
 public partial class EmployeeBalance
 {
-    public int Id { get; set; }
-
     public int EmpId { get; set; }
 
     public string Pto { get; set; }

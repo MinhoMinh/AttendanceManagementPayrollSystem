@@ -7,5 +7,7 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
         Task<IEnumerable<Department>> GetAllAsync();
         Task<Department?> GetByIdAsync(int id);
         Task<IEnumerable<Employee>> GetEmployees(int headId);
+        Task<IEnumerable<Department>> GetAllDepartmentExceptManager();
+
     }
 }

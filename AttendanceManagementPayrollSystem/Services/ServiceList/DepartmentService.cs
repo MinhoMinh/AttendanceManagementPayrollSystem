@@ -1,4 +1,5 @@
 ﻿using AttendanceManagementPayrollSystem.DTO;
+using AttendanceManagementPayrollSystem.Models;
 
 namespace AttendanceManagementPayrollSystem.Services.ServiceList
 {
@@ -7,5 +8,6 @@ namespace AttendanceManagementPayrollSystem.Services.ServiceList
         Task<IEnumerable<DepartmentDTO>> GetAllAsync();
         Task<DepartmentDTO?> GetByIdAsync(int id);
         Task<IEnumerable<EmployeeBasicDTO>> GetEmployeesAsync(int headId);
+        Task<IEnumerable<DepartmentDTO>> GetAllDepartmentExceptManager();
     }
 }

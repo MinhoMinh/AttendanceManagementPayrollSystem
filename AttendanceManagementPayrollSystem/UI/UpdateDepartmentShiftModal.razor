@@ -1,0 +1,141 @@
+﻿@using AttendanceManagementPayrollSystem.DTO
+@inject IHttpClientFactory HttpFactory
+
+@if (IsVisible)
+{
+    <div class="update-modal-backdrop" @onclick="OnBackdropClick">
+        <div class="update-modal-dialog" @onclick:stopPropagation="true">
+            <div class="update-modal-header">
+                <div>
+                    <h5 class="mb-0"><i class="bi bi-building me-2"></i> Cập nhật Lịch Phòng Ban</h5>
+                </div>
+                <button class="btn-close-modal" @onclick="Close" aria-label="Đóng">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+
+            <div class="update-modal-body">
+                <table class="table table-bordered table-sm">
+                    <thead>
+                        <tr>
+                            <th>Phòng ban</th>
+                            <th>Shift</th>
+                            <th>Active</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (DepartmentShifts != null)
+                        {
+                            @foreach (var item in DepartmentShifts)
+                            {
+                                <tr>
+                                    <td>@item.DepName</td>
+                                    <td>
+                                        <select class="form-select"
+                                                value="@item.ShiftId"
+                                                @onchange="@(e => item.ShiftId = int.Parse(e.Value.ToString()!))">
+                                            @foreach (var shift in Shifts)
+                                            {
+                                                <option value="@shift.ShiftId">@shift.ShiftName</option>
+                                            }
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input type="checkbox"
+                                               class="form-check-input"
+                                               checked="@item.IsActive"
+                                               @onchange="@(e => item.IsActive = e.Value != null && (bool)e.Value)" />
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="update-modal-footer">
+                <button class="btn btn-secondary" @onclick="Close" disabled="@isSaving">
+                    <i class="bi bi-x-circle me-1"></i> Hủy
+                </button>
+                <button class="btn btn-primary" @onclick="SaveChanges" disabled="@isSaving">
+                    @if (isSaving)
+                    {
+                        <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+                        <span>Đang lưu...</span>
+                    }
+                    else
+                    {
+                        <i class="bi bi-check-lg me-1"></i> 
+                        <span>Lưu thay đổi</span>
+                    }
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public bool IsVisible { get; set; }
+    [Parameter] public EventCallback<bool> IsVisibleChanged { get; set; }
+
+    [Parameter] public List<DepartmentWeeklyShiftViewDTO>? DepartmentShifts { get; set; }
+    [Parameter] public List<WeeklyShiftViewDTO>? Shifts { get; set; }
+
+    [Parameter] public EventCallback OnSaved { get; set; }
+
+    private bool isSaving = false;
+
+    private async Task SaveChanges()
+    {
+        if (DepartmentShifts == null || !DepartmentShifts.Any())
+            return;
+
+        isSaving = true;
+        try
+        {
+            var client = HttpFactory.CreateClient("ApiClient");
+            foreach (var item in DepartmentShifts)
+            {
+                var updateDto = new DepartmentWeeklyShiftUpdateDTO
+                {
+                    DeptShiftId = item.DeptShiftId,
+                    DepId = item.DepId,
+                    ShiftId = item.ShiftId,
+                    IsActive = item.IsActive
+                };
+
+                var response = await client.PutAsJsonAsync("api/departmentweeklyshift", updateDto);
+                if (!response.IsSuccessStatusCode)
+                {
+                    var msg = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"❌ Lỗi update DeptShiftId={item.DeptShiftId}: {msg}");
+                }
+            }
+
+            await Close();
+            await OnSaved.InvokeAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ Exception: {ex.Message}");
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private async Task Close()
+    {
+        IsVisible = false;
+        await IsVisibleChanged.InvokeAsync(false);
+    }
+
+    private async Task OnBackdropClick()
+    {
+        if (!isSaving)
+        {
+            await Close();
+        }
+    }
+}

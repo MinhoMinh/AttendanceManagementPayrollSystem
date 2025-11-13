@@ -12,6 +12,37 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
             
         }
 
+        public async Task<DailyShift> AddShiftAsync(DailyShift dailyShift)
+        {
+            await _context.DailyShifts.AddAsync(dailyShift);
+            await _context.SaveChangesAsync();
+            return dailyShift;
+        }
+
+        public async Task<List<DailyShift>> GetAllDailyShiftAsync()
+        {
+            return await _context.DailyShifts.ToListAsync();
+        }
+
+        public async Task<List<WeeklyShift>> GetAllWeeklyShiftAsync()
+        {
+            return await _context.WeeklyShifts
+                .Include(w => w.MonDailyShift)
+                .Include(w => w.TueDailyShift)
+                .Include(w => w.WedDailyShift)
+                .Include(w => w.ThuDailyShift)
+                .Include(w => w.FriDailyShift)
+                .Include(w => w.SatDailyShift)
+                .Include(w => w.SunDailyShift)
+                .ToListAsync();
+        }
+
+        public async Task<DailyShift?> GetDailyShiftByIdAsync(int id)
+        {
+            return await _context.DailyShifts
+                .FirstOrDefaultAsync(s => s.ShiftId == id);
+        }
+
         public async Task<WeeklyShift?> GetWeeklyShift(int empId)
         {
             var shift = await _context.Employees
@@ -33,6 +64,11 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
                 await _context.Entry(shift).Reference(s => s.SunDailyShift).LoadAsync();
             }
             return shift;
+        }
+
+        public async Task<WeeklyShift?> GetWeeklyShiftById(int id)
+        {
+            return await this._context.WeeklyShifts.FindAsync(id);
         }
 
         public async Task<Dictionary<int, WeeklyShift?>> GetWeeklyShifts(IEnumerable<int> empIds)
@@ -82,6 +118,10 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
                 .ToDictionary(x => x.EmpId, x => x.Shift);
         }
 
-
+        public async Task UpdateWeeklyShiftAsync(WeeklyShift weeklyShift)
+        {
+            this._context.WeeklyShifts.Update(weeklyShift);
+            await this._context.SaveChangesAsync();
+        }
     }
 }

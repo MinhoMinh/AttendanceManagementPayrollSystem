@@ -19,7 +19,7 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
         public async Task<List<int>> GetActiveIds()
         {
             DateOnly now = DateOnly.FromDateTime(DateTime.Now);
-            return await _context.InsuranceRates.Where(i => i.EffectiveFrom <= now && (i.EffectiveTo == null || i.EffectiveTo >= now) && i.IsActive == true)
+            return await _context.InsuranceRates.Where(i => i.EffectiveFrom <= now && i.IsActive == true)
                                           .Select(r => r.RateSetId)
                                           .ToListAsync();
 
@@ -28,7 +28,7 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
         public async Task<List<InsuranceRateDTO>> GetActiveInsuranceRateDTO()
         {
             DateOnly now = DateOnly.FromDateTime(DateTime.Now);
-            var list = await _context.InsuranceRates.Where(i => i.EffectiveFrom <= now && (i.EffectiveTo == null || i.EffectiveTo >= now) && i.IsActive == true)
+            var list = await _context.InsuranceRates.Where(i => i.EffectiveFrom <= now && i.IsActive == true)
                                                    .Select(i => new InsuranceRateDTO
                                                    {
                                                        CapRule = i.CapRule,
@@ -42,7 +42,6 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
                                                        TypeName = i.TypeName,
                                                        Category = i.Category
                                                    }).ToListAsync();
-            list.Reverse();
             return list;
         }
 

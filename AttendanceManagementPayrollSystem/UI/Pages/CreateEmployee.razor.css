@@ -1,0 +1,10 @@
+﻿body {
+}
+.validation-message {
+    color: red;
+    font-size: 0.875rem; /* nhỏ hơn một chút */
+    margin-top: 0.25rem;
+}
+
+
+

@@ -9,6 +9,7 @@ namespace AttendanceManagementPayrollSystem.DTO
 	}
 
 	public class EmployeeBasicDTO
+
 	{
         public int EmpId { get; set; }
         public string EmpName { get; set; }

@@ -122,5 +122,189 @@ namespace AttendanceManagementPayrollSystem.Services.ServiceList
             return result;
 
         }
+
+        public async Task<DailyShiftAfterCreateDTO> CreateAsync(DailyShiftCreateDTO dto)
+        {
+            string shiftString=string.Join("|", dto.Segments.Select(s=>$"{s.StartTime:hh\\:mm}-{s.EndTime:hh\\:mm}#{s.WorkUnit}c"));
+
+            decimal totalWorkUnit = dto.Segments.Sum(s => s.WorkUnit);
+
+            string shiftHours = string.Join("|", dto.Segments.Select(s => (s.EndTime - s.StartTime).TotalHours.ToString("0.00")));
+
+            var entity = new DailyShift
+            {
+                ShiftName = dto.ShiftName,
+                ShiftDescription = dto.ShiftDescription,
+                ShiftString = shiftString,
+                ShiftWorkUnit = totalWorkUnit,
+                ShiftHours = shiftHours
+            };
+
+            await this._shiftRepo.AddShiftAsync(entity);
+
+            return new DailyShiftAfterCreateDTO
+            {
+                ShiftId = entity.ShiftId,
+                ShiftName = entity.ShiftName,
+                ShiftDescription = entity.ShiftDescription,
+                ShiftString = entity.ShiftString,
+                ShiftWorkUnit = entity.ShiftWorkUnit,
+                ShiftHours = shiftHours
+            };
+        }
+
+        public async Task<List<DailyShiftViewDTO>> GetAllForViewAsync()
+        {
+            var shifts = await this._shiftRepo.GetAllDailyShiftAsync();
+            var result = new List<DailyShiftViewDTO>();
+
+            foreach (var s in shifts)
+            {
+                // Tách ShiftString thành segments
+                var shiftHoursArray = s.ShiftHours?.Split('|', StringSplitOptions.RemoveEmptyEntries) ?? new string[0];
+
+                var segments = s.ShiftString.Split('|', StringSplitOptions.RemoveEmptyEntries)
+                    .Select((seg, index) =>
+                    {
+                        var parts = seg.Split('#');
+                        var timeRange = parts[0].Split('-');
+                        var workUnit = decimal.Parse(parts[1].Replace("c", ""));
+                        var workHours = index < shiftHoursArray.Length ? decimal.Parse(shiftHoursArray[index]) : 0;
+
+                        return new ShiftDto
+                        {
+                            StartTime = TimeSpan.Parse(timeRange[0]),
+                            EndTime = TimeSpan.Parse(timeRange[1]),
+                            WorkUnits = workUnit,
+                            WorkHours = workHours
+                        };
+                    })
+                    .ToList();
+
+                result.Add(new DailyShiftViewDTO
+                {
+                    ShiftId = s.ShiftId,
+                    ShiftName = s.ShiftName,
+                    ShiftDescription = s.ShiftDescription,
+                    ShiftString = s.ShiftString,
+                    ShiftWorkUnit = s.ShiftWorkUnit,
+                    Segments = segments
+                });
+            }
+
+            return result;
+        }
+
+        public async Task<DailyShiftViewDTO?> GetByIdAsync(int id)
+        {
+            var s = await _shiftRepo.GetDailyShiftByIdAsync(id);
+            if (s == null) return null;
+
+            // Tách ShiftHours từ DB
+            var shiftHoursArray = s.ShiftHours?.Split('|', StringSplitOptions.RemoveEmptyEntries) ?? new string[0];
+
+            // Parse ShiftString -> Segments
+            var segments = s.ShiftString.Split('|', StringSplitOptions.RemoveEmptyEntries)
+                .Select((seg, index) =>
+                {
+                    var parts = seg.Split('#');
+                    var timeRange = parts[0].Split('-');
+                    var workUnit = decimal.Parse(parts[1].Replace("c", ""));
+                    var workHours = index < shiftHoursArray.Length ? decimal.Parse(shiftHoursArray[index]) : 0;
+
+                    return new ShiftDto
+                    {
+                        StartTime = TimeSpan.Parse(timeRange[0]),
+                        EndTime = TimeSpan.Parse(timeRange[1]),
+                        WorkUnits = workUnit,
+                        WorkHours = workHours
+                    };
+                }).ToList();
+
+            return new DailyShiftViewDTO
+            {
+                ShiftId = s.ShiftId,
+                ShiftName = s.ShiftName,
+                ShiftDescription = s.ShiftDescription,
+                ShiftString = s.ShiftString,
+                ShiftWorkUnit = s.ShiftWorkUnit,
+                Segments = segments
+            };
+        }
+
+        public async Task<List<WeeklyShiftViewDTO>> GetAllWeeklyShiftAsync()
+        {
+            var shifts = await _shiftRepo.GetAllWeeklyShiftAsync();
+
+            return shifts.Select(w => new WeeklyShiftViewDTO
+            {
+                ShiftId = w.ShiftId,
+                ShiftName = w.ShiftName,
+                ShiftDescription = w.ShiftDescription,
+
+                MonDailyShift = MapDailyShiftView(w.MonDailyShift),
+                TueDailyShift = MapDailyShiftView(w.TueDailyShift),
+                WedDailyShift = MapDailyShiftView(w.WedDailyShift),
+                ThuDailyShift = MapDailyShiftView(w.ThuDailyShift),
+                FriDailyShift = MapDailyShiftView(w.FriDailyShift),
+                SatDailyShift = MapDailyShiftView(w.SatDailyShift),
+                SunDailyShift = MapDailyShiftView(w.SunDailyShift)
+            }).ToList();
+        }
+
+        private static DailyShiftViewDTO? MapDailyShiftView(DailyShift? d)
+        {
+            if (d == null) return null;
+
+            // Parse ShiftString và ShiftHours nếu có
+            var shiftHoursArray = d.ShiftHours?.Split('|', StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>();
+
+            var segments = (d.ShiftString ?? string.Empty)
+                .Split('|', StringSplitOptions.RemoveEmptyEntries)
+                .Select((seg, index) =>
+                {
+                    var parts = seg.Split('#');
+                    var timeRange = parts[0].Split('-');
+                    var workUnit = decimal.Parse(parts[1].Replace("c", ""));
+                    var workHours = index < shiftHoursArray.Length ? decimal.Parse(shiftHoursArray[index]) : 0;
+
+                    return new ShiftDto
+                    {
+                        StartTime = TimeSpan.Parse(timeRange[0]),
+                        EndTime = TimeSpan.Parse(timeRange[1]),
+                        WorkUnits = workUnit,
+                        WorkHours = workHours
+                    };
+                }).ToList();
+
+            return new DailyShiftViewDTO
+            {
+                ShiftId = d.ShiftId,
+                ShiftName = d.ShiftName,
+                ShiftDescription = d.ShiftDescription,
+                ShiftString = d.ShiftString,
+                ShiftWorkUnit = d.ShiftWorkUnit,
+                Segments = segments
+            };
+        }
+
+        public async Task UpdateWeeklyShiftAsync(int id, WeeklyShiftCreateUpdateDTO dto)
+        {
+            var entity = await this._shiftRepo.GetWeeklyShiftById(id);
+            if(entity==null) throw new Exception("Weekly shift not found");
+
+            entity.ShiftName = dto.ShiftName;
+            entity.ShiftDescription = dto.ShiftDescription;
+
+            entity.MonDailyShiftId = dto.MonDailyShiftId;
+            entity.TueDailyShiftId = dto.TueDailyShiftId;
+            entity.WedDailyShiftId = dto.WedDailyShiftId;
+            entity.ThuDailyShiftId = dto.ThuDailyShiftId;
+            entity.FriDailyShiftId = dto.FriDailyShiftId;
+            entity.SatDailyShiftId = dto.SatDailyShiftId;
+            entity.SunDailyShiftId = dto.SunDailyShiftId;
+
+            await this._shiftRepo.UpdateWeeklyShiftAsync(entity);
+        }
     }
 }

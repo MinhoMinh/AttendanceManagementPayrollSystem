@@ -1,0 +1,273 @@
+﻿@page "/dependent-management"
+@using AttendanceManagementPayrollSystem.DTO
+@inject IHttpClientFactory HttpFactory
+@inject NavigationManager Navigation
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+
+<PageTitle>Quản lý Người phụ thuộc</PageTitle>
+
+<div class="container-fluid py-4 custom-bg">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h3 class="mb-3 custom-text-accent">Quản lý Người phụ thuộc</h3>
+
+            <div class="card shadow-sm custom-card">
+                <div class="card-body">
+                    <div class="row align-items-end">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold custom-text-accent">Chọn nhân viên</label>
+                            <select class="form-select" @bind="selectedEmployeeId" @bind:after="OnEmployeeChanged">
+                                <option value="0">-- Chọn nhân viên --</option>
+                                @foreach (var emp in employees)
+                                {
+                                    <option value="@emp.EmpId">@emp.EmpName</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            @if (selectedEmployeeId > 0)
+                            {
+                                <button class="btn custom-btn-accent" @onclick="OpenAddModal">
+                                    <i class="bi bi-plus-circle me-2"></i>Thêm người phụ thuộc
+                                </button>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border custom-spinner-accent" role="status">
+                <span class="visually-hidden">Đang tải...</span>
+            </div>
+        </div>
+    }
+    else if (selectedEmployeeId > 0 && currentEmployeeData != null)
+    {
+        <div class="row">
+            <div class="col-12">
+                <div class="card shadow-sm custom-card">
+                    <div class="card-header custom-header-accent">
+                        <h5 class="mb-0">Danh sách người phụ thuộc - @currentEmployeeData.EmployeeName</h5>
+                    </div>
+                    <div class="card-body">
+                        @if (currentEmployeeData.Dependents.Any())
+                        {
+                            <div class="table-responsive">
+                                <table class="table table-hover custom-table">
+                                    <thead class="custom-table-header">
+                                        <tr>
+                                            <th>Họ tên</th>
+                                            <th>Quan hệ</th>
+                                            <th>Ngày sinh</th>
+                                            <th>Giới tính</th>
+                                            <th>CMND/CCCD</th>
+                                            <th>Giảm trừ thuế</th>
+                                            <th>Ngày hiệu lực</th>
+                                            <th>Ngày hết hạn</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var dep in currentEmployeeData.Dependents)
+                                        {
+                                            <tr>
+                                                <td>@dep.FullName</td>
+                                                <td>@dep.Relationship</td>
+                                                <td>@(dep.DateOfBirth?.ToString("dd/MM/yyyy") ?? "N/A")</td>
+                                                <td>
+                                                    <span class="badge @(dep.Gender == "M" ? "bg-info" : "bg-pink")">
+                                                        @(dep.Gender == "M" ? "Nam" : "Nữ")
+                                                    </span>
+                                                </td>
+                                                <td>@dep.NationalId</td>
+                                                <td>
+                                                    @if (dep.IsTaxDependent)
+                                                    {
+                                                        <span class="badge bg-success">Có</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge bg-secondary">Không</span>
+                                                    }
+                                                </td>
+                                                <td>@dep.EffectiveStartDate.ToString("dd/MM/yyyy")</td>
+                                                <td>@(dep.EffectiveEndDate?.ToString("dd/MM/yyyy") ?? "Không giới hạn")</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="alert custom-alert-info text-center">
+                                <i class="bi bi-info-circle me-2"></i>
+                                Nhân viên này chưa có người phụ thuộc
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<AddDependentModal @ref="addDependentModal"
+                   EmployeeId="selectedEmployeeId"
+                   OnDependentAdded="OnDependentAdded" />
+
+<style>
+    .bg-pink {
+        background-color: #e91e63 !important;
+    }
+
+    /* Custom background color */
+    .custom-bg {
+        background-color: #FFE4A1;
+        min-height: 100vh;
+    }
+
+    /* Custom accent color for text */
+    .custom-text-accent {
+        color: #97322D !important;
+    }
+
+    /* Custom card styling */
+    .custom-card {
+        border: 1px solid #97322D;
+        background-color: rgba(255, 255, 255, 0.9);
+    }
+
+    /* Custom header accent */
+    .custom-header-accent {
+        background-color: #97322D !important;
+        color: white !important;
+    }
+
+    /* Custom button accent */
+    .custom-btn-accent {
+        background-color: #97322D !important;
+        border-color: #97322D !important;
+        color: white !important;
+    }
+
+        .custom-btn-accent:hover {
+            background-color: #7a2924 !important; /* Slightly darker shade for hover */
+            border-color: #7a2924 !important;
+        }
+
+    /* Custom spinner accent */
+    .custom-spinner-accent {
+        color: #97322D !important;
+    }
+
+    /* Custom table styling */
+    .custom-table {
+        background-color: rgba(255, 255, 255, 0.9);
+    }
+
+    .custom-table-header {
+        background-color: #FFE4A1 !important;
+        color: #97322D !important;
+    }
+
+        .custom-table-header th {
+            border-bottom: 2px solid #97322D;
+        }
+
+    /* Custom alert styling */
+    .custom-alert-info {
+        background-color: rgba(255, 228, 161, 0.8) !important; /* Light version of #FFE4A1 */
+        border-color: #97322D !important;
+        color: #97322D !important;
+    }
+</style>
+
+@code {
+    private List<EmployeeBasicDTO> employees = new();
+    private List<EmployeeWithDependentsDTO> allDependentsData = new();
+    private EmployeeWithDependentsDTO? currentEmployeeData = null;
+    private int selectedEmployeeId = 0;
+    private bool isLoading = false;
+    private AddDependentModal? addDependentModal;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadEmployees();
+        await LoadAllDependents();
+    }
+
+    private async Task LoadEmployees()
+    {
+        try
+        {
+            var client = HttpFactory.CreateClient("ApiClient");
+            employees = await client.GetFromJsonAsync<List<EmployeeBasicDTO>>("api/employee/basic") ?? new();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading employees: {ex.Message}");
+        }
+    }
+
+    private async Task LoadAllDependents()
+    {
+        try
+        {
+            var client = HttpFactory.CreateClient("ApiClient");
+            allDependentsData = await client.GetFromJsonAsync<List<EmployeeWithDependentsDTO>>("api/employeedependent/grouped") ?? new();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading dependents: {ex.Message}");
+        }
+    }
+
+    private async Task OnEmployeeChanged()
+    {
+        if (selectedEmployeeId > 0)
+        {
+            isLoading = true;
+            await Task.Delay(100); // Small delay for UI feedback
+
+            currentEmployeeData = allDependentsData.FirstOrDefault(x => x.EmployeeId == selectedEmployeeId);
+
+            // If not found in cached data, create empty structure
+            if (currentEmployeeData == null)
+            {
+                var employee = employees.FirstOrDefault(e => e.EmpId == selectedEmployeeId);
+                if (employee != null)
+                {
+                    currentEmployeeData = new EmployeeWithDependentsDTO
+                    {
+                        EmployeeId = employee.EmpId,
+                        EmployeeName = employee.EmpName,
+                        Dependents = new List<EmployeeDependentDTO>()
+                    };
+                }
+            }
+
+            isLoading = false;
+        }
+        else
+        {
+            currentEmployeeData = null;
+        }
+    }
+
+    private void OpenAddModal()
+    {
+        addDependentModal?.Open();
+    }
+
+    private async Task OnDependentAdded()
+    {
+        await LoadAllDependents();
+        await OnEmployeeChanged();
+    }
+}

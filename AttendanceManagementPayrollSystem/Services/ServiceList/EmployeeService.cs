@@ -7,5 +7,13 @@ namespace AttendanceManagementPayrollSystem.Services.ServiceList
     {
         Task CreateAsync(EmployeeCreateDTO dto);
 
+        Task<List<EmployeeBasicDTO>> GetAllEmployeeBasic();
+
+        Task<IEnumerable<EmployeeViewDTO>> GetAllEmployeesAsync();
+
+        Task<EmployeeViewDTO> GetEmployeeViewByIdAsync(int id);
+
+
+        Task<IEnumerable<EmployeeGroupByDepartmentDTO>> GetEmployeesGroupedByDepartmentAsync();
     }
 }

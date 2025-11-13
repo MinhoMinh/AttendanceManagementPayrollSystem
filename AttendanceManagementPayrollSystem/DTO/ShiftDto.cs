@@ -50,6 +50,21 @@
         public List<ShiftDto> ShiftDtos { get; set; } = new();
     }
 
+    public class DailyShiftAfterCreateDTO
+    {
+        public int ShiftId { get; set; }
+
+        public string ShiftName { get; set; }
+
+        public string ShiftString { get; set; }
+
+        public string ShiftDescription { get; set; }
+
+        public decimal? ShiftWorkUnit { get; set; }
+
+        public string ShiftHours { get; set; }
+    }
+
     public class ShiftDto
     {
         public TimeSpan StartTime { get; set; }

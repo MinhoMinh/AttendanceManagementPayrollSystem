@@ -1,0 +1,419 @@
+﻿@using AttendanceManagementPayrollSystem.DTO
+@inject IHttpClientFactory HttpFactory
+
+<style>
+    :root {
+        --primary-cream: #FFE4A1;
+        --primary-red: #97322D;
+        --primary-red-dark: #7A2823;
+        --primary-red-light: #B23D37;
+    }
+
+    .update-modal-backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: transparent;
+        backdrop-filter: blur(5px);
+        z-index: 1050;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: fadeIn 0.3s ease;
+    }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+    }
+
+    @@keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(50px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .update-modal-dialog {
+        background: white;
+        border-radius: 15px;
+        width: 90%;
+        max-width: 750px;
+        max-height: 90vh;
+        overflow: hidden;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        display: flex;
+        flex-direction: column;
+        animation: slideUp 0.3s ease;
+        border: 3px solid var(--primary-cream);
+    }
+
+    .update-modal-header {
+        background: linear-gradient(135deg, var(--primary-red) 0%, var(--primary-red-dark) 100%);
+        color: var(--primary-cream);
+        padding: 1.5rem 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-radius: 12px 12px 0 0;
+        box-shadow: 0 4px 15px rgba(151, 50, 45, 0.3);
+    }
+
+        .update-modal-header h5 {
+            font-weight: 700;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            font-size: 1.4rem;
+        }
+
+        .update-modal-header small {
+            opacity: 0.9;
+            font-size: 0.9rem;
+        }
+
+    .update-modal-body {
+        background: linear-gradient(135deg, #FFF8E7 0%, #FFF 50%);
+        padding: 2rem;
+        overflow-y: auto;
+        flex: 1;
+    }
+
+        .update-modal-body::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .update-modal-body::-webkit-scrollbar-track {
+            background: var(--primary-cream);
+            border-radius: 10px;
+        }
+
+        .update-modal-body::-webkit-scrollbar-thumb {
+            background: var(--primary-red);
+            border-radius: 10px;
+        }
+
+    .update-modal-footer {
+        background: white;
+        padding: 1.25rem 2rem;
+        border-top: 3px solid var(--primary-cream);
+        display: flex;
+        justify-content: flex-end;
+        gap: 1rem;
+    }
+
+    .info-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 3px 10px rgba(151, 50, 45, 0.1);
+        border: 2px solid var(--primary-cream);
+        transition: all 0.3s ease;
+    }
+
+        .info-card:hover {
+            border-color: var(--primary-red);
+            box-shadow: 0 5px 20px rgba(151, 50, 45, 0.2);
+        }
+
+    .info-card-header {
+        font-weight: 700;
+        font-size: 1.1rem;
+        margin-bottom: 1.25rem;
+        color: var(--primary-red);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .day-item {
+        background: linear-gradient(135deg, rgba(255, 228, 161, 0.15) 0%, white 100%);
+        border: 2px solid var(--primary-cream);
+        border-radius: 12px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+    }
+
+        .day-item:hover {
+            border-color: var(--primary-red);
+            box-shadow: 0 4px 15px rgba(151, 50, 45, 0.15);
+            transform: translateY(-2px);
+        }
+
+    .day-label {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--primary-red-dark);
+    }
+
+    .form-select, .form-control {
+        border: 2px solid var(--primary-cream);
+        border-radius: 8px;
+        padding: 0.6rem 0.75rem;
+        transition: all 0.3s ease;
+        font-size: 0.95rem;
+    }
+
+        .form-select:focus, .form-control:focus {
+            border-color: var(--primary-red);
+            box-shadow: 0 0 0 0.2rem rgba(151, 50, 45, 0.15);
+            outline: none;
+        }
+
+    .btn-close-modal {
+        background: rgba(255, 228, 161, 0.2);
+        border: 2px solid var(--primary-cream);
+        color: var(--primary-cream);
+        font-size: 1.25rem;
+        cursor: pointer;
+        padding: 0.4rem 0.7rem;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        font-weight: bold;
+    }
+
+        .btn-close-modal:hover {
+            background: rgba(255, 228, 161, 0.4);
+            transform: rotate(90deg);
+            border-color: white;
+        }
+</style>
+
+@if (IsVisible && WeekShift != null)
+{
+    <div class="update-modal-backdrop" @onclick="OnBackdropClick">
+        <div class="update-modal-dialog" @onclick:stopPropagation="true">
+            <!-- Header -->
+            <div class="update-modal-header">
+                <div>
+                    <h5 class="mb-0">
+                        <i class="bi bi-calendar-week me-2"></i>
+                        Cập nhật Lịch Tuần
+                    </h5>
+                    <small style="opacity: 0.85;">@WeekShift.ShiftName</small>
+                </div>
+                <button class="btn-close-modal" @onclick="Close" aria-label="Đóng">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+
+            <!-- Body -->
+            <div class="update-modal-body">
+                <!-- Thông tin cơ bản -->
+                <div class="info-card">
+                    <div class="info-card-header">
+                        <i class="bi bi-info-circle"></i>
+                        Thông tin cơ bản
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">
+                            Tên ca <span class="text-danger">*</span>
+                        </label>
+                        <input type="text"
+                               class="form-control"
+                               @bind="updateDto.ShiftName"
+                               placeholder="Nhập tên ca" />
+                        @if (string.IsNullOrWhiteSpace(updateDto.ShiftName))
+                        {
+                            <small class="text-danger">
+                                <i class="bi bi-exclamation-circle me-1"></i>
+                                Tên ca là bắt buộc
+                            </small>
+                        }
+                    </div>
+
+                    <div>
+                        <label class="form-label">Mô tả</label>
+                        <textarea class="form-control"
+                                  rows="2"
+                                  @bind="updateDto.ShiftDescription"
+                                  placeholder="Mô tả lịch tuần (tùy chọn)"></textarea>
+                    </div>
+                </div>
+
+                <!-- Lịch tuần -->
+                <div class="info-card">
+                    <div class="info-card-header">
+                        <i class="bi bi-calendar3"></i>
+                        Chọn ca làm việc cho từng ngày
+                    </div>
+
+                    @foreach (var day in weeklyDays)
+                    {
+                        <div class="day-item">
+                            <div class="day-label">
+                                <i class="bi bi-calendar-day text-muted"></i>
+                                @day.Value
+                            </div>
+                            <select class="form-select"
+                                    value="@GetDailyShiftId(day.Key)"
+                                    @onchange="@(e => SetDailyShiftId(day.Key, string.IsNullOrEmpty(e.Value?.ToString()) ? null : int.Parse(e.Value.ToString())))">
+                                <option value="">-- Không có ca --</option>
+                                @if (DailyShifts != null)
+                                {
+                                    @foreach (var ds in DailyShifts)
+                                    {
+                                        <option value="@ds.ShiftId">@ds.ShiftName</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="update-modal-footer">
+                <button class="btn btn-secondary" @onclick="Close" disabled="@isSaving">
+                    <i class="bi bi-x-circle me-1"></i> Hủy
+                </button>
+                <button class="btn btn-primary"
+                        @onclick="SaveChanges"
+                        disabled="@(isSaving || string.IsNullOrWhiteSpace(updateDto.ShiftName))">
+                    @if (isSaving)
+                    {
+                        <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+                        <span>Đang lưu...</span>
+                    }
+                    else
+                    {
+                        <i class="bi bi-check-lg me-1"></i>
+                        <span>Lưu thay đổi</span>
+                    }
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public bool IsVisible { get; set; }
+    [Parameter] public EventCallback<bool> IsVisibleChanged { get; set; }
+    [Parameter] public WeeklyShiftViewDTO? WeekShift { get; set; }
+    [Parameter] public List<DailyShiftViewDTO>? DailyShifts { get; set; }
+    [Parameter] public EventCallback OnSaved { get; set; }
+
+    private WeeklyShiftCreateUpdateDTO updateDto = new();
+    private bool isSaving = false;
+
+    private readonly Dictionary<string, string> weeklyDays = new()
+    {
+        { "mon", "Thứ 2" },
+        { "tue", "Thứ 3" },
+        { "wed", "Thứ 4" },
+        { "thu", "Thứ 5" },
+        { "fri", "Thứ 6" },
+        { "sat", "Thứ 7" },
+        { "sun", "Chủ nhật" }
+    };
+
+    protected override void OnParametersSet()
+    {
+        if (IsVisible && WeekShift != null)
+        {
+            updateDto = new WeeklyShiftCreateUpdateDTO
+            {
+                ShiftName = WeekShift.ShiftName,
+                ShiftDescription = WeekShift.ShiftDescription,
+                MonDailyShiftId = WeekShift.MonDailyShift?.ShiftId,
+                TueDailyShiftId = WeekShift.TueDailyShift?.ShiftId,
+                WedDailyShiftId = WeekShift.WedDailyShift?.ShiftId,
+                ThuDailyShiftId = WeekShift.ThuDailyShift?.ShiftId,
+                FriDailyShiftId = WeekShift.FriDailyShift?.ShiftId,
+                SatDailyShiftId = WeekShift.SatDailyShift?.ShiftId,
+                SunDailyShiftId = WeekShift.SunDailyShift?.ShiftId
+            };
+        }
+    }
+
+    private int? GetDailyShiftId(string dayKey)
+    {
+        return dayKey switch
+        {
+            "mon" => updateDto.MonDailyShiftId,
+            "tue" => updateDto.TueDailyShiftId,
+            "wed" => updateDto.WedDailyShiftId,
+            "thu" => updateDto.ThuDailyShiftId,
+            "fri" => updateDto.FriDailyShiftId,
+            "sat" => updateDto.SatDailyShiftId,
+            "sun" => updateDto.SunDailyShiftId,
+            _ => null
+        };
+    }
+
+    private void SetDailyShiftId(string dayKey, int? shiftId)
+    {
+        switch (dayKey)
+        {
+            case "mon": updateDto.MonDailyShiftId = shiftId; break;
+            case "tue": updateDto.TueDailyShiftId = shiftId; break;
+            case "wed": updateDto.WedDailyShiftId = shiftId; break;
+            case "thu": updateDto.ThuDailyShiftId = shiftId; break;
+            case "fri": updateDto.FriDailyShiftId = shiftId; break;
+            case "sat": updateDto.SatDailyShiftId = shiftId; break;
+            case "sun": updateDto.SunDailyShiftId = shiftId; break;
+        }
+    }
+
+    private async Task SaveChanges()
+    {
+        if (WeekShift == null || string.IsNullOrWhiteSpace(updateDto.ShiftName))
+            return;
+
+        isSaving = true;
+        try
+        {
+            var client = HttpFactory.CreateClient("ApiClient");
+            var response = await client.PutAsJsonAsync($"api/shift/{WeekShift.ShiftId}", updateDto);
+
+            if (response.IsSuccessStatusCode)
+            {
+                await Close();
+                await OnSaved.InvokeAsync();
+            }
+            else
+            {
+                var msg = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"❌ Lỗi: {msg}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ Exception: {ex.Message}");
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private async Task Close()
+    {
+        IsVisible = false;
+        await IsVisibleChanged.InvokeAsync(false);
+    }
+
+    private async Task OnBackdropClick()
+    {
+        if (!isSaving)
+        {
+            await Close();
+        }
+    }
+}

@@ -49,5 +49,15 @@ namespace AttendanceManagementPayrollSystem.Services.ServiceList
                 DepName = dep.DepName
             };
         }
+
+        public async Task<IEnumerable<DepartmentDTO>> GetAllDepartmentExceptManager()
+        {
+            var departments = await _departmentRepo.GetAllDepartmentExceptManager();
+            return departments.Select(d => new DepartmentDTO
+            {
+                DepId = d.DepId,
+                DepName = d.DepName
+            });
+        }
     }
 }

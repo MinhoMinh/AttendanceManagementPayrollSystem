@@ -1,0 +1,696 @@
+﻿@using AttendanceManagementPayrollSystem.DTO
+@inject IHttpClientFactory HttpFactory
+
+<style>
+    :root {
+        --primary-cream: #FFE4A1;
+        --primary-red: #97322D;
+        --primary-red-dark: #7A2823;
+        --primary-red-light: #B23D37;
+    }
+
+    .create-daily-modal-backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: transparent;
+        backdrop-filter: blur(5px);
+        z-index: 1050;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: fadeIn 0.3s ease;
+    }
+
+    @@keyframes fadeIn {
+        from
+
+    {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+
+    }
+
+
+    @@keyframes slideUp {
+        from
+
+    {
+        opacity: 0;
+        transform: translateY(50px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    }
+
+    .create-daily-modal-dialog {
+        background: white;
+        border-radius: 15px;
+        width: 90%;
+        max-width: 750px;
+        max-height: 90vh;
+        overflow: hidden;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        display: flex;
+        flex-direction: column;
+        animation: slideUp 0.3s ease;
+        border: 3px solid var(--primary-cream);
+    }
+
+    .create-daily-modal-header {
+        background: linear-gradient(135deg, var(--primary-red) 0%, var(--primary-red-dark) 100%);
+        color: var(--primary-cream);
+        padding: 1.5rem 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-radius: 12px 12px 0 0;
+        box-shadow: 0 4px 15px rgba(151, 50, 45, 0.3);
+    }
+
+        .create-daily-modal-header h5 {
+            font-weight: 700;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            font-size: 1.4rem;
+        }
+
+        .create-daily-modal-header small {
+            opacity: 0.9;
+            font-size: 0.9rem;
+        }
+
+    .create-daily-modal-body {
+        background: linear-gradient(135deg, #FFF8E7 0%, #FFF 50%);
+        padding: 2rem;
+        overflow-y: auto;
+        flex: 1;
+    }
+
+        .create-daily-modal-body::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .create-daily-modal-body::-webkit-scrollbar-track {
+            background: var(--primary-cream);
+            border-radius: 10px;
+        }
+
+        .create-daily-modal-body::-webkit-scrollbar-thumb {
+            background: var(--primary-red);
+            border-radius: 10px;
+        }
+
+    .create-daily-modal-footer {
+        background: white;
+        padding: 1.25rem 2rem;
+        border-top: 3px solid var(--primary-cream);
+        display: flex;
+        justify-content: flex-end;
+        gap: 1rem;
+    }
+
+    .info-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 3px 10px rgba(151, 50, 45, 0.1);
+        border: 2px solid var(--primary-cream);
+        transition: all 0.3s ease;
+    }
+
+        .info-card:hover {
+            border-color: var(--primary-red);
+            box-shadow: 0 5px 20px rgba(151, 50, 45, 0.2);
+        }
+
+    .info-card-header {
+        font-weight: 700;
+        font-size: 1.1rem;
+        margin-bottom: 1.25rem;
+        color: var(--primary-red);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid var(--primary-cream);
+    }
+
+    .segment-item {
+        background: linear-gradient(135deg, rgba(255, 228, 161, 0.15) 0%, white 100%);
+        border: 2px solid var(--primary-cream);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1.25rem;
+        position: relative;
+        transition: all 0.3s ease;
+    }
+
+        .segment-item:hover {
+            border-color: var(--primary-red);
+            box-shadow: 0 4px 15px rgba(151, 50, 45, 0.15);
+            transform: translateY(-2px);
+        }
+
+    .segment-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.25rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid var(--primary-cream);
+    }
+
+    .segment-badge {
+        background: linear-gradient(135deg, var(--primary-red) 0%, var(--primary-red-dark) 100%);
+        color: var(--primary-cream);
+        padding: 0.4rem 1rem;
+        border-radius: 25px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        box-shadow: 0 2px 8px rgba(151, 50, 45, 0.3);
+    }
+
+    .btn-remove-segment {
+        background: #dc3545;
+        color: white;
+        border: none;
+        padding: 0.4rem 1rem;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 6px rgba(220, 53, 69, 0.3);
+    }
+
+        .btn-remove-segment:hover {
+            background: #c82333;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
+        }
+
+    .btn-add-segment {
+        background: linear-gradient(135deg, var(--primary-red) 0%, var(--primary-red-dark) 100%);
+        color: var(--primary-cream);
+        border: 2px solid transparent;
+        padding: 0.75rem 1.5rem;
+        border-radius: 10px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        width: 100%;
+        font-size: 1rem;
+        box-shadow: 0 3px 10px rgba(151, 50, 45, 0.3);
+    }
+
+        .btn-add-segment:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(151, 50, 45, 0.4);
+            border-color: var(--primary-cream);
+        }
+
+    .time-input-group {
+        display: flex;
+        gap: 0.75rem;
+        align-items: center;
+    }
+
+    .time-input-wrapper {
+        flex: 1;
+    }
+
+    .input-label {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--primary-red);
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    .form-control {
+        border: 2px solid var(--primary-cream);
+        border-radius: 8px;
+        padding: 0.6rem 0.75rem;
+        transition: all 0.3s ease;
+        font-size: 0.95rem;
+    }
+
+        .form-control:focus {
+            border-color: var(--primary-red);
+            box-shadow: 0 0 0 0.2rem rgba(151, 50, 45, 0.15);
+            outline: none;
+        }
+
+        .form-control::placeholder {
+            color: #aaa;
+            font-style: italic;
+        }
+
+    .btn-close-modal {
+        background: rgba(255, 228, 161, 0.2);
+        border: 2px solid var(--primary-cream);
+        color: var(--primary-cream);
+        font-size: 1.25rem;
+        cursor: pointer;
+        padding: 0.4rem 0.7rem;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        font-weight: bold;
+    }
+
+        .btn-close-modal:hover {
+            background: rgba(255, 228, 161, 0.4);
+            transform: rotate(90deg);
+            border-color: white;
+        }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem 2rem;
+        color: #999;
+        background: rgba(255, 228, 161, 0.1);
+        border-radius: 10px;
+        border: 2px dashed var(--primary-cream);
+    }
+
+        .empty-state i {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            color: var(--primary-cream);
+        }
+
+    .badge {
+        background: linear-gradient(135deg, var(--primary-red) 0%, var(--primary-red-dark) 100%);
+        color: var(--primary-cream);
+        padding: 0.35rem 0.75rem;
+        border-radius: 20px;
+        font-weight: 600;
+    }
+
+    .btn-secondary {
+        background: #6c757d;
+        color: white;
+        border: none;
+        padding: 0.6rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(108, 117, 125, 0.3);
+    }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: #5a6268;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(108, 117, 125, 0.4);
+        }
+
+    .btn-primary {
+        background: linear-gradient(135deg, var(--primary-red) 0%, var(--primary-red-dark) 100%);
+        color: var(--primary-cream);
+        border: none;
+        padding: 0.6rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(151, 50, 45, 0.3);
+    }
+
+        .btn-primary:hover:not(:disabled) {
+            background: linear-gradient(135deg, var(--primary-red-light) 0%, var(--primary-red) 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(151, 50, 45, 0.4);
+        }
+
+        .btn-primary:disabled,
+        .btn-secondary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+    .text-danger {
+        color: var(--primary-red) !important;
+        font-weight: 500;
+    }
+
+    .alert-warning {
+        background: linear-gradient(135deg, rgba(255, 228, 161, 0.3) 0%, rgba(255, 228, 161, 0.1) 100%);
+        border: 2px solid var(--primary-cream);
+        border-left: 5px solid #ffc107;
+        color: #856404;
+        border-radius: 8px;
+        font-weight: 500;
+    }
+
+    .spinner-border {
+        border-color: var(--primary-cream);
+        border-right-color: transparent;
+    }
+
+    .col-md-5 .form-control,
+    .col-md-2 .form-control {
+        font-weight: 500;
+    }
+
+    input[type="time"]::-webkit-calendar-picker-indicator {
+        filter: invert(30%) sepia(50%) saturate(800%) hue-rotate(330deg);
+    }
+
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+        opacity: 1;
+    }
+</style>
+
+@if (IsVisible)
+{
+    <div class="create-daily-modal-backdrop" @onclick="OnBackdropClick">
+        <div class="create-daily-modal-dialog" @onclick:stopPropagation="true">
+            <!-- Header -->
+            <div class="create-daily-modal-header">
+                <div>
+                    <h5 class="mb-1">
+                        <i class="bi bi-plus-circle me-2"></i>
+                        Tạo mới Lịch Ngày
+                    </h5>
+                    <small>Định nghĩa ca làm việc trong ngày</small>
+                </div>
+                <button class="btn-close-modal" @onclick="Close" aria-label="Đóng">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+
+            <!-- Body -->
+            <div class="create-daily-modal-body">
+                <!-- Thông tin cơ bản -->
+                <div class="info-card">
+                    <div class="info-card-header">
+                        <span>
+                            <i class="bi bi-info-circle me-2"></i>
+                            Thông tin ca làm việc
+                        </span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="input-label">
+                            <i class="bi bi-tag-fill me-1"></i>
+                            Tên ca <span class="text-danger">*</span>
+                        </label>
+                        <input type="text"
+                               class="form-control"
+                               @bind="createDto.ShiftName"
+                               placeholder="Ví dụ: Ca sáng, Ca chiều, Ca hành chính..." />
+                        @if (showValidation && string.IsNullOrWhiteSpace(createDto.ShiftName))
+                        {
+                            <small class="text-danger">
+                                <i class="bi bi-exclamation-circle me-1"></i>
+                                Tên ca là bắt buộc
+                            </small>
+                        }
+                    </div>
+
+                    <div>
+                        <label class="input-label">
+                            <i class="bi bi-card-text me-1"></i>
+                            Mô tả
+                        </label>
+                        <textarea class="form-control"
+                                  rows="3"
+                                  @bind="createDto.ShiftDescription"
+                                  placeholder="Mô tả chi tiết về ca làm việc (tùy chọn)"></textarea>
+                    </div>
+                </div>
+
+                <!-- Danh sách segment -->
+                <div class="info-card">
+                    <div class="info-card-header">
+                        <span>
+                            <i class="bi bi-clock-history me-2"></i>
+                            Khung giờ làm việc
+                        </span>
+                        <span class="badge">
+                            <i class="bi bi-list-ol me-1"></i>
+                            @createDto.Segments.Count khung giờ
+                        </span>
+                    </div>
+
+                    @if (!createDto.Segments.Any())
+                    {
+                        <div class="empty-state">
+                            <i class="bi bi-calendar-x"></i>
+                            <p class="mb-0">
+                                <strong>Chưa có khung giờ nào</strong><br />
+                                <small>Nhấn nút bên dưới để thêm khung giờ làm việc</small>
+                            </p>
+                        </div>
+                    }
+                    else
+                    {
+                        @for (int i = 0; i < createDto.Segments.Count; i++)
+                        {
+                            var index = i;
+                            var segment = createDto.Segments[index];
+
+                            <div class="segment-item">
+                                <div class="segment-header">
+                                    <span class="segment-badge">
+                                        <i class="bi bi-clock me-1"></i>
+                                        Khung giờ #@(index + 1)
+                                    </span>
+                                    <button class="btn-remove-segment"
+                                            @onclick="() => RemoveSegment(index)"
+                                            title="Xóa khung giờ này">
+                                        <i class="bi bi-trash me-1"></i>
+                                        Xóa
+                                    </button>
+                                </div>
+
+                                <div class="row g-3">
+                                    <div class="col-md-5">
+                                        <label class="input-label">
+                                            <i class="bi bi-box-arrow-in-right me-1 text-success"></i>
+                                            Giờ bắt đầu
+                                        </label>
+                                        <input type="time"
+                                               class="form-control"
+                                               value="@segment.StartTime.ToString(@"hh\:mm")"
+                                               @onchange="@(e => UpdateStartTime(index, e.Value?.ToString()))" />
+                                    </div>
+
+                                    <div class="col-md-5">
+                                        <label class="input-label">
+                                            <i class="bi bi-box-arrow-right me-1 text-danger"></i>
+                                            Giờ kết thúc
+                                        </label>
+                                        <input type="time"
+                                               class="form-control"
+                                               value="@segment.EndTime.ToString(@"hh\:mm")"
+                                               @onchange="@(e => UpdateEndTime(index, e.Value?.ToString()))" />
+                                    </div>
+
+                                    <div class="col-md-2">
+                                        <label class="input-label">
+                                            <i class="bi bi-calculator me-1"></i>
+                                            Công
+                                        </label>
+                                        <input type="number"
+                                               class="form-control"
+                                               step="0.1"
+                                               min="0"
+                                               @bind="segment.WorkUnit"
+                                               placeholder="0.5" />
+                                    </div>
+                                </div>
+
+                                @if (showValidation && !IsSegmentValid(segment))
+                                {
+                                    <div class="alert alert-warning mt-3 mb-0 py-2">
+                                        <small>
+                                            <i class="bi bi-exclamation-triangle me-1"></i>
+                                            Vui lòng điền đầy đủ thông tin và giờ kết thúc phải sau giờ bắt đầu
+                                        </small>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    }
+
+                    <button class="btn-add-segment" @onclick="AddSegment">
+                        <i class="bi bi-plus-circle me-2"></i>
+                        Thêm khung giờ mới
+                    </button>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="create-daily-modal-footer">
+                <button class="btn btn-secondary" @onclick="Close" disabled="@isSaving">
+                    <i class="bi bi-x-circle me-1"></i> Hủy
+                </button>
+                <button class="btn btn-primary"
+                        @onclick="SaveChanges"
+                        disabled="@isSaving">
+                    @if (isSaving)
+                    {
+                        <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+                        <span>Đang tạo...</span>
+                    }
+                    else
+                    {
+                        <i class="bi bi-check-lg me-1"></i>
+                        <span>Tạo lịch ngày</span>
+                    }
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public bool IsVisible { get; set; }
+    [Parameter] public EventCallback<bool> IsVisibleChanged { get; set; }
+    [Parameter] public EventCallback OnSaved { get; set; }
+
+    private DailyShiftCreateDTO createDto = new();
+    private bool isSaving = false;
+    private bool showValidation = false;
+
+    protected override void OnParametersSet()
+    {
+        if (IsVisible)
+        {
+            ResetForm();
+        }
+    }
+
+    private void ResetForm()
+    {
+        createDto = new DailyShiftCreateDTO
+        {
+            ShiftName = "",
+            ShiftDescription = "",
+            Segments = new List<ShiftSegmentDTO>()
+        };
+        showValidation = false;
+    }
+
+    private void AddSegment()
+    {
+        createDto.Segments.Add(new ShiftSegmentDTO
+        {
+            StartTime = TimeSpan.FromHours(8),
+            EndTime = TimeSpan.FromHours(17),
+            WorkUnit = 1.0m
+        });
+    }
+
+    private void RemoveSegment(int index)
+    {
+        if (index >= 0 && index < createDto.Segments.Count)
+        {
+            createDto.Segments.RemoveAt(index);
+        }
+    }
+
+    private void UpdateStartTime(int index, string? timeValue)
+    {
+        if (index >= 0 && index < createDto.Segments.Count && !string.IsNullOrEmpty(timeValue))
+        {
+            if (TimeSpan.TryParse(timeValue, out var time))
+            {
+                createDto.Segments[index].StartTime = time;
+            }
+        }
+    }
+
+    private void UpdateEndTime(int index, string? timeValue)
+    {
+        if (index >= 0 && index < createDto.Segments.Count && !string.IsNullOrEmpty(timeValue))
+        {
+            if (TimeSpan.TryParse(timeValue, out var time))
+            {
+                createDto.Segments[index].EndTime = time;
+            }
+        }
+    }
+
+    private bool IsSegmentValid(ShiftSegmentDTO segment)
+    {
+        return segment.EndTime > segment.StartTime && segment.WorkUnit > 0;
+    }
+
+    private bool ValidateForm()
+    {
+        showValidation = true;
+
+        if (string.IsNullOrWhiteSpace(createDto.ShiftName))
+            return false;
+
+        if (!createDto.Segments.Any())
+            return false;
+
+        if (createDto.Segments.Any(s => !IsSegmentValid(s)))
+            return false;
+
+        return true;
+    }
+
+    private async Task SaveChanges()
+    {
+        if (!ValidateForm())
+        {
+            return;
+        }
+
+        isSaving = true;
+        try
+        {
+            var client = HttpFactory.CreateClient("ApiClient");
+            var response = await client.PostAsJsonAsync("api/shift/createnewdailyshift", createDto);
+
+            if (response.IsSuccessStatusCode)
+            {
+                await Close();
+                await OnSaved.InvokeAsync();
+            }
+            else
+            {
+                var msg = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"❌ Lỗi: {msg}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ Exception: {ex.Message}");
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private async Task Close()
+    {
+        IsVisible = false;
+        await IsVisibleChanged.InvokeAsync(false);
+        ResetForm();
+    }
+
+    private async Task OnBackdropClick()
+    {
+        if (!isSaving)
+        {
+            await Close();
+        }
+    }
+}
