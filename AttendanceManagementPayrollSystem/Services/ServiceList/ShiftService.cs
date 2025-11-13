@@ -8,5 +8,13 @@ namespace AttendanceManagementPayrollSystem.Services.ServiceList
 
         Task<Dictionary<int, WeeklyShiftDto?>> GetWeeklyShiftDtos(IEnumerable<int> empIds);
 
+        Task<DailyShiftAfterCreateDTO> CreateAsync(DailyShiftCreateDTO dto);
+        Task<List<DailyShiftViewDTO>> GetAllForViewAsync();
+
+        Task<DailyShiftViewDTO?> GetByIdAsync(int id);
+
+        Task<List<WeeklyShiftViewDTO>> GetAllWeeklyShiftAsync();
+        Task UpdateWeeklyShiftAsync(int id, WeeklyShiftCreateUpdateDTO dto);
+
     }
 }

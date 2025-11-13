@@ -23,6 +23,8 @@ public partial class Employee
 
     public int? ClockinId { get; set; }
 
+    public bool IsActive { get; set; }
+
     public virtual ICollection<ClockInAdjustmentRequest> ClockInAdjustmentRequestApprovers { get; set; } = new List<ClockInAdjustmentRequest>();
 
     public virtual ICollection<ClockInAdjustmentRequest> ClockInAdjustmentRequestEmployees { get; set; } = new List<ClockInAdjustmentRequest>();
@@ -35,7 +37,7 @@ public partial class Employee
 
     public virtual ICollection<EmployeeAllowance> EmployeeAllowanceEmps { get; set; } = new List<EmployeeAllowance>();
 
-    public virtual ICollection<EmployeeBalance> EmployeeBalances { get; set; } = new List<EmployeeBalance>();
+    public virtual EmployeeBalance EmployeeBalance { get; set; }
 
     public virtual ICollection<EmployeeDependent> EmployeeDependents { get; set; } = new List<EmployeeDependent>();
 

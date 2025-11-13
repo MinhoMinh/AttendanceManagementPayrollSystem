@@ -20,6 +20,13 @@ public class DepartmentController : ControllerBase
         return Ok(list);
     }
 
+    [HttpGet("exceptmanager")]
+    public async Task<ActionResult<List<DepartmentDTO>>> GetAllDepartmentExceptManager()
+    {
+        var list = await _service.GetAllDepartmentExceptManager();
+        return Ok(list);
+    }
+
     [HttpGet("employees")]
     public async Task<ActionResult<List<EmployeeBasicDTO>>> GetEmployeesByHeadAsync([FromQuery] int headId)
     {

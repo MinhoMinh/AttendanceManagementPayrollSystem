@@ -16,6 +16,10 @@
             <DashboardButtonGroup Buttons="@EmployeeService" GroupName="Dịch vụ nhân viên" />
             <DashboardButtonGroup Buttons="@DepartmentHeadService" GroupName="Dịch vụ trưởng phòng" />
             <DashboardButtonGroup Buttons="@CompanyService" GroupName="Dịch vụ công ty" />
+            <DashboardButtonGroup Buttons="@HRHeadService" GroupName="Dịch vụ trường phòng nhân lực" />
+            <DashboardButtonGroup Buttons="@ITStaffService" GroupName="Dịch vụ nhân viên IT" />
+
+
         </div>
     </LayoutContent>
 
@@ -33,6 +37,10 @@
     private List<DashboardButton> EmployeeService = new();
     private List<DashboardButton> DepartmentHeadService = new();
     private List<DashboardButton> CompanyService = new();
+    private List<DashboardButton> HRHeadService = new();
+    private List<DashboardButton> ITStaffService = new();
+
+
 
     [Inject] INotificationService NotificationService { get; set; }
 
@@ -68,7 +76,7 @@
             new() { Text = "Lịch làm việc", ImageSrc="https://cdn-icons-png.flaticon.com/512/1077/1077976.png", OnClick = EventCallback.Factory.Create(this, NavigateSelfShift), Visible = HasPermission("has_shift") },
             new() { Text = "Bảng lương cá nhân", ImageSrc = "https://cdn-icons-png.flaticon.com/512/3135/3135695.png", OnClick = EventCallback.Factory.Create(this, NavigateSelfPayItem), Visible = HasPermission("view_employee_payroll") },
             new() { Text = "Gio vuot", ImageSrc="https://cdn-icons-png.flaticon.com/512/1077/1077976.png", OnClick = EventCallback.Factory.Create(this, NavigateSelfOvertime), Visible = HasPermission("has_overtime_request") },
-            
+
         };
 
         DepartmentHeadService = new()
@@ -87,6 +95,16 @@
             new() { Text = "Chính sách bảo hiểm/thuế", ImageSrc = "https://cdn-icons-png.flaticon.com/512/942/942799.png", OnClick = EventCallback.Factory.Create(this, NavigateInsuranceTaxPolicy), Visible = HasPermission("edit_tax_insurance") },
         };
 
+        HRHeadService = new()
+        {
+            new() { Text = "Quản lý ca làm việc", ImageSrc = "https://cdn-icons-png.flaticon.com/512/1828/1828926.png", OnClick = EventCallback.Factory.Create(this, NavigateShiftManagement), Visible = HasPermission("shift_management") },
+        };
+
+        ITStaffService = new()
+        {
+            new() { Text = "Quản lý tài khoản nhân viên", ImageSrc = "https://cdn-icons-png.flaticon.com/512/1828/1828926.png", OnClick = EventCallback.Factory.Create(this, NavigateAccountManagement), Visible = HasPermission("employee_account_management") },
+        };
+
     }
 
     private bool HasPermission(string task)
@@ -95,6 +113,7 @@
         return Employee.Permissions.Contains(task);
     }
 
+    private void NavigateAccountManagement() => Navigation.NavigateTo("/employees/group");
     private void NavigateAttendance() => Navigation.NavigateTo("/attendance/self");
     private void NavigateSelfKpi() => Navigation.NavigateTo("/kpi/self");
     private void NavigateSelfShift() => Navigation.NavigateTo("/shift/self");
@@ -118,5 +137,7 @@
     private void NavigateHolidaySetup() => Navigation.NavigateTo("/department-holiday");
     private void NavigateSalaryPolicy() => Navigation.NavigateTo("/salary-policies");
     private void NavigateInsuranceTaxPolicy() => Navigation.NavigateTo("/rates-tax");
+    private void NavigateShiftManagement() => Navigation.NavigateTo("/shift-management");
+
     
 }

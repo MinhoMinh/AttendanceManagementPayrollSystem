@@ -9,5 +9,7 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
         Task<Department?> GetByIdAsync(int id);
         Task<IEnumerable<Employee>> GetEmployees(int headId);
         Task<Dictionary<string, List<EmployeeBasicDTO>>> GetEmployeesByDepAsync();
+        Task<IEnumerable<Department>> GetAllDepartmentExceptManager();
+
     }
 }

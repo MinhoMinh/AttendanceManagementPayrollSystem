@@ -14,7 +14,6 @@ namespace AttendanceManagementPayrollSystem.Services.Mapper
 
             var dto = new EmployeeBalanceDto
             {
-                Id = balance.Id,
                 EmpId = balance.EmpId,
                 LastUpdated = balance.LastUpdated
             };
@@ -68,7 +67,6 @@ namespace AttendanceManagementPayrollSystem.Services.Mapper
 
             var balance = new EmployeeBalance
             {
-                Id = dto.Id,
                 EmpId = dto.EmpId,
                 LastUpdated = dto.LastUpdated,
                 Pto = $"{dto.PtoAvailable:F1}|{dto.PtoUsed:F1}|{dto.PtoTotal:F1}",

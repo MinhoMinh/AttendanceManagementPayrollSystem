@@ -9,5 +9,6 @@ namespace AttendanceManagementPayrollSystem.Services.ServiceList
         Task<DepartmentDTO?> GetByIdAsync(int id);
         Task<IEnumerable<EmployeeBasicDTO>> GetEmployeesAsync(int headId);
         Task<Dictionary<string, List<EmployeeBasicDTO>>> GetEmployeesByDepAsync();
+        Task<IEnumerable<DepartmentDTO>> GetAllDepartmentExceptManager();
     }
 }

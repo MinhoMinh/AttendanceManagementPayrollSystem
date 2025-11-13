@@ -74,5 +74,12 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
                 .Include(d => d.DepartmentWeeklyShifts)
                 .FirstOrDefaultAsync(d => d.DepId == id);
         }
+
+        public async Task<IEnumerable<Department>> GetAllDepartmentExceptManager()
+        {
+            return await _context.Departments
+                .Where(d=>!d.DepName.Equals("Ban giám đốc"))
+                .ToListAsync();
+        }
     }
 }

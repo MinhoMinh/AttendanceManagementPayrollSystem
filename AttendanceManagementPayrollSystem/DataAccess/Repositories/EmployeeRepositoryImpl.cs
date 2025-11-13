@@ -6,6 +6,7 @@ using System.Linq.Expressions;
 using Kpi = AttendanceManagementPayrollSystem.Models.Kpi;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using AttendanceManagementPayrollSystem.DTO;
 
 namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
 {
@@ -55,7 +56,7 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
         // ✅ Get by ID
         public async Task<Employee?> GetByIdAsync(int id)
         {
-            return await _context.Employees.FindAsync(id);
+            return await _context.Employees.Where(e=>e.EmpId==id).Include(e=>e.Dep).Include(e=>e.EmployeeBalance).FirstOrDefaultAsync();
         }
 
         // ✅ Update employee
@@ -93,7 +94,7 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
                 .Collection(e => e.EmployeeRoles)
                 .Query()
                 .Include(er => er.Role)
-                    //.ThenInclude(r => r.RolePermissions)
+                        //.ThenInclude(r => r.RolePermissions)
                         .ThenInclude(rp => rp.Permissions)
                 .LoadAsync();
         }
@@ -103,6 +104,48 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
             var emp = await _context.Employees.FirstOrDefaultAsync(e => e.ClockinId == clockId);
             if (emp == null) return -1;
             else return emp.EmpId;
+        }
+
+        public async Task<List<EmployeeBasicDTO>> GetAllEmployeeBasic()
+        {
+            return await this._context.Employees.Select(e => new EmployeeBasicDTO
+            {
+                EmpId = e.EmpId,
+                EmpName = e.EmpName
+            }).ToListAsync();
+        }
+
+        public async Task AddBalenceForNewEmployee(EmployeeBalance eb)
+        {
+            this._context.EmployeeBalances.Add(eb);
+            await this._context.SaveChangesAsync();
+        }
+
+        public async Task<IEnumerable<Employee>> GetAllEmployeesAsync()
+        {
+            return await _context.Employees
+                .Include(e => e.Dep)
+                .Include(e => e.EmployeeBalance)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<EmployeeGroupByDepartmentDTO>> GetEmployeesGroupedByDepartmentAsync()
+        {
+            return await _context.Employees
+                            .Include(e => e.Dep)
+                            .GroupBy(e => new { e.DepId, e.Dep.DepName })
+                            .Select(g => new EmployeeGroupByDepartmentDTO
+                            {
+                                DepId = g.Key.DepId ?? 0,
+                                DepName = g.Key.DepName,
+                                Employees = g.Select(e => new EmployeeInDepartmentDTO
+                                {
+                                    EmpId = e.EmpId,
+                                    EmpName = e.EmpName,
+                                    EmpPhoneNumber = e.EmpPhoneNumber
+                                }).ToList()
+                            })
+                            .ToListAsync();
         }
     }
 }
