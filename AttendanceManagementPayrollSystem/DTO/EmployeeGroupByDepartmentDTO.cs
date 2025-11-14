@@ -5,6 +5,7 @@
         public int EmpId { get; set; }
         public string EmpName { get; set; }
         public string EmpPhoneNumber { get; set; }
+        public bool IsActive { get; set; }
     }
     public class EmployeeGroupByDepartmentDTO
     {

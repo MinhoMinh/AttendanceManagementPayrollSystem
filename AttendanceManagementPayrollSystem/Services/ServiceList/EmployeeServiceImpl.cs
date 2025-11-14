@@ -117,6 +117,15 @@ namespace AttendanceManagementPayrollSystem.Services.ServiceList
             };
         }
 
+        public async Task<bool> UpdateStatusAsync(EmployeeStatusUpdateDTO dto)
+        {
+            var emp = await this.employeeRepository.GetByIdAsync(dto.EmpId);
+            if (emp == null) return false;
 
+            emp.IsActive = dto.IsActive;
+
+            await this.employeeRepository.UpdateAsync(emp);
+            return true;
+        }
     }
 }

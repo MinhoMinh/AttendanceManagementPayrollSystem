@@ -1,4 +1,4 @@
-﻿@page "/employees/group"
+﻿@page "/employees/group/view"
 @using System.Net.Http.Json
 @using System.ComponentModel.DataAnnotations
 @inject IHttpClientFactory HttpFactory
@@ -262,11 +262,6 @@
         overflow: hidden;
     }
 
-        .employee-card.inactive {
-            opacity: 0.6;
-            background: #f8f9fa;
-        }
-
         .employee-card::before {
             content: "";
             position: absolute;
@@ -277,10 +272,6 @@
             background: var(--primary-red);
             transform: scaleY(0);
             transition: transform 0.3s ease;
-        }
-
-        .employee-card.inactive::before {
-            background: #6c757d;
         }
 
         .employee-card:hover {
@@ -308,38 +299,12 @@
         box-shadow: 0 4px 15px rgba(151, 50, 45, 0.3);
     }
 
-    .employee-card.inactive .employee-avatar {
-        background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
-        box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
-    }
-
     .employee-name {
         font-size: 1.2rem;
         font-weight: 600;
         color: var(--primary-red);
         margin-bottom: 0.5rem;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
     }
-
-    .status-badge {
-        font-size: 0.7rem;
-        padding: 0.25rem 0.5rem;
-        border-radius: 12px;
-        font-weight: 600;
-        text-transform: uppercase;
-    }
-
-        .status-badge.active {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .status-badge.inactive {
-            background: #f8d7da;
-            color: #721c24;
-        }
 
     .employee-info {
         display: flex;
@@ -354,26 +319,19 @@
             color: var(--primary-red);
         }
 
-    .employee-actions {
-        display: grid;
-        grid-template-columns: 1fr auto;
-        gap: 0.5rem;
-        margin-top: 1rem;
-    }
-
     .btn-view-detail {
         background: linear-gradient(135deg, var(--primary-red) 0%, var(--primary-red-dark) 100%);
         color: var(--primary-cream);
         border: none;
-        padding: 0.6rem 1rem;
+        padding: 0.6rem 1.5rem;
         border-radius: 8px;
         font-weight: 500;
         transition: all 0.3s ease;
+        width: 100%;
         display: flex;
         align-items: center;
         justify-content: center;
         gap: 0.5rem;
-        font-size: 0.9rem;
     }
 
         .btn-view-detail:hover {
@@ -382,47 +340,6 @@
             box-shadow: 0 4px 12px rgba(151, 50, 45, 0.4);
             color: var(--primary-cream);
         }
-
-    .btn-toggle-status {
-        border: none;
-        width: 45px;
-        height: 45px;
-        border-radius: 8px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.3s ease;
-        font-size: 1.2rem;
-        cursor: pointer;
-    }
-
-    .btn-ban {
-        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
-        color: white;
-    }
-
-        .btn-ban:hover {
-            background: linear-gradient(135deg, #c82333 0%, #bd2130 100%);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
-        }
-
-    .btn-unban {
-        background: linear-gradient(135deg, #28a745 0%, #218838 100%);
-        color: white;
-    }
-
-        .btn-unban:hover {
-            background: linear-gradient(135deg, #218838 0%, #1e7e34 100%);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
-        }
-
-    .btn-toggle-status:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-        transform: none !important;
-    }
 
     .empty-state {
         text-align: center;
@@ -771,20 +688,12 @@
             width: 95%;
             margin: 1rem;
         }
-
-        .employee-actions {
-            grid-template-columns: 1fr;
-        }
     }
 </style>
 
 <div class="employee-group-wrapper">
     <div class="page-header">
-        <h3><i class="bi bi-people-fill"></i> Quản lý tài khoản nhân viên</h3>
-        <button class="btn-add-employee" @onclick="OpenCreateModal">
-            <i class="bi bi-plus-circle-fill"></i>
-            <span>Thêm nhân viên mới</span>
-        </button>
+        <h3><i class="bi bi-people-fill"></i> Danh sách nhân viên theo phòng ban</h3>
     </div>
 
     @if (departments == null)
@@ -817,21 +726,14 @@
                     <i class="bi bi-person-badge"></i>
                 </div>
                 <div class="stat-value">@departments.Sum(d => d.Employees?.Count ?? 0)</div>
-                <div class="stat-label">Tổng nhân viên</div>
+                <div class="stat-label">Nhân viên</div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon">
-                    <i class="bi bi-check-circle"></i>
+                    <i class="bi bi-graph-up"></i>
                 </div>
-                <div class="stat-value">@departments.Sum(d => d.Employees?.Count(e => e.IsActive) ?? 0)</div>
-                <div class="stat-label">Đang hoạt động</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="bi bi-x-circle"></i>
-                </div>
-                <div class="stat-value">@departments.Sum(d => d.Employees?.Count(e => !e.IsActive) ?? 0)</div>
-                <div class="stat-label">Đã bị ban</div>
+                <div class="stat-value">@(departments.Any(d => d.Employees?.Any() == true) ? Math.Round(departments.Average(d => d.Employees?.Count ?? 0), 1) : 0)</div>
+                <div class="stat-label">Trung bình/PB</div>
             </div>
         </div>
 
@@ -877,59 +779,20 @@
                                 <div class="employee-grid">
                                     @foreach (var emp in FilterEmployees(dep.Employees))
                                     {
-                                        <div class="employee-card @(!emp.IsActive ? "inactive" : "")">
+                                        <div class="employee-card">
                                             <div class="employee-avatar">
                                                 @GetInitials(emp.EmpName)
                                             </div>
-                                            <div class="employee-name">
-                                                @emp.EmpName
-                                                <span class="status-badge @(emp.IsActive ? "active" : "inactive")">
-                                                    @(emp.IsActive ? "Hoạt động" : "Đã khoá")
-                                                </span>
-                                            </div>
+                                            <div class="employee-name">@emp.EmpName</div>
                                             <div class="employee-info">
                                                 <i class="bi bi-telephone-fill"></i>
                                                 <span>@(emp.EmpPhoneNumber ?? "Chưa cập nhật")</span>
                                             </div>
-                                            <div class="employee-actions">
-                                                <button class="btn-view-detail"
-                                                        @onclick="() => ViewEmployeeDetail(emp.EmpId)">
-                                                    <i class="bi bi-eye"></i>
-                                                    Xem chi tiết
-                                                </button>
-                                                @if (emp.IsActive)
-                                                {
-                                                    <button class="btn-toggle-status btn-ban"
-                                                            @onclick="() => ToggleEmployeeStatus(emp)"
-                                                            disabled="@(updatingEmployeeId == emp.EmpId)"
-                                                            title="Vô hiệu hóa tài khoản">
-                                                        @if (updatingEmployeeId == emp.EmpId)
-                                                        {
-                                                            <span class="spinner-border spinner-border-sm"></span>
-                                                        }
-                                                        else
-                                                        {
-                                                            <i class="bi bi-ban"></i>
-                                                        }
-                                                    </button>
-                                                }
-                                                else
-                                                {
-                                                    <button class="btn-toggle-status btn-unban"
-                                                            @onclick="() => ToggleEmployeeStatus(emp)"
-                                                            disabled="@(updatingEmployeeId == emp.EmpId)"
-                                                            title="Kích hoạt lại tài khoản">
-                                                        @if (updatingEmployeeId == emp.EmpId)
-                                                        {
-                                                            <span class="spinner-border spinner-border-sm"></span>
-                                                        }
-                                                        else
-                                                        {
-                                                            <i class="bi bi-check-circle"></i>
-                                                        }
-                                                    </button>
-                                                }
-                                            </div>
+                                            <button class="btn-view-detail"
+                                                    @onclick="() => ViewEmployeeDetail(emp.EmpId)">
+                                                <i class="bi bi-eye"></i>
+                                                Xem chi tiết
+                                            </button>
                                         </div>
                                     }
                                 </div>
@@ -951,263 +814,30 @@
     }
 </div>
 
-@if (showCreateModal)
-{
-    <div class="modal-overlay" @onclick="CloseCreateModal">
-        <div class="modal-container" @onclick:stopPropagation="true">
-            <div class="modal-header">
-                <h4>
-                    <i class="bi bi-person-plus-fill"></i>
-                    Thêm nhân viên mới
-                </h4>
-                <button class="btn-close-modal" @onclick="CloseCreateModal">
-                    <i class="bi bi-x-lg"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-                @if (isLoadingDepartments)
-                {
-                    <div class="text-center py-4">
-                        <div class="spinner" style="margin: 0 auto;"></div>
-                        <p class="mt-3 text-muted">Đang tải danh sách phòng ban...</p>
-                    </div>
-                }
-                else
-                {
-                    <EditForm Model="@newEmployee" OnValidSubmit="@HandleCreateEmployee">
-                        <DataAnnotationsValidator />
-
-                        <div class="form-group">
-                            <label class="form-label">
-                                <i class="bi bi-person"></i>
-                                Tên nhân viên
-                            </label>
-                            <InputText @bind-Value="newEmployee.EmpName" class="form-control" placeholder="Nhập tên nhân viên" />
-                            <ValidationMessage For="@(() => newEmployee.EmpName)" />
-                        </div>
-
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label class="form-label">
-                                    <i class="bi bi-person-circle"></i>
-                                    Tên đăng nhập
-                                </label>
-                                <InputText @bind-Value="newEmployee.Username" class="form-control" placeholder="username" />
-                                <ValidationMessage For="@(() => newEmployee.Username)" />
-                            </div>
-
-                            <div class="form-group position-relative">
-                                <label class="form-label">
-                                    <i class="bi bi-shield-lock"></i>
-                                    Mật khẩu
-                                </label>
-                                <InputText @bind-Value="newEmployee.Password"
-                                           type="@(showPassword ? "text" : "password")"
-                                           class="form-control"
-                                           placeholder="Mật khẩu" />
-                                <button type="button" class="btn btn-sm btn-outline-secondary position-absolute top-50 end-0 translate-middle-y me-2"
-                                        @onclick="() => showPassword = !showPassword">
-                                    <i class="bi @(showPassword ? "bi-eye-slash" : "bi-eye")"></i>
-                                </button>
-                                <ValidationMessage For="@(() => newEmployee.Password)" />
-                            </div>
-                        </div>
-
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label class="form-label">
-                                    <i class="bi bi-telephone"></i>
-                                    Số điện thoại
-                                </label>
-                                <InputText @bind-Value="newEmployee.EmpPhoneNumber" class="form-control" placeholder="0123456789" />
-                                <ValidationMessage For="@(() => newEmployee.EmpPhoneNumber)" />
-                            </div>
-
-                            <div class="form-group">
-                                <label class="form-label">
-                                    <i class="bi bi-calendar-event"></i>
-                                    Ngày sinh
-                                </label>
-                                <InputDate @bind-Value="newEmployee.EmpDob" class="form-control" />
-                                <ValidationMessage For="@(() => newEmployee.EmpDob)" />
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label">
-                                <i class="bi bi-building"></i>
-                                Phòng ban
-                            </label>
-                            <InputSelect @bind-Value="newEmployee.DepId" class="form-select">
-                                <option value="">-- Chọn phòng ban --</option>
-                                @foreach (var dep in departmentList)
-                                {
-                                    <option value="@dep.DepId">@dep.DepName</option>
-                                }
-                            </InputSelect>
-                            <ValidationMessage For="@(() => newEmployee.DepId)" />
-                        </div>
-
-                        <button type="submit" class="btn-submit" disabled="@isSubmitting">
-                            @if (isSubmitting)
-                            {
-                                <span class="spinner-border spinner-border-sm"></span>
-                                <span>Đang xử lý...</span>
-                            }
-                            else
-                            {
-                                <i class="bi bi-check-circle-fill"></i>
-                                <span>Tạo tài khoản</span>
-                            }
-                        </button>
-                    </EditForm>
-                }
-            </div>
-        </div>
-    </div>
-}
-
-@if (showToast)
-{
-    <div class="toast-notification">
-        <div class="toast-content @(toastType == "success" ? "toast-success" : "toast-error")">
-            <div class="toast-icon">
-                <i class="bi @(toastType == "success" ? "bi-check-circle-fill" : "bi-exclamation-triangle-fill")"></i>
-            </div>
-            <div class="toast-message">@toastMessage</div>
-            <button class="toast-close" @onclick="() => showToast = false">
-                <i class="bi bi-x"></i>
-            </button>
-        </div>
-    </div>
-}
 
 @code {
     private bool showPassword = false;
 
     private List<EmployeeGroupByDepartmentDTO>? departments;
-    private List<DepartmentDTO> departmentList = new();
     private string searchQuery = "";
     private HashSet<int> expandedDepartments = new();
 
-    private bool showCreateModal = false;
     private bool isLoadingDepartments = false;
     private bool isSubmitting = false;
-    private EmployeeCreateDTO newEmployee = new();
 
     private bool showToast = false;
     private string toastMessage = "";
     private string toastType = "success";
 
-    private int? updatingEmployeeId = null;
-
     protected override async Task OnInitializedAsync()
-    {
-        await LoadEmployees();
-    }
-
-    private async Task LoadEmployees()
     {
         var http = HttpFactory.CreateClient();
         departments = await http.GetFromJsonAsync<List<EmployeeGroupByDepartmentDTO>>(
             "https://localhost:7088/api/employee/getgroupbydepforview");
     }
 
-    private async Task ToggleEmployeeStatus(EmployeeInDepartmentDTO employee)
-    {
-        updatingEmployeeId = employee.EmpId;
-        try
-        {
-            var http = HttpFactory.CreateClient();
-            var dto = new EmployeeStatusUpdateDTO
-            {
-                EmpId = employee.EmpId,
-                IsActive = !employee.IsActive
-            };
 
-            var response = await http.PutAsJsonAsync("https://localhost:7088/api/employee/status", dto);
 
-            if (response.IsSuccessStatusCode)
-            {
-                employee.IsActive = !employee.IsActive;
-                var action = employee.IsActive ? "kích hoạt lại" : "vô hiệu hóa";
-                ShowToast($"Đã {action} tài khoản nhân viên {employee.EmpName} thành công!", "success");
-            }
-            else
-            {
-                var errorContent = await response.Content.ReadAsStringAsync();
-                ShowToast($"Cập nhật trạng thái thất bại: {errorContent}", "error");
-            }
-        }
-        catch (Exception ex)
-        {
-            ShowToast($"Đã xảy ra lỗi: {ex.Message}", "error");
-        }
-        finally
-        {
-            updatingEmployeeId = null;
-            StateHasChanged();
-        }
-    }
-
-    private async Task OpenCreateModal()
-    {
-        showCreateModal = true;
-        isLoadingDepartments = true;
-        newEmployee = new EmployeeCreateDTO();
-
-        try
-        {
-            var http = HttpFactory.CreateClient();
-            departmentList = await http.GetFromJsonAsync<List<DepartmentDTO>>("https://localhost:7088/api/department/exceptmanager") ?? new();
-        }
-        catch
-        {
-            ShowToast("Không thể tải danh sách phòng ban.", "error");
-        }
-        finally
-        {
-            isLoadingDepartments = false;
-            StateHasChanged();
-        }
-    }
-
-    private void CloseCreateModal()
-    {
-        showCreateModal = false;
-        newEmployee = new EmployeeCreateDTO();
-    }
-
-    private async Task HandleCreateEmployee()
-    {
-        isSubmitting = true;
-        try
-        {
-            var http = HttpFactory.CreateClient();
-            var response = await http.PostAsJsonAsync("https://localhost:7088/api/employee", newEmployee);
-
-            if (response.IsSuccessStatusCode)
-            {
-                ShowToast("Tài khoản nhân viên mới đã được tạo thành công!", "success");
-                CloseCreateModal();
-                await LoadEmployees();
-            }
-            else
-            {
-                var errorContent = await response.Content.ReadAsStringAsync();
-                ShowToast($"Tạo tài khoản thất bại: {errorContent}", "error");
-            }
-        }
-        catch (Exception ex)
-        {
-            ShowToast($"Đã xảy ra lỗi: {ex.Message}", "error");
-        }
-        finally
-        {
-            isSubmitting = false;
-            StateHasChanged();
-        }
-    }
 
     private void ShowToast(string message, string type)
     {
@@ -1228,7 +858,7 @@
 
     private void ViewEmployeeDetail(int empId)
     {
-        NavManager.NavigateTo($"/employees/detail/{empId}?from=accountmanage");
+        NavManager.NavigateTo($"/employees/detail/{empId}?from=view");
     }
 
     private void ToggleDepartment(int depId)
@@ -1287,41 +917,5 @@
         public int EmpId { get; set; }
         public string EmpName { get; set; }
         public string EmpPhoneNumber { get; set; }
-        public bool IsActive { get; set; }
-    }
-
-    public class EmployeeCreateDTO
-    {
-        [Required(ErrorMessage = "Tên nhân viên là bắt buộc.")]
-        public string EmpName { get; set; }
-
-        [Required(ErrorMessage = "Ngày sinh là bắt buộc.")]
-        public DateTime? EmpDob { get; set; }
-
-        [Required(ErrorMessage = "Số điện thoại là bắt buộc.")]
-        [Phone(ErrorMessage = "Số điện thoại không hợp lệ.")]
-        public string EmpPhoneNumber { get; set; }
-
-        [Required(ErrorMessage = "Phòng ban là bắt buộc.")]
-        public int? DepId { get; set; }
-
-        [Required(ErrorMessage = "Tên đăng nhập là bắt buộc.")]
-        public string Username { get; set; }
-
-        [Required(ErrorMessage = "Mật khẩu là bắt buộc.")]
-        [MinLength(6, ErrorMessage = "Mật khẩu tối thiểu 6 ký tự.")]
-        public string Password { get; set; }
-    }
-
-    public class DepartmentDTO
-    {
-        public int DepId { get; set; }
-        public string DepName { get; set; }
-    }
-
-    public class EmployeeStatusUpdateDTO
-    {
-        public int EmpId { get; set; }
-        public bool IsActive { get; set; }
     }
 }

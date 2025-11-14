@@ -142,7 +142,8 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
                                 {
                                     EmpId = e.EmpId,
                                     EmpName = e.EmpName,
-                                    EmpPhoneNumber = e.EmpPhoneNumber
+                                    EmpPhoneNumber = e.EmpPhoneNumber,
+                                    IsActive=e.IsActive
                                 }).ToList()
                             })
                             .ToListAsync();

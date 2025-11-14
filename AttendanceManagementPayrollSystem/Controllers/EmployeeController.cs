@@ -63,11 +63,13 @@ namespace AttendanceManagementPayrollSystem.Controllers
             }
         }
 
-        // PUT api/<EmployeeController>/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        [HttpPut("status")]
+        public async Task<IActionResult> UpdateStatus([FromBody] EmployeeStatusUpdateDTO dto)
         {
+            var success = await this.employeeService.UpdateStatusAsync(dto);
+            return success ? Ok() : NotFound();
         }
+
 
         // DELETE api/<EmployeeController>/5
         [HttpDelete("{id}")]
