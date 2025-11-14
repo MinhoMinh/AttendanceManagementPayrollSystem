@@ -1,0 +1,256 @@
+@page "/bonus-manager"
+
+@using AttendanceManagementPayrollSystem.DTO
+@inject IHttpClientFactory HttpFactory
+@inject NavigationManager NavigationManager
+@using System.Linq
+
+<PageTitle>Quản lý thưởng</PageTitle>
+
+<Layout>
+    <Container Class="mt-4">
+        <h3>Phân bổ thưởng theo phòng ban</h3>
+
+        @if (groups.Count == 0)
+        {
+            <p>Đang tải dữ liệu...</p>
+        }
+        else
+        {
+            @foreach (var g in groups)
+            {
+                <Card Class="mb-4">
+                    <CardHeader>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <strong>@g.DepName</strong>
+                            <div class="d-flex gap-2">
+                                <Button Color="Color.Secondary" Size="Size.Small" Clicked="() => ToggleViewBonuses(g.DepId)">
+                                    Xem thưởng
+                                </Button>
+                            </div>
+                        </div>
+                    </CardHeader>
+                    <CardBody>
+                        <div class="table-responsive">
+                            <table class="table table-sm align-middle">
+                                <thead>
+                                    <tr>
+                                        <th style="width:42px;"></th>
+                                        <th>Nhân viên</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var emp in g.Employees)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <Button Color="Color.Success" Size="Size.ExtraSmall" Clicked="() => OpenAssignModal(g.DepId, emp)">
+                                                    Gán thưởng
+                                                </Button>
+                                            </td>
+                                            <td>@emp.EmpName</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+
+                        @if (deptBonusViews.TryGetValue(g.DepId, out var depView))
+                        {
+                            <hr />
+                            <h6>Thưởng hiện có</h6>
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Nhân viên</th>
+                                            <th>Thưởng</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var eb in depView.Employees.Where(e => e.Bonuses != null && e.Bonuses.Count > 0))
+                                        {
+                                            <tr>
+                                                <td>@eb.EmpName</td>
+                                                <td>
+                                                    <ul class="mb-0">
+                                                        @foreach (var b in eb.Bonuses)
+                                                        {
+                                                            <li>
+                                                                @b.BonusName - @b.BonusAmount.ToString("N0")
+                                                                @(b.BonusPeriod.HasValue ? $"({b.BonusPeriod.Value.Month}/{b.BonusPeriod.Value.Year})" : "")
+                                                            </li>
+                                                        }
+                                                    </ul>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+
+                                </table>
+                            </div>
+                        }
+                    </CardBody>
+                </Card>
+            }
+        }
+    </Container>
+</Layout>
+
+<Modal Visible="@assignModalVisible" Toggled="@CloseAssignModal">
+    <ModalHeader>
+        Gán thưởng cho @modalEmpName
+    </ModalHeader>
+    <ModalBody>
+        <Fields>
+            <Field>
+                <Label>Loại thưởng</Label>
+                <Select TValue="int" @bind-SelectedValue="modalBonusId">
+                    @foreach (var b in bonuses)
+                    {
+                        <SelectItem Value="@b.BonusId">@($"{b.BonusName} - {b.BonusAmount:N0}")</SelectItem>
+                    }
+                </Select>
+            </Field>
+        </Fields>
+    </ModalBody>
+    <ModalFooter>
+        <Button Color="Color.Secondary" Clicked="@CloseAssignModal">Hủy</Button>
+        <Button Color="Color.Primary" Clicked="@ConfirmAssign">Gán</Button>
+    </ModalFooter>
+</Modal>
+
+@code {
+    private List<DepartmentEmployeeGroupDTO> groups = new();
+    private List<BonusDTO> bonuses = new();
+    private Dictionary<int, bool> selected = new();
+    private Dictionary<int, DepartmentBonusViewDTO> deptBonusViews = new();
+
+    private int selectedBonusId;
+    private decimal? overrideAmount;
+    private DateTime periodPeriod = DateTime.Today; // sửa lại kiểu DateTime
+
+    // modal state
+    private bool assignModalVisible;
+    private int modalEmpId;
+    private int modalDepId;
+    private string modalEmpName = "";
+    private int modalBonusId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var client = HttpFactory.CreateClient("default");
+        client.BaseAddress ??= new Uri(NavigationManager.Uri);
+
+        var gResp = await client.GetFromJsonAsync<List<DepartmentEmployeeGroupDTO>>("api/department/groups");
+        groups = gResp ?? new();
+
+        var bResp = await client.GetFromJsonAsync<List<BonusDTO>>("api/bonus");
+        bonuses = bResp ?? new();
+
+        selectedBonusId = bonuses.FirstOrDefault()?.BonusId ?? 0;
+        overrideAmount = bonuses.FirstOrDefault()?.BonusAmount;
+
+        // Auto-load current bonuses per department
+        foreach (var dep in groups)
+        {
+            await LoadDepartmentBonuses(dep.DepId);
+        }
+    }
+
+    private bool AnySelected(DepartmentEmployeeGroupDTO g)
+        => g.Employees.Any(e => selected.TryGetValue(e.EmpId, out var s) && s);
+
+    private async Task AssignForDepartment(DepartmentEmployeeGroupDTO g)
+    {
+        var client = HttpFactory.CreateClient("default");
+        client.BaseAddress ??= new Uri(NavigationManager.Uri);
+
+        var empIds = g.Employees.Where(e => selected.TryGetValue(e.EmpId, out var s) && s)
+            .Select(e => e.EmpId)
+            .ToList();
+
+        var req = new AssignBonusRequest
+        {
+            EmpIds = empIds,
+            BonusId = selectedBonusId,
+            OverrideAmount = overrideAmount,
+            PeriodMonth = periodPeriod.Month,
+            PeriodYear = periodPeriod.Year,
+            DepId = g.DepId
+        };
+
+        var res = await client.PostAsJsonAsync("api/bonus/assign", req);
+        if (res.IsSuccessStatusCode)
+        {
+            foreach (var id in empIds) selected[id] = false;
+        }
+    }
+
+    private void OpenAssignModal(int depId, EmployeeBasicDTO emp)
+    {
+        modalEmpId = emp.EmpId;
+        modalDepId = depId;
+        modalEmpName = emp.EmpName;
+        modalBonusId = bonuses.FirstOrDefault()?.BonusId ?? 0;
+
+        assignModalVisible = true;
+    }
+
+    private void CloseAssignModal() => assignModalVisible = false;
+
+    private async Task ConfirmAssign()
+    {
+        var client = HttpFactory.CreateClient("default");
+        client.BaseAddress ??= new Uri(NavigationManager.Uri);
+
+        var req = new AssignBonusRequest
+        {
+            EmpIds = new List<int> { modalEmpId },
+            BonusId = modalBonusId,
+            DepId = modalDepId
+        };
+
+
+        var res = await client.PostAsJsonAsync("api/bonus/assign", req);
+        if (res.IsSuccessStatusCode)
+        {
+            assignModalVisible = false;
+            if (deptBonusViews.ContainsKey(modalDepId))
+            {
+                await LoadDepartmentBonuses(modalDepId);
+            }
+        }
+    }
+
+    private async Task ToggleViewBonuses(int depId)
+    {
+        if (deptBonusViews.ContainsKey(depId))
+        {
+            deptBonusViews.Remove(depId);
+        }
+        else
+        {
+            await LoadDepartmentBonuses(depId);
+        }
+    }
+
+    private async Task LoadDepartmentBonuses(int depId)
+    {
+        try
+        {
+            var client = HttpFactory.CreateClient("default");
+            client.BaseAddress ??= new Uri(NavigationManager.Uri);
+            var view = await client.GetFromJsonAsync<DepartmentBonusViewDTO>($"api/bonus/department/{depId}");
+            if (view != null)
+            {
+                deptBonusViews[depId] = view;
+                StateHasChanged();
+            }
+        }
+        catch
+        {
+            // ignore
+        }
+    }
+}

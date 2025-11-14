@@ -53,4 +53,11 @@ public class DepartmentController : ControllerBase
 
         return Ok(employees);
     }
+    
+    [HttpGet("groups")]
+    public async Task<ActionResult<List<DepartmentEmployeeGroupDTO>>> GetDepartmentsWithEmployees()
+    {
+        var groups = await (_service as DepartmentServiceImpl)!.GetAllWithEmployeesAsync();
+        return Ok(groups);
+    }
 }

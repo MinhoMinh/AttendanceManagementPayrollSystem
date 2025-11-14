@@ -74,6 +74,9 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
     public virtual DbSet<TaxBracket> TaxBrackets { get; set; }
 
     public virtual DbSet<WeeklyShift> WeeklyShifts { get; set; }
+    
+    public virtual DbSet<Bonus> Bonuses { get; set; }
+    public virtual DbSet<EmpBonus> EmpBonuses { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -101,6 +104,54 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
             entity.Property(e => e.Value)
                 .HasColumnType("decimal(18, 2)")
                 .HasColumnName("value");
+        });
+
+        modelBuilder.Entity<Bonus>(entity =>
+        {
+            entity.HasKey(e => e.BonusId).HasName("PK_Bonus");
+            entity.ToTable("Bonus");
+
+            entity.Property(e => e.BonusId).HasColumnName("bonus_id");
+            entity.Property(e => e.BonusName)
+                .IsRequired()
+                .HasMaxLength(100)
+                .HasColumnName("bonus_name");
+            entity.Property(e => e.BonusAmount)
+                .HasColumnType("decimal(12, 2)")
+                .HasColumnName("bonus_amount");
+            entity.Property(e => e.BonusPeriod)
+                .HasConversion(
+                    v => v.HasValue ? new DateTime(v.Value.Year, v.Value.Month, v.Value.Day) : (DateTime?)null,
+                    v => v.HasValue ? DateOnly.FromDateTime(v.Value) : (DateOnly?)null
+                )
+                .HasColumnName("bonus_period");
+            entity.Property(e => e.CreatedAt)
+                .HasColumnType("datetime")
+                .HasColumnName("created_at");
+        });
+
+        modelBuilder.Entity<EmpBonus>(entity =>
+        {
+            entity.HasKey(e => e.EmpBonusId).HasName("PK_Emp_Bonus");
+            entity.ToTable("EmpBonus");
+            entity.Property(e => e.EmpBonusId).HasColumnName("emp_bonus_id");
+            entity.Property(e => e.EmpId).HasColumnName("emp_id");
+            entity.Property(e => e.BonusId).HasColumnName("bonus_id");
+            entity.Property(e => e.DepId).HasColumnName("dep_id");
+
+            entity.HasOne(d => d.Emp).WithMany()
+                .HasForeignKey(d => d.EmpId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Emp_Bonus_Employee");
+
+            entity.HasOne(d => d.Bonus).WithMany(p => p.EmpBonuses)
+                .HasForeignKey(d => d.BonusId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Emp_Bonus_Bonus");
+
+            entity.HasOne(d => d.Dep).WithMany()
+                .HasForeignKey(d => d.DepId)
+                .HasConstraintName("FK_Emp_Bonus_Department");
         });
 
         modelBuilder.Entity<ClockInAdjustmentRequest>(entity =>
