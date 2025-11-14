@@ -18,6 +18,7 @@
             <DashboardButtonGroup Buttons="@CompanyService" GroupName="Dịch vụ công ty" />
             <DashboardButtonGroup Buttons="@HRHeadService" GroupName="Dịch vụ trường phòng nhân lực" />
             <DashboardButtonGroup Buttons="@ITStaffService" GroupName="Dịch vụ nhân viên IT" />
+            <DashboardButtonGroup Buttons="@HRStaffService" GroupName="Dịch vụ nhân viên IT" />
 
 
         </div>
@@ -39,6 +40,8 @@
     private List<DashboardButton> CompanyService = new();
     private List<DashboardButton> HRHeadService = new();
     private List<DashboardButton> ITStaffService = new();
+    private List<DashboardButton> HRStaffService = new();
+
 
 
 
@@ -105,6 +108,11 @@
             new() { Text = "Quản lý tài khoản nhân viên", ImageSrc = "https://cdn-icons-png.flaticon.com/512/1828/1828926.png", OnClick = EventCallback.Factory.Create(this, NavigateAccountManagement), Visible = HasPermission("employee_account_management") },
         };
 
+        HRStaffService = new()
+        {
+            new() { Text = "Khai báo người phụ thuộc", ImageSrc = "https://cdn-icons-png.flaticon.com/512/1828/1828926.png", OnClick = EventCallback.Factory.Create(this, NavigateDependentManagement), Visible = HasPermission("declare_dependent") },
+        };
+
     }
 
     private bool HasPermission(string task)
@@ -113,6 +121,7 @@
         return Employee.Permissions.Contains(task);
     }
 
+    private void NavigateDependentManagement() => Navigation.NavigateTo("/dependent-management");
     private void NavigateAccountManagement() => Navigation.NavigateTo("/employees/group");
     private void NavigateAttendance() => Navigation.NavigateTo("/attendance/self");
     private void NavigateSelfKpi() => Navigation.NavigateTo("/kpi/self");
