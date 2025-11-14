@@ -33,6 +33,8 @@ public partial class Employee
 
     public virtual Department Dep { get; set; }
 
+    public virtual ICollection<EmpBonu> EmpBonus { get; set; } = new List<EmpBonu>();
+
     public virtual ICollection<EmployeeAllowance> EmployeeAllowanceCreatedByNavigations { get; set; } = new List<EmployeeAllowance>();
 
     public virtual ICollection<EmployeeAllowance> EmployeeAllowanceEmps { get; set; } = new List<EmployeeAllowance>();

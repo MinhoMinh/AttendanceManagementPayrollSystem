@@ -17,5 +17,7 @@ public partial class Tax
 
     public bool IsActive { get; set; }
 
+    public virtual ICollection<PayRun> PayRuns { get; set; } = new List<PayRun>();
+
     public virtual ICollection<TaxBracket> TaxBrackets { get; set; } = new List<TaxBracket>();
 }

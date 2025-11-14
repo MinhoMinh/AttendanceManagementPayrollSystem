@@ -20,6 +20,10 @@
          "ObjectType": 0
       },
       {
+         "Name": "[dbo].[Bonus]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[dbo].[Clockin]",
          "ObjectType": 0
       },
@@ -45,6 +49,10 @@
       },
       {
          "Name": "[dbo].[DepartmentWeeklyShift]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Emp_Bonus]",
          "ObjectType": 0
       },
       {

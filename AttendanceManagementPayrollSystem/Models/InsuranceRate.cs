@@ -26,4 +26,10 @@ public partial class InsuranceRate
     public bool IsActive { get; set; }
 
     public string Category { get; set; }
+
+    public virtual ICollection<PayRun> PayRunHealthInsurances { get; set; } = new List<PayRun>();
+
+    public virtual ICollection<PayRun> PayRunSocialInsurances { get; set; } = new List<PayRun>();
+
+    public virtual ICollection<PayRun> PayRunUnemployeeInsurances { get; set; } = new List<PayRun>();
 }

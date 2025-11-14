@@ -35,15 +35,35 @@ public partial class PayRun
 
     public DateTime? RejectedAt { get; set; }
 
+    public int? TaxId { get; set; }
+
+    public int? SocialInsuranceId { get; set; }
+
+    public int? HealthInsuranceId { get; set; }
+
+    public int? UnemployeeInsuranceId { get; set; }
+
+    public int? SalaryPolicyId { get; set; }
+
     public virtual Employee ApprovedFinalByNavigation { get; set; }
 
     public virtual Employee ApprovedFirstByNavigation { get; set; }
 
     public virtual Employee CreatedByNavigation { get; set; }
 
+    public virtual InsuranceRate HealthInsurance { get; set; }
+
     public virtual ICollection<OvertimeRequest> OvertimeRequests { get; set; } = new List<OvertimeRequest>();
 
     public virtual ICollection<PayRunItem> PayRunItems { get; set; } = new List<PayRunItem>();
 
     public virtual Employee RejectedByNavigation { get; set; }
+
+    public virtual SalaryPolicy SalaryPolicy { get; set; }
+
+    public virtual InsuranceRate SocialInsurance { get; set; }
+
+    public virtual Tax Tax { get; set; }
+
+    public virtual InsuranceRate UnemployeeInsurance { get; set; }
 }

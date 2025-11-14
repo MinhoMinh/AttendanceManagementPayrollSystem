@@ -19,5 +19,7 @@ public partial class Department
 
     public virtual ICollection<DepartmentWeeklyShift> DepartmentWeeklyShifts { get; set; } = new List<DepartmentWeeklyShift>();
 
+    public virtual ICollection<EmpBonu> EmpBonus { get; set; } = new List<EmpBonu>();
+
     public virtual ICollection<Employee> Employees { get; set; } = new List<Employee>();
 }

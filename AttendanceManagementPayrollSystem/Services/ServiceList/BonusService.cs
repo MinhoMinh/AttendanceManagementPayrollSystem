@@ -23,7 +23,7 @@ namespace AttendanceManagementPayrollSystem.Services.ServiceList
 
         public async Task<IEnumerable<BonusDTO>> GetAllAsync()
         {
-            var list = await _context.Bonuses
+            var list = await _context.Bonus
                 .OrderByDescending(b => b.BonusPeriod)
                 .Select(b => new BonusDTO
                 {
@@ -44,7 +44,7 @@ namespace AttendanceManagementPayrollSystem.Services.ServiceList
             // Đảm bảo luôn là ngày đầu tháng
             bonusPeriod = new DateOnly(bonusPeriod.Year, bonusPeriod.Month, 1);
 
-            var bonus = new Bonus
+            var bonus = new Bonu
             {
                 BonusName = request.BonusName,
                 BonusAmount = request.BonusAmount,
@@ -53,25 +53,25 @@ namespace AttendanceManagementPayrollSystem.Services.ServiceList
                 // Đã xóa CreatedBy theo yêu cầu
             };
 
-            _context.Bonuses.Add(bonus);
+            _context.Bonus.Add(bonus);
             await _context.SaveChangesAsync();
         }
 
         public async Task AssignAsync(AssignBonusRequest request)
         {
-            var bonus = await _context.Bonuses.FindAsync(request.BonusId);
+            var bonus = await _context.Bonus.FindAsync(request.BonusId);
             if (bonus == null)
                 throw new ArgumentException("Bonus not found");
 
             // Gán thưởng cho từng nhân viên trong request
             foreach (var empId in request.EmpIds.Distinct())
             {
-                var exists = await _context.EmpBonuses.AnyAsync(eb =>
+                var exists = await _context.EmpBonus.AnyAsync(eb =>
                     eb.EmpId == empId && eb.BonusId == request.BonusId && eb.DepId == request.DepId);
 
                 if (!exists)
                 {
-                    _context.EmpBonuses.Add(new EmpBonus
+                    _context.EmpBonus.Add(new EmpBonu
                     {
                         EmpId = empId,
                         BonusId = request.BonusId,
@@ -101,9 +101,9 @@ namespace AttendanceManagementPayrollSystem.Services.ServiceList
             // Lấy tất cả nhân viên phòng ban, join với EmpBonus + Bonus (left join để lấy nhân viên chưa có bonus)
             var rows = await (from e in _context.Employees
                               where e.DepId == depId
-                              join eb in _context.EmpBonuses on e.EmpId equals eb.EmpId into ebs
+                              join eb in _context.EmpBonus on e.EmpId equals eb.EmpId into ebs
                               from eb in ebs.DefaultIfEmpty()
-                              join b in _context.Bonuses on eb.BonusId equals b.BonusId into bs
+                              join b in _context.Bonus on eb.BonusId equals b.BonusId into bs
                               from b in bs.DefaultIfEmpty()
                               orderby e.EmpName
                               select new { e.EmpId, e.EmpName, Bonus = b }).ToListAsync();

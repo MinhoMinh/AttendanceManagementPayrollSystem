@@ -20,4 +20,6 @@ public partial class SalaryPolicy
     public DateTime EffectiveFrom { get; set; }
 
     public bool IsActive { get; set; }
+
+    public virtual ICollection<PayRun> PayRuns { get; set; } = new List<PayRun>();
 }
