@@ -1,9 +1,9 @@
-using AttendanceManagementPayrollSystem.UI;
 using AttendanceManagementPayrollSystem.DataAccess.Repositories;
+using AttendanceManagementPayrollSystem.Services.ServiceList;
+using AttendanceManagementPayrollSystem.UI;
 using Blazorise;
 using Blazorise.Bootstrap5;
 using Blazorise.Icons.FontAwesome;
-using AttendanceManagementPayrollSystem.Services.ServiceList;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -49,6 +49,8 @@ builder.Services.AddScoped<EmployeeService, EmployeeServiceImpl>();
 builder.Services.AddScoped<DepartmentWeeklyShiftService, DepartmentWeeklyShiftServiceImpl>();
 builder.Services.AddScoped<EmployeeDependentService, EmployeeDependentServiceImpl>();
 builder.Services.AddScoped<BonusService, BonusServiceImpl>();
+builder.Services.AddScoped<IAttendanceService, AttendanceServiceImpl>();
+builder.Services.AddScoped<IAttendanceRepository, AttendanceRepositoryImpl>();
 //builder.Services.AddScoped<ClockInAdjustmentRequestService, ClockInAdjustmentRequestServiceImpl>();
 //builder.Services.AddScoped<ClockinComponentService, ClockinComponentServiceImpl>();
 

@@ -35,6 +35,7 @@
     private List<DashboardButton> EmployeeService = new();
     private List<DashboardButton> DepartmentHeadService = new();
     private List<DashboardButton> CompanyService = new();
+    private List<DashboardButton> ManagerService = new();
 
     [Inject] INotificationService NotificationService { get; set; }
 
@@ -94,6 +95,10 @@
 
         //
         };
+        ManagerService = new()
+        {
+            new() { Text = "Xem thông kê chấm công", ImageSrc="https://cdn-icons-png.flaticon.com/512/3062/3062634.png", OnClick = EventCallback.Factory.Create(this, NavigateAllClockin), Visible = HasPermission("all_clockin") },
+        };
 
     }
 
@@ -131,5 +136,6 @@
     private void NavigateInsuranceTaxPolicy() => Navigation.NavigateTo("/rates-tax");
     private void NavigateShiftManagement() => Navigation.NavigateTo("/shift-management");
 
+    private void NavigateAllClockin() => Navigation.NavigateTo("/allclockin");
     
 }

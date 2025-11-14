@@ -20,10 +20,10 @@
                     <SelectItem Value="DisplayedView.Monthly">Theo tháng</SelectItem>
                 </Select>
             </Field>
-            
 
-        @if (SelectedView == DisplayedView.Monthly)
-        {
+
+            @if (SelectedView == DisplayedView.Monthly)
+            {
                 <Field>
                     <FieldLabel>Chọn tháng/năm</FieldLabel>
                     <FieldBody>
@@ -220,7 +220,8 @@
             {
                 NotificationService.Warning("Không thể tìm thấy thông tin nhân viên!", "Lỗi");
                 return;
-            };
+            }
+            ;
 
             Employee = JsonSerializer.Deserialize<EmployeeDTO>(empJson);
             StateHasChanged();
@@ -281,7 +282,8 @@
         {
             NotificationService.Warning("Không tìm thấy thông tin nhân viên!", "Lỗi");
             return;
-        };
+        }
+        ;
 
         var client = HttpFactory.CreateClient("ApiClient");
 
