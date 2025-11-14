@@ -13,33 +13,140 @@
     body {
         font-family: 'Inter', sans-serif;
     }
+
     @@keyframes skeleton-pulse {
-        0%, 100%
-    {
-        opacity: 1;
+        0%, 100% {
+            opacity: 1;
+        }
+
+        50% {
+            opacity: 0.5;
+        }
     }
-    50% {
-        opacity: 0.5;
-    }
-    }
+
     .skeleton {
-        background-color: #e5e7eb;
+        background: linear-gradient(90deg, #FFE4A1 0%, #ffd67a 50%, #FFE4A1 100%);
+        background-size: 200% 100%;
         animation: skeleton-pulse 1.5s ease-in-out infinite;
     }
+
     .card-hover {
         transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: 2px solid #97322D;
     }
+
         .card-hover:hover {
             transform: translateY(-4px);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            box-shadow: 0 20px 25px -5px rgba(151, 50, 45, 0.3), 0 10px 10px -5px rgba(151, 50, 45, 0.2);
+        }
+
+    .custom-gradient-bg {
+        background: linear-gradient(135deg, #FFE4A1 0%, #fff5d9 50%, #ffffff 100%);
+    }
+
+    .custom-header-gradient {
+        background: linear-gradient(135deg, #97322D 0%, #7a2824 100%);
+    }
+
+    .custom-ring {
+        box-shadow: 0 0 0 3px rgba(151, 50, 45, 0.3), 0 0 0 6px rgba(255, 228, 161, 0.5);
+    }
+
+    .day-card {
+        transition: all 0.3s ease;
+        border: 2px solid #FFE4A1;
+    }
+
+        .day-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(151, 50, 45, 0.2);
+            border-color: #97322D;
+        }
+
+    .shift-badge {
+        transition: all 0.3s ease;
+        border: 1px solid #97322D;
+    }
+
+        .shift-badge:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(151, 50, 45, 0.25);
+        }
+
+    .shift-regular {
+        background: linear-gradient(135deg, #FFE4A1 0%, #ffd67a 100%);
+        color: #97322D;
+    }
+
+    .shift-overtime {
+        background: linear-gradient(135deg, #97322D 0%, #7a2824 100%);
+        color: #FFE4A1;
+    }
+
+    .stat-card {
+        transition: all 0.3s ease;
+        border: 2px solid #FFE4A1;
+    }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px rgba(255, 228, 161, 0.4);
+            border-color: #97322D;
+        }
+
+    .stat-card-1 {
+        background: linear-gradient(135deg, #FFE4A1 0%, #fff5d9 100%);
+        color: #97322D;
+    }
+
+    .stat-card-2 {
+        background: linear-gradient(135deg, #97322D 0%, #7a2824 100%);
+        color: #FFE4A1;
+    }
+
+    .stat-card-3 {
+        background: linear-gradient(135deg, #FFE4A1 0%, #ffd67a 100%);
+        color: #97322D;
+    }
+
+    .stat-card-4 {
+        background: linear-gradient(135deg, #fffdf9 0%, #FFE4A1 100%);
+        color: #97322D;
+    }
+
+    .no-data-icon {
+        background: linear-gradient(135deg, #FFE4A1 0%, #ffd67a 100%);
+        border: 3px dashed #97322D;
+    }
+
+    .update-badge {
+        background: linear-gradient(135deg, #FFE4A1 0%, #ffd67a 100%);
+        color: #97322D;
+        border: 2px solid #97322D;
+        transition: all 0.3s ease;
+    }
+
+        .update-badge:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(151, 50, 45, 0.3);
         }
 </style>
-<div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 py-8 px-4 sm:px-6 lg:px-8">
+<div class="min-h-screen custom-gradient-bg py-8 px-4 sm:px-6 lg:px-8">
     <div class="max-w-6xl mx-auto">
         <!-- Header -->
-        <div class="text-center mb-8">
-            <h1 class="text-3xl font-bold text-gray-800 mb-2">Lịch Ca Làm Việc Tuần Này</h1>
-            <p class="text-gray-600">Theo dõi chi tiết ca làm • Tăng ca • Giờ công</p>
+        <div class="mb-8">
+            <button @onclick="NavigateToDashboard" 
+                    class="mb-4 inline-flex items-center px-4 py-2 rounded-lg font-medium transition-all duration-300 hover:scale-105"
+                    style="background: linear-gradient(135deg, #97322D 0%, #7a2824 100%); color: #FFE4A1; border: 2px solid #97322D;">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                </svg>
+                Về Dashboard
+            </button>
+            <div class="text-center">
+                <h1 class="text-3xl font-bold mb-2" style="color: #97322D;">Lịch Ca Làm Việc Tuần Này</h1>
+                <p class="text-gray-700">Theo dõi chi tiết ca làm • Tăng ca • Giờ công</p>
+            </div>
         </div>
         @* Loading *@
         @if (loading)
@@ -47,16 +154,16 @@
             <div class="bg-white rounded-2xl shadow-lg p-6 card-hover">
                 <div class="space-y-6">
                     <div class="flex justify-between items-center">
-                        <div class="h-8 w-64 bg-gray-200 rounded skeleton"></div>
-                        <div class="h-10 w-36 bg-gray-200 rounded skeleton"></div>
+                        <div class="h-8 w-64 rounded skeleton"></div>
+                        <div class="h-10 w-36 rounded skeleton"></div>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-7 gap-4">
                         @for (int i = 0; i < 7; i++)
                         {
-                            <div class="border border-gray-200 rounded-xl p-4 text-center">
-                                <div class="h-5 w-16 bg-gray-200 rounded skeleton mx-auto"></div>
-                                <div class="h-8 w-8 bg-gray-200 rounded-full skeleton mx-auto mt-2"></div>
-                                <div class="h-12 w-full bg-gray-200 rounded skeleton mt-3"></div>
+                            <div class="border-2 border-gray-200 rounded-xl p-4 text-center">
+                                <div class="h-5 w-16 rounded skeleton mx-auto"></div>
+                                <div class="h-8 w-8 rounded-full skeleton mx-auto mt-2"></div>
+                                <div class="h-12 w-full rounded skeleton mt-3"></div>
                             </div>
                         }
                     </div>
@@ -67,9 +174,13 @@
         else if (shift == null)
         {
             <div class="bg-white rounded-2xl shadow-lg p-12 text-center card-hover">
-                <div class="bg-gray-200 border-2 border-dashed rounded-xl w-28 h-28 mx-auto mb-6"></div>
-                <h3 class="text-xl font-semibold text-gray-700 mb-2">Chưa có lịch ca tuần này</h3>
-                <p class="text-gray-500">Vui lòng liên hệ quản lý để được phân công.</p>
+                <div class="no-data-icon rounded-xl w-28 h-28 mx-auto mb-6 flex items-center justify-center">
+                    <svg class="w-16 h-16" style="color: #97322D;" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <h3 class="text-xl font-semibold mb-2" style="color: #97322D;">Chưa có lịch ca tuần này</h3>
+                <p class="text-gray-600">Vui lòng liên hệ quản lý để được phân công.</p>
             </div>
         }
         @* Data *@
@@ -77,14 +188,14 @@
         {
             <div class="bg-white rounded-2xl shadow-lg overflow-hidden card-hover">
                 <!-- Header -->
-                <div class="bg-gradient-to-r from-indigo-600 to-blue-700 text-white p-6">
+                <div class="custom-header-gradient text-white p-6">
                     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
                         <div>
                             <h2 class="text-2xl font-bold">@employeeName</h2>
-                            <p class="text-indigo-100 text-sm">Mã NV: @employeeId • @currentWeekInfo</p>
+                            <p class="text-sm" style="color: #FFE4A1;">Mã NV: @employeeId • @currentWeekInfo</p>
                         </div>
                         <div class="mt-3 sm:mt-0">
-                            <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-white text-indigo-700">
+                            <span class="update-badge inline-flex items-center px-4 py-2 rounded-full text-sm font-medium">
                                 <svg class="w-4 h-4 mr-1.5" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
                                 </svg>
@@ -101,13 +212,13 @@
                             var isToday = day.Date.Date == DateTime.Today;
                             var isWeekend = day.Date.DayOfWeek == DayOfWeek.Saturday || day.Date.DayOfWeek == DayOfWeek.Sunday;
                             var hasShift = day.ShiftDtos?.Any() == true;
-                            <div class="@(isToday ? "ring-2 ring-indigo-500 ring-offset-2" : "")
-                                                 @(isWeekend ? "bg-gray-50" : "bg-white")
-                                                 border @(hasShift ? "border-indigo-200" : "border-gray-200") rounded-xl p-4 text-center transition-all duration-200 hover:shadow-md">
+                            <div class="day-card @(isToday ? "custom-ring" : "")
+                                                         @(isWeekend ? "bg-gray-50" : "bg-white")
+                                                         rounded-xl p-4 text-center">
                                 <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider">
                                     @(day.Date.ToString("ddd"))
                                 </div>
-                                <div class="text-2xl font-bold text-gray-800 mt-1">
+                                <div class="text-2xl font-bold mt-1" style="color: #97322D;">
                                     @day.Date.Day
                                 </div>
                                 <div class="text-xs text-gray-500">
@@ -119,13 +230,12 @@
                                         @foreach (var s in day.ShiftDtos!)
                                         {
                                             var isOvertime = s.WorkUnits > 1.0m;
-                                            <!-- ĐÃ SỬA: CĂN GIỮA HOÀN HẢO -->
                                             <div class="flex justify-center">
-                                                <div class="p-2 rounded-lg text-xs font-medium @(isOvertime ? "bg-amber-100 text-amber-800" : "bg-emerald-100 text-emerald-800")">
+                                                <div class="shift-badge p-2 rounded-lg text-xs font-medium @(isOvertime ? "shift-overtime" : "shift-regular")">
                                                     <div class="w-32 min-w-32 text-xs font-semibold whitespace-nowrap overflow-hidden text-ellipsis text-center">
                                                         @s
                                                     </div>
-                                                    <div class="text-xs opacity-80 text-center mt-1">
+                                                    <div class="text-xs opacity-90 text-center mt-1">
                                                         @(s.WorkHours.ToString("F1"))h • @(s.WorkUnits.ToString("F1"))c
                                                     </div>
                                                     @if (isOvertime)
@@ -142,21 +252,21 @@
                     </div>
                     <!-- Stats -->
                     <div class="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <div class="bg-blue-50 rounded-xl p-4 text-center">
-                            <div class="text-2xl font-bold text-blue-700">@TotalWorkingDays</div>
-                            <div class="text-xs text-blue-600 uppercase font-medium">Ngày làm</div>
+                        <div class="stat-card stat-card-1 rounded-xl p-4 text-center">
+                            <div class="text-2xl font-bold">@TotalWorkingDays</div>
+                            <div class="text-xs uppercase font-medium">Ngày làm</div>
                         </div>
-                        <div class="bg-emerald-50 rounded-xl p-4 text-center">
-                            <div class="text-2xl font-bold text-emerald-700">@(TotalHours.ToString("F1"))</div>
-                            <div class="text-xs text-emerald-600 uppercase font-medium">Tổng giờ</div>
+                        <div class="stat-card stat-card-2 rounded-xl p-4 text-center">
+                            <div class="text-2xl font-bold">@(TotalHours.ToString("F1"))</div>
+                            <div class="text-xs uppercase font-medium">Tổng giờ</div>
                         </div>
-                        <div class="bg-amber-50 rounded-xl p-4 text-center">
-                            <div class="text-2xl font-bold text-amber-700">@OvertimeCount</div>
-                            <div class="text-xs text-amber-600 uppercase font-medium">Ca OT</div>
+                        <div class="stat-card stat-card-3 rounded-xl p-4 text-center">
+                            <div class="text-2xl font-bold">@OvertimeCount</div>
+                            <div class="text-xs uppercase font-medium">Ca OT</div>
                         </div>
-                        <div class="bg-purple-50 rounded-xl p-4 text-center">
-                            <div class="text-2xl font-bold text-purple-700">@LeaveDays</div>
-                            <div class="text-xs text-purple-600 uppercase font-medium">Ngày nghỉ</div>
+                        <div class="stat-card stat-card-4 rounded-xl p-4 text-center">
+                            <div class="text-2xl font-bold">@LeaveDays</div>
+                            <div class="text-xs uppercase font-medium">Ngày nghỉ</div>
                         </div>
                     </div>
                 </div>
@@ -218,5 +328,10 @@
     private int GetWeekNumber(DateTime date)
     {
         return CultureInfo.CurrentCulture.Calendar.GetWeekOfYear(date, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday);
+    }
+
+    private void NavigateToDashboard()
+    {
+        Navigation.NavigateTo("/dashboard");
     }
 }
