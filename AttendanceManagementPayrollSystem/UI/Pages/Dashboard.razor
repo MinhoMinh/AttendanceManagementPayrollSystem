@@ -16,6 +16,7 @@
             <DashboardButtonGroup Buttons="@EmployeeService" GroupName="Dịch vụ nhân viên" />
             <DashboardButtonGroup Buttons="@DepartmentHeadService" GroupName="Dịch vụ trưởng phòng" />
             <DashboardButtonGroup Buttons="@CompanyService" GroupName="Dịch vụ công ty" />
+            <DashboardButtonGroup Buttons="@ManagerService" GroupName="Dịch vụ quản lý" />
         </div>
     </LayoutContent>
 
@@ -33,6 +34,7 @@
     private List<DashboardButton> EmployeeService = new();
     private List<DashboardButton> DepartmentHeadService = new();
     private List<DashboardButton> CompanyService = new();
+    private List<DashboardButton> ManagerService = new();
 
     [Inject] INotificationService NotificationService { get; set; }
 
@@ -68,7 +70,7 @@
             new() { Text = "Lịch làm việc", ImageSrc="https://cdn-icons-png.flaticon.com/512/1077/1077976.png", OnClick = EventCallback.Factory.Create(this, NavigateSelfShift), Visible = HasPermission("has_shift") },
             new() { Text = "Bảng lương cá nhân", ImageSrc = "https://cdn-icons-png.flaticon.com/512/3135/3135695.png", OnClick = EventCallback.Factory.Create(this, NavigateSelfPayItem), Visible = HasPermission("view_employee_payroll") },
             new() { Text = "Gio vuot", ImageSrc="https://cdn-icons-png.flaticon.com/512/1077/1077976.png", OnClick = EventCallback.Factory.Create(this, NavigateSelfOvertime), Visible = HasPermission("has_overtime_request") },
-            
+
         };
 
         DepartmentHeadService = new()
@@ -85,6 +87,10 @@
             new() { Text = "Thiết lập ngày lễ", ImageSrc = "https://cdn-icons-png.flaticon.com/512/616/616408.png", OnClick = EventCallback.Factory.Create(this, NavigateHolidaySetup), Visible = HasPermission("edit_holiday_calendar") },
             new() { Text = "Chính sách lương", ImageSrc = "https://cdn-icons-png.flaticon.com/512/709/709496.png", OnClick = EventCallback.Factory.Create(this, NavigateSalaryPolicy), Visible = HasPermission("edit_salary_policy") },
             new() { Text = "Chính sách bảo hiểm/thuế", ImageSrc = "https://cdn-icons-png.flaticon.com/512/942/942799.png", OnClick = EventCallback.Factory.Create(this, NavigateInsuranceTaxPolicy), Visible = HasPermission("edit_tax_insurance") },
+        };
+        ManagerService = new()
+        {
+            new() { Text = "Xem thông kê chấm công", ImageSrc="https://cdn-icons-png.flaticon.com/512/3062/3062634.png", OnClick = EventCallback.Factory.Create(this, NavigateAllClockin), Visible = HasPermission("all_clockin") },
         };
 
     }
@@ -118,5 +124,6 @@
     private void NavigateHolidaySetup() => Navigation.NavigateTo("/department-holiday");
     private void NavigateSalaryPolicy() => Navigation.NavigateTo("/salary-policies");
     private void NavigateInsuranceTaxPolicy() => Navigation.NavigateTo("/rates-tax");
+    private void NavigateAllClockin() => Navigation.NavigateTo("/allclockin");
     
 }

@@ -1,4 +1,6 @@
 ﻿@page "/attendance/self"
+@using AttendanceManagementPayrollSystem.UI.Components
+@using Blazorise
 
 @using System.Net.Http.Json
 @using AttendanceManagementPayrollSystem.DTO
@@ -18,43 +20,43 @@
                     <SelectItem Value="DisplayedView.Monthly">Theo tháng</SelectItem>
                 </Select>
             </Field>
-            
 
-        @if (SelectedView == DisplayedView.Monthly)
-        {
+
+            @if (SelectedView == DisplayedView.Monthly)
+            {
                 <Field>
                     <FieldLabel>Chọn tháng/năm</FieldLabel>
                     <FieldBody>
                         <Div Class="d-flex flex-column picker-container" Position="Position.Relative">
-                        <DatePicker TValue="DateTime?"
-                                    Date="@SelectedDate"
-                                        DateChanged="@(value => OnMonthlyDateChanged(value))"
-                                    DisplayFormat="MM/yyyy" />
+                            <Blazorise.DatePicker TValue="DateTime?"
+                                                  Date="@SelectedDate"
+                                                  DateChanged="@(value => OnMonthlyDateChanged(value))"
+                                                  DisplayFormat="MM/yyyy" />
                         </Div>
                     </FieldBody>
                 </Field>
-        }
-        else if (SelectedView == DisplayedView.Annual)
-        {
-            <Div Class="d-flex flex-row align-items-start gap-2">
-                <Field>
-                    <FieldLabel>Ngày bắt đầu</FieldLabel>
-                    <FieldBody>
-                        <Div Class="d-flex flex-column picker-container" Position="Position.Relative">
-                            <DatePicker TValue="DateTime?"
-                                        Date="@SelectedDate"
-                                            DateChanged="@(value => OnAnnualDateChanged(value))"
-                                        DisplayFormat="dd/MM/yyyy" />
-                        </Div>
-                    </FieldBody>
-                    <FieldHelp>Format: DD/MM/YYYY</FieldHelp>
-                </Field>
-                <Field>
-                    <FieldLabel>Số tháng hiển thị</FieldLabel>
-                    <NumericEdit TValue="int" @bind-Value="MonthsToDisplay" Min="1" Max="12" />
-                </Field>
-            </Div>
-        }
+            }
+            else if (SelectedView == DisplayedView.Annual)
+            {
+                <Div Class="d-flex flex-row align-items-start gap-2">
+                    <Field>
+                        <FieldLabel>Ngày bắt đầu</FieldLabel>
+                        <FieldBody>
+                            <Div Class="d-flex flex-column picker-container" Position="Position.Relative">
+                                <Blazorise.DatePicker TValue="DateTime?"
+                                                      Date="@SelectedDate"
+                                                      DateChanged="@(value => OnAnnualDateChanged(value))"
+                                                      DisplayFormat="dd/MM/yyyy" />
+                            </Div>
+                        </FieldBody>
+                        <FieldHelp>Format: DD/MM/YYYY</FieldHelp>
+                    </Field>
+                    <Field>
+                        <FieldLabel>Số tháng hiển thị</FieldLabel>
+                        <NumericEdit TValue="int" @bind-Value="MonthsToDisplay" Min="1" Max="12" />
+                    </Field>
+                </Div>
+            }
         </Div>
     </CardBody>
 </Card>
@@ -92,7 +94,7 @@
                             <div class="d-flex flex-column gap-2">
                                 @foreach (var comp in DayClockins.Take(3))
                                 {
-                                    <ClockinDayView Component="@comp" OnReportClicked="OpenReportModal"/>
+                                    <ClockinDayView Component="@comp" OnReportClicked="OpenReportModal" />
                                 }
                             </div>
                         }
@@ -194,11 +196,12 @@
         {
             _initialized = true;
             var empJson = await JS.InvokeAsync<string>("localStorage.getItem", "employee");
-            if (string.IsNullOrWhiteSpace(empJson)) 
+            if (string.IsNullOrWhiteSpace(empJson))
             {
                 NotificationService.Warning("Không thể tìm thấy thông tin nhân viên!", "Lỗi");
                 return;
-            };
+            }
+            ;
 
             Employee = JsonSerializer.Deserialize<EmployeeDTO>(empJson);
             StateHasChanged();
@@ -211,7 +214,7 @@
         var newDate = value ?? DateTime.Today;
         var normalized = new DateTime(newDate.Year, newDate.Month, 1);
 
-        bool monthChanged = 
+        bool monthChanged =
              SelectedDate.Month != normalized.Month
             || SelectedDate.Year != normalized.Year;
 
@@ -248,7 +251,8 @@
         {
             NotificationService.Warning("Không tìm thấy thông tin nhân viên!", "Lỗi");
             return;
-        };
+        }
+        ;
 
         var client = HttpFactory.CreateClient("ApiClient");
         var response = await client.GetFromJsonAsync<ClockinDTO>($"api/clockin/employee?empId={Employee.EmpId}&month={SelectedDate.Month}&year={SelectedDate.Year}");
@@ -273,14 +277,14 @@
                 string color = isFull ? "#90EE90" : "#FFB6C1";
 
                 MonthlyTasks.Add(new Tasks
-                    {
-                        ID = id++,
-                        DateStart = new DateTime(MonthlyClockin.Date.Year, MonthlyClockin.Date.Month, record.Day),
-                        DateEnd = new DateTime(MonthlyClockin.Date.Year, MonthlyClockin.Date.Month, record.Day),
-                        Code = $"Giờ làm: {(record.ActualHour ?? 0m):F2}/{(record.ScheduledHour ?? 0m):F2}",
-                        Caption = "Lorem ipsum dolor sit amet",
-                        Color = color,
-                    });
+                {
+                    ID = id++,
+                    DateStart = new DateTime(MonthlyClockin.Date.Year, MonthlyClockin.Date.Month, record.Day),
+                    DateEnd = new DateTime(MonthlyClockin.Date.Year, MonthlyClockin.Date.Month, record.Day),
+                    Code = $"Giờ làm: {(record.ActualHour ?? 0m):F2}/{(record.ScheduledHour ?? 0m):F2}",
+                    Caption = "Lorem ipsum dolor sit amet",
+                    Color = color,
+                });
             }
         }
 
