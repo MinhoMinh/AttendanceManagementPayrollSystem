@@ -5,6 +5,7 @@ using AttendanceManagementPayrollSystem.DTO;
 using Microsoft.EntityFrameworkCore;
 using DocumentFormat.OpenXml.InkML;
 using AttendanceManagementPayrollSystem.Services.ServiceList;
+using AttendanceManagementPayrollSystem.Services.Helper;
 
 namespace AttendanceManagementPayrollSystem.Controllers
 {
@@ -44,28 +45,69 @@ namespace AttendanceManagementPayrollSystem.Controllers
             return Ok(result);
         }
 
-        [HttpPost("uploadxls")]
-        public async Task<ActionResult<List<ClockinDTO>>> UploadXls()
+        //[HttpPost("uploadxls")]
+        //public async Task<ActionResult<List<ClockinDTO>>> UploadXls()
+        //{
+        //    if (Request.ContentLength == null || Request.ContentLength == 0)
+        //        return BadRequest("No file content received");
+
+        //    using var mem = new MemoryStream();
+        //    await Request.Body.CopyToAsync(mem);
+        //    mem.Position = 0;
+
+        //    System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
+        //    using var reader = ExcelReaderFactory.CreateBinaryReader(mem);
+        //    var ds = reader.AsDataSet();
+
+        //    if (ds.Tables.Count < 3) return BadRequest("Sheet 3 not found");
+
+        //    var data = await _clockinService.ReadClockinData(ds.Tables[2]);
+
+        //    if (data == null || data.Count == 0) return NotFound("Không tìm thấy dữ liệu.");
+
+        //    return Ok(data);
+        //}
+
+        [HttpPost("upload-table")]
+        public async Task<ActionResult<List<ClockinDTO>>> UploadTable([FromBody] TableTransfer data)
         {
-            if (Request.ContentLength == null || Request.ContentLength == 0)
-                return BadRequest("No file content received");
+            if (data == null || data.Rows?.Count == 0)
+                return BadRequest("Empty table");
 
-            using var mem = new MemoryStream();
-            await Request.Body.CopyToAsync(mem);
-            mem.Position = 0;
+            // convert back to DataTable if needed
+            var table = ConvertBack(data);
+            var result = await _clockinService.ReadClockinData(table);
 
-            System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
-            using var reader = ExcelReaderFactory.CreateBinaryReader(mem);
-            var ds = reader.AsDataSet();
+            if (result == null ) return NotFound("Không tìm thấy dữ liệu.");
+            if (result.Count == 0) return NotFound("Rong");
 
-            if (ds.Tables.Count < 3) return BadRequest("Sheet 3 not found");
-            
-            var data = await _clockinService.ReadClockinData(ds.Tables[2]);
-
-            if (data == null || data.Count == 0) return NotFound("Không tìm thấy dữ liệu.");
-
-            return Ok(data);
+            return Ok(result);
         }
+
+        private DataTable ConvertBack(TableTransfer t)
+        {
+            var dt = new DataTable();
+
+            foreach (var col in t.Columns)
+                dt.Columns.Add(col);
+
+            foreach (var row in t.Rows)
+                dt.Rows.Add(row.ToArray());
+
+            return dt;
+        }
+
+
+        [HttpPost("test-post")]
+        public async Task<IActionResult> TestPost([FromBody] TableTransfer data)
+        {
+            Console.WriteLine("what?");
+            var table = ConvertBack(data);
+            Console.WriteLine($"POST test table {table == null}");
+
+            return Ok($"POST test {table == null}");
+        }
+
 
         [HttpPost("upload-clockin")]
         public async Task<IActionResult> UploadClockins([FromBody] List<ClockinDTO> clockins)
@@ -99,3 +141,6 @@ namespace AttendanceManagementPayrollSystem.Controllers
         }
     }
 }
+
+
+

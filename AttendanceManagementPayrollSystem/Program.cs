@@ -90,7 +90,15 @@ builder.Services
 .AddBootstrap5Providers()
 .AddFontAwesomeIcons();
 
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+
 var app = builder.Build();
+
+
+    app.UseDeveloperExceptionPage();
+
+
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
@@ -106,9 +114,10 @@ app.UseStaticFiles();
 app.UseAntiforgery();
 app.UseAuthorization();
 
+app.MapControllers();
+
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
-app.MapControllers();
 
 app.Run();

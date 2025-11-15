@@ -1,6 +1,7 @@
 ﻿@page "/"
 @page "/login"
 
+@using AttendanceManagementPayrollSystem.Services.Helper
 @using UI.Layout
 @layout NoHeaderLayout
 
@@ -96,5 +97,27 @@
         {
             ErrorMessage = "Lỗi đăng nhập: " + ex.Message;
         }
+    }
+
+    [Inject] INotificationService NotificationService { get; set; }
+
+    private async Task What()
+    {
+        var client = HttpFactory.CreateClient("ApiClient");
+
+        var sample = new TableTransfer
+        {
+            Columns = new List<string> { "EmpId", "Date", "Hours" },
+            Rows = new List<List<string>>
+            {
+                new() { "1", "2025-01-10", "8" },
+                new() { "2", "2025-01-10", "7.5" }
+            }
+        };
+
+        var response = await client.PostAsJsonAsync("api/clockin/test-post", sample);
+
+        var text = await response.Content.ReadAsStringAsync();
+        NotificationService.Warning(text, "Lỗi");
     }
 }
