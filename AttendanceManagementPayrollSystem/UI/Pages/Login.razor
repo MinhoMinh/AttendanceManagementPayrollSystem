@@ -1,123 +1,341 @@
 ﻿@page "/"
 @page "/login"
-
-@using AttendanceManagementPayrollSystem.Services.Helper
 @using UI.Layout
 @layout NoHeaderLayout
-
 @using AttendanceManagementPayrollSystem.DTO
 @inject IHttpClientFactory HttpFactory
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
+<PageTitle>Đăng nhập - Đồng Tiến Bakery</PageTitle>
 
-<PageTitle>Đăng nhập</PageTitle>
+<style>
+    body {
+        background: linear-gradient(135deg, #FFEAA1 0%, #A85B4A 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .login-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        padding: 20px;
+    }
+
+    .login-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 60px rgba(151, 50, 45, 0.3);
+        overflow: hidden;
+        width: 100%;
+        max-width: 450px;
+        animation: slideUp 0.5s ease-out;
+    }
+
+    @@keyframes slideUp {
+        from
+
+    {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    }
+
+    .login-header {
+        background: linear-gradient(135deg, #97322D 0%, #c9442f 100%);
+        padding: 40px 30px;
+        text-align: center;
+        color: white;
+    }
+
+    .logo-small {
+        width: 60px;
+        height: 60px;
+        margin-bottom: 15px;
+        animation: fadeIn 0.6s ease-out;
+    }
+
+    .logo-large {
+        width: 300px;
+        height: auto;
+        margin-bottom: 20px;
+        animation: fadeIn 0.8s ease-out;
+    }
+
+    .login-header h4 {
+        font-size: 28px;
+        font-weight: 600;
+        margin: 0;
+        letter-spacing: 0.5px;
+    }
+
+    .login-header p {
+        font-size: 14px;
+        opacity: 0.9;
+        margin-top: 8px;
+    }
+
+    @@keyframes fadeIn {
+        from
+
+    {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+
+    }
+
+    .login-body {
+        padding: 40px 30px;
+    }
+
+    .form-group {
+        margin-bottom: 25px;
+    }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #97322D;
+            font-size: 15px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #FFE4A1;
+            border-radius: 10px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            background-color: #fafafa;
+        }
+
+            .form-group input:focus {
+                outline: none;
+                border-color: #97322D;
+                background-color: white;
+                box-shadow: 0 0 0 3px rgba(255, 228, 161, 0.3);
+            }
+
+    .password-wrapper {
+        position: relative;
+    }
+
+    .toggle-password {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: #97322D;
+        cursor: pointer;
+        font-size: 18px;
+        padding: 5px 10px;
+        transition: color 0.3s ease;
+    }
+
+        .toggle-password:hover {
+            color: #FFE4A1;
+        }
+
+    .error-message {
+        background-color: #fee;
+        border-left: 4px solid #97322D;
+        color: #97322D;
+        padding: 12px 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        font-size: 14px;
+        animation: slideDown 0.3s ease-out;
+    }
+
+    @@keyframes slideDown {
+        from
+
+    {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    }
+
+    .submit-btn {
+        width: 100%;
+        padding: 14px;
+        background: linear-gradient(135deg, #97322D 0%, #c9442f 100%);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 10px;
+        letter-spacing: 0.5px;
+        box-shadow: 0 4px 15px rgba(151, 50, 45, 0.2);
+    }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(151, 50, 45, 0.4);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+    .footer-text {
+        text-align: center;
+        margin-top: 20px;
+        color: #999;
+        font-size: 12px;
+    }
+</style>
 
 <Layout>
-    <Container class="mt-5 d-flex justify-content-center">
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <img src="https://dongtienbakery.com/image/data/logo/Logo%20m%E1%BB%9Bi.png"
+                     alt="Logo Đồng Tiến Bakery" class="logo-large">
+                <h4>Đăng Nhập</h4>
+                <p>Hệ Thống Quản Lý Công và Tính Lương</p>
+            </div>
 
-        <Card Style="width:400px;">
-            <CardHeader>
-                <h4 class="text-center mb-0">Đăng nhập</h4>
-            </CardHeader>
-
-            <CardBody>
+            <div class="login-body">
                 @if (!string.IsNullOrEmpty(ErrorMessage))
                 {
-                    <Alert Color="Color.Danger" Visible="true">
-                        @ErrorMessage
-                    </Alert>
+                    <div class="error-message">
+                        <strong>⚠️ Lỗi:</strong> @ErrorMessage
+                    </div>
                 }
 
-                <EditForm Model="loginRequest" OnValidSubmit="HandleLogin">
+                <EditForm Model="loginRequest" OnValidSubmit="HandleLogin" FormName="LoginForm">
                     <DataAnnotationsValidator />
 
-                    <Field>
-                        <Label for="username">Tên đăng nhập</Label>
-                        <TextEdit @bind-Text="loginRequest.Username"
-                                  Placeholder="Nhập tên đăng nhập" />
-                    </Field>
-
-                    <Field>
-                        <Label for="password">Mật khẩu</Label>
-                        <TextEdit @bind-Text="loginRequest.Password"
-                                  Placeholder="Nhập mật khẩu"
-                                  TextRole="Password" />
-                    </Field>
-
-                    <div class="d-flex justify-content-end mt-3">
-                        <Button Color="Color.Primary"
-                                Type="ButtonType.Submit"
-                                Size="Size.Large"
-                                FullWidth="true">
-                            Đăng nhập
-                        </Button>
+                    <div class="form-group">
+                        <label for="username">Tên Đăng Nhập</label>
+                        <input type="text"
+                               id="username"
+                               @bind="loginRequest.Username"
+                               placeholder="Nhập tên đăng nhập của bạn"
+                               autocomplete="username" />
                     </div>
+
+                    <div class="form-group">
+                        <label for="password">Mật Khẩu</label>
+                        <div class="password-wrapper">
+                            <input type="@passwordInputType"
+                                   id="password"
+                                   @bind="loginRequest.Password"
+                                   placeholder="Nhập mật khẩu của bạn"
+                                   autocomplete="current-password" />
+                            <button type="button"
+                                    class="toggle-password"
+                                    @onclick="TogglePasswordVisibility"
+                                    title="@(showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu")">
+                                @if (showPassword)
+                                {
+                                    <span>👁️</span>
+                                }
+                                else
+                                {
+                                    <span>👁️‍🗨️</span>
+                                }
+                            </button>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="submit-btn" disabled="@isSubmitting">
+                        @if (isSubmitting)
+                        {
+                            <span>⏳ Đang Đăng Nhập...</span>
+                        }
+                        else
+                        {
+                            <span>Đăng Nhập</span>
+                        }
+                    </button>
                 </EditForm>
-            </CardBody>
-        </Card>
 
-    </Container>
+                <div class="footer-text">
+                    <p>© 2024 Đồng Tiến Bakery - Hệ Thống Quản Lý Công và Tính Lương</p>
+                </div>
+            </div>
+        </div>
+    </div>
 </Layout>
-
 
 @code {
     private LoginRequest loginRequest = new();
     private string ErrorMessage;
+    private bool showPassword = false;
+    private string passwordInputType = "password";
+    private bool isSubmitting = false;
+
+    private void TogglePasswordVisibility()
+    {
+        showPassword = !showPassword;
+        passwordInputType = showPassword ? "text" : "password";
+    }
 
     private async Task HandleLogin(EditContext context)
     {
         try
         {
-            var client = HttpFactory.CreateClient("ApiClient");
+            isSubmitting = true;
+            ErrorMessage = null;
 
-            var response = await client.PostAsJsonAsync(
-                "api/auth/login",
-                loginRequest
-            );
-
+            var client = HttpFactory.CreateClient();
+            var response = await client.PostAsJsonAsync("http://localhost:5038/api/auth/login", loginRequest);
 
             if (!response.IsSuccessStatusCode)
             {
-                ErrorMessage = await response.Content.ReadAsStringAsync() ?? "Đăng nhập thất bại";
+                ErrorMessage = await response.Content.ReadAsStringAsync() ?? "Đăng nhập thất bại. Vui lòng thử lại.";
+                isSubmitting = false;
                 return;
             }
 
             var employeeDto = await response.Content.ReadFromJsonAsync<EmployeeDTO>();
-
             if (employeeDto?.EmpId != null)
             {
                 var employeeJson = System.Text.Json.JsonSerializer.Serialize(employeeDto);
                 await JS.InvokeVoidAsync("localStorage.setItem", "employee", employeeJson);
                 await JS.InvokeVoidAsync("console.log", employeeDto.EmpId, employeeDto.EmpName, employeeDto.EmpRole, employeeDto.Permissions);
-            }
 
-            Navigation.NavigateTo("/dashboard");
+                Navigation.NavigateTo("/dashboard");
+            }
         }
         catch (Exception ex)
         {
             ErrorMessage = "Lỗi đăng nhập: " + ex.Message;
+            isSubmitting = false;
         }
-    }
-
-    [Inject] INotificationService NotificationService { get; set; }
-
-    private async Task What()
-    {
-        var client = HttpFactory.CreateClient("ApiClient");
-
-        var sample = new TableTransfer
-        {
-            Columns = new List<string> { "EmpId", "Date", "Hours" },
-            Rows = new List<List<string>>
-            {
-                new() { "1", "2025-01-10", "8" },
-                new() { "2", "2025-01-10", "7.5" }
-            }
-        };
-
-        var response = await client.PostAsJsonAsync("api/clockin/test-post", sample);
-
-        var text = await response.Content.ReadAsStringAsync();
-        NotificationService.Warning(text, "Lỗi");
     }
 }

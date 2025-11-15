@@ -16,6 +16,7 @@
         public BalanceDTO Vacation { get; set; }
         public BalanceDTO Overtime { get; set; }
         public DateTime? LastUpdated { get; set; }
+        public bool IsActive { get; set; }
     }
 
     public class BalanceDTO

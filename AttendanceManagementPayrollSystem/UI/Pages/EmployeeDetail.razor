@@ -1,5 +1,6 @@
 ﻿@page "/employees/detail/{Id:int}"
 @using AttendanceManagementPayrollSystem.DTO
+@using Microsoft.AspNetCore.WebUtilities
 @inject IHttpClientFactory HttpFactory
 @inject NavigationManager Nav
 
@@ -651,6 +652,11 @@
 
     protected override async Task OnInitializedAsync()
     {
+        var uri = Nav.ToAbsoluteUri(Nav.Uri);
+        if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("from", out var from))
+        {
+            From = from;
+        }
         var client = HttpFactory.CreateClient("ApiClient");
         var response = await client.GetAsync($"api/employee/view/{Id}");
         if (response.IsSuccessStatusCode)
@@ -660,7 +666,14 @@
         isLoading = false;
     }
 
-    private void GoBack() => Nav.NavigateTo("/employees/group");
+    [Parameter] public string? From { get; set; }
+    private void GoBack()
+    {
+        if (From == "view")
+            Nav.NavigateTo("/employees/group/view");
+        else
+            Nav.NavigateTo("/employees/group");
+    }
 
     private string GetInitials(string name)
     {

@@ -1,32 +1,206 @@
-﻿<Bar ThemeContrast="ThemeContrast.Light" Background="Background.Light" Padding="Padding.Is3.OnY"
-     Mode="BarMode.Horizontal">
+﻿@using AttendanceManagementPayrollSystem.DTO
+@using System.Text.Json
+
+<Bar ThemeContrast="ThemeContrast.Light" Background="Background.Light" Padding="Padding.Is3.OnY"
+     Mode="BarMode.Horizontal" Style="background: linear-gradient(135deg, #E8B75A 0%, #FFE4A1 100%); box-shadow: 0 2px 8px rgba(151, 50, 45, 0.15); border-bottom: 3px solid #97322D;">
     <BarBrand Class="ps-4">
-        <BarLink To="/dashboard">
-            <strong>AMPS</strong>
+        <BarLink To="/dashboard" Style="display: flex; align-items: center; gap: 12px; text-decoration: none;">
+            <img src="https://dongtienbakery.com/image/data/logo/Logo%20m%E1%BB%9Bi.png"
+                 alt="Đồng Tiến Logo"
+                 style="height: 45px; width: auto; filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.1));" />
+            <strong style="color: #97322D; font-size: 24px; font-weight: 700; letter-spacing: 1px; text-shadow: 1px 1px 2px rgba(255, 228, 161, 0.5);">AMPS</strong>
         </BarLink>
     </BarBrand>
 
     <BarEnd Class="me-4 pe-4">
-        <div class="position-relative d-inline-block">
-            <Dropdown Direction="Direction.Down" DropdownPositionStrategy="DropdownPositionStrategy.Absolute">
-                <DropdownToggle Color="Color.Info" Class="pe-3">
-                    Tài khoản
-                </DropdownToggle>
-                <DropdownMenu Class="position-absolute mt-1 w-auto" Style="min-width:150px;">
-                    <DropdownItem To="/settings">Cài đặt</DropdownItem>
-                    <DropdownDivider />
-                    <DropdownItem Clicked="Logout">Đăng xuất</DropdownItem>
-                </DropdownMenu>
-            </Dropdown>
-        </div>
+        @if (Employee != null)
+        {
+            <div class="d-flex align-items-center gap-3">
+                <!-- Employee Info Display -->
+                <div class="employee-info-card" style="background-color: rgba(255, 255, 255, 0.9); padding: 8px 16px; border-radius: 8px; border: 2px solid #97322D; box-shadow: 0 2px 6px rgba(151, 50, 45, 0.15);">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="employee-avatar" style="width: 36px; height: 36px; background: linear-gradient(135deg, #97322D 0%, #7A2824 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #FFE4A1; font-weight: 700; font-size: 16px; box-shadow: 0 2px 4px rgba(151, 50, 45, 0.3);">
+                            @GetInitials(Employee.EmpName)
+                        </div>
+                        <div style="line-height: 1.3;">
+                            <div style="color: #97322D; font-weight: 700; font-size: 14px;">@Employee.EmpName</div>
+                            <div style="color: #7A2824; font-size: 11px; font-weight: 500;">
+                                <i class="fas fa-briefcase" style="font-size: 10px; margin-right: 4px;"></i>@Employee.EmpRole
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Account Dropdown -->
+                <div class="position-relative d-inline-block">
+                    <Dropdown Direction="Direction.Down" DropdownPositionStrategy="DropdownPositionStrategy.Absolute">
+                        <DropdownToggle Color="Color.Info" Class="pe-3" Style="background-color: #97322D; border-color: #97322D; color: #FFE4A1; font-weight: 600; padding: 10px 20px; border-radius: 8px; box-shadow: 0 3px 6px rgba(151, 50, 45, 0.3); transition: all 0.3s ease;">
+                            <i class="fas fa-user-circle me-2"></i>Tài khoản
+                        </DropdownToggle>
+                        <DropdownMenu Class="position-absolute mt-1 w-auto" Style="min-width: 280px; border-radius: 10px; border: 2px solid #97322D; box-shadow: 0 4px 12px rgba(151, 50, 45, 0.2); background-color: #FFFEF9;">
+                            <!-- Employee Profile Section -->
+                            <div style="padding: 16px; border-bottom: 2px solid #FFE4A1; background: linear-gradient(135deg, rgba(232, 183, 90, 0.1) 0%, rgba(255, 228, 161, 0.1) 100%);">
+                                <div class="d-flex align-items-center gap-3 mb-2">
+                                    <div class="employee-avatar-large" style="width: 48px; height: 48px; background: linear-gradient(135deg, #97322D 0%, #7A2824 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #FFE4A1; font-weight: 700; font-size: 20px; box-shadow: 0 3px 6px rgba(151, 50, 45, 0.3);">
+                                        @GetInitials(Employee.EmpName)
+                                    </div>
+                                    <div style="flex: 1;">
+                                        <div style="color: #97322D; font-weight: 700; font-size: 16px; margin-bottom: 2px;">@Employee.EmpName</div>
+                                        <div style="color: #7A2824; font-size: 12px; font-weight: 500;">
+                                            <i class="fas fa-id-badge" style="margin-right: 4px;"></i>ID: @Employee.EmpId
+                                        </div>
+                                    </div>
+                                </div>
+                                <div style="background-color: rgba(151, 50, 45, 0.1); padding: 6px 10px; border-radius: 6px; margin-top: 8px;">
+                                    <div style="color: #97322D; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
+                                        <i class="fas fa-briefcase" style="margin-right: 6px;"></i>@Employee.EmpRole
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Permissions Section -->
+                            @if (Employee.Permissions != null && Employee.Permissions.Any())
+                            {
+                                <div style="padding: 12px 16px; border-bottom: 1px solid #FFE4A1;">
+                                    <div style="color: #97322D; font-size: 11px; font-weight: 700; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px;">
+                                        <i class="fas fa-shield-alt me-1"></i>Quyền hạn
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        @foreach (var permission in Employee.Permissions.Take(5))
+                                        {
+                                            <span style="background-color: #FFE4A1; color: #97322D; padding: 4px 10px; border-radius: 12px; font-size: 10px; font-weight: 600; border: 1px solid #E8B75A;">
+                                                @permission
+                                            </span>
+                                        }
+                                        @if (Employee.Permissions.Count > 3)
+                                        {
+                                            <span style="background-color: #97322D; color: #FFE4A1; padding: 4px 10px; border-radius: 12px; font-size: 10px; font-weight: 600;">
+                                                +@(Employee.Permissions.Count - 5)
+                                            </span>
+                                        }
+                                    </div>
+                                </div>
+                            }
+
+                            <!-- Menu Items -->
+                            <DropdownItem To="/profile" Style="color: #97322D; font-weight: 500; padding: 12px 16px; transition: background-color 0.2s ease;">
+                                <i class="fas fa-user me-2"></i>Hồ sơ cá nhân
+                            </DropdownItem>
+                            <DropdownItem To="/settings" Style="color: #97322D; font-weight: 500; padding: 12px 16px; transition: background-color 0.2s ease;">
+                                <i class="fas fa-cog me-2"></i>Cài đặt
+                            </DropdownItem>
+                            <DropdownDivider Style="border-color: #FFE4A1; margin: 4px 0;" />
+                            <DropdownItem Clicked="Logout" Style="color: #97322D; font-weight: 600; padding: 12px 16px; transition: background-color 0.2s ease;">
+                                <i class="fas fa-sign-out-alt me-2"></i>Đăng xuất
+                            </DropdownItem>
+                        </DropdownMenu>
+                    </Dropdown>
+                </div>
+            </div>
+        }
+        else
+        {
+            <!-- Fallback if Employee is null -->
+            <div class="position-relative d-inline-block">
+                <Dropdown Direction="Direction.Down" DropdownPositionStrategy="DropdownPositionStrategy.Absolute">
+                    <DropdownToggle Color="Color.Info" Class="pe-3" Style="background-color: #97322D; border-color: #97322D; color: #FFE4A1; font-weight: 600; padding: 10px 20px; border-radius: 8px; box-shadow: 0 3px 6px rgba(151, 50, 45, 0.3); transition: all 0.3s ease;">
+                        <i class="fas fa-user-circle me-2"></i>Tài khoản
+                    </DropdownToggle>
+                    <DropdownMenu Class="position-absolute mt-1 w-auto" Style="min-width:180px; border-radius: 8px; border: 2px solid #97322D; box-shadow: 0 4px 12px rgba(151, 50, 45, 0.2); background-color: #FFFEF9;">
+                        <DropdownItem To="/settings" Style="color: #97322D; font-weight: 500; padding: 10px 16px; transition: background-color 0.2s ease;">
+                            <i class="fas fa-cog me-2"></i>Cài đặt
+                        </DropdownItem>
+                        <DropdownDivider Style="border-color: #FFE4A1; margin: 4px 0;" />
+                        <DropdownItem Clicked="Logout" Style="color: #97322D; font-weight: 500; padding: 10px 16px; transition: background-color 0.2s ease;">
+                            <i class="fas fa-sign-out-alt me-2"></i>Đăng xuất
+                        </DropdownItem>
+                    </DropdownMenu>
+                </Dropdown>
+            </div>
+        }
     </BarEnd>
 </Bar>
 
+<style>
+    /* Hover effects cho dropdown toggle */
+    .dropdown-toggle:hover {
+        background-color: #7A2824 !important;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 10px rgba(151, 50, 45, 0.4) !important;
+    }
+
+    /* Hover effects cho dropdown items */
+    .dropdown-item:hover {
+        background-color: #FFE4A1 !important;
+        color: #97322D !important;
+    }
+
+    /* Active state cho brand link */
+    .bar-brand a:hover strong {
+        color: #7A2824;
+        transform: scale(1.05);
+        display: inline-block;
+        transition: all 0.3s ease;
+    }
+
+    .bar-brand a:hover img {
+        transform: scale(1.08);
+        transition: all 0.3s ease;
+    }
+
+    /* Employee info card animation */
+    .employee-info-card {
+        transition: all 0.3s ease;
+    }
+
+        .employee-info-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(151, 50, 45, 0.25) !important;
+        }
+
+    /* Avatar pulse effect */
+    .employee-avatar, .employee-avatar-large {
+        transition: all 0.3s ease;
+    }
+
+        .employee-avatar:hover, .employee-avatar-large:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(151, 50, 45, 0.5) !important;
+        }
+</style>
+
 @code
 {
+    private EmployeeDTO? Employee;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var empJson = await JS.InvokeAsync<string>("localStorage.getItem", "employee");
+            if (!string.IsNullOrEmpty(empJson))
+            {
+                Employee = JsonSerializer.Deserialize<EmployeeDTO>(empJson);
+                StateHasChanged();
+            }
+        }
+    }
+
+
+    private string GetInitials(string? name)
+    {
+        if (string.IsNullOrWhiteSpace(name)) return "??";
+
+        var parts = name.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length == 0) return "??";
+        if (parts.Length == 1) return parts[0].Substring(0, Math.Min(2, parts[0].Length)).ToUpper();
+
+        // Take first char of first name and first char of last name
+        return $"{parts[0][0]}{parts[^1][0]}".ToUpper();
+    }
+
     private void Logout()
     {
-        // clear localStorage and redirect to login
         JS.InvokeVoidAsync("localStorage.clear");
         Navigation.NavigateTo("/login", forceLoad: true);
     }

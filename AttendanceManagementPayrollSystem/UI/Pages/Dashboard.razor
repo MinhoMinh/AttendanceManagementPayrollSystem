@@ -9,24 +9,77 @@
 <PageTitle>Bảng điều khiển</PageTitle>
 
 <Layout>
-    <LayoutHeader>
-        <h4 class="m-2">Bảng điều khiển</h4>
+    <LayoutHeader Style="background: linear-gradient(135deg, #97322D 0%, #7A2824 100%); box-shadow: 0 4px 12px rgba(151, 50, 45, 0.3); padding: 20px 0;">
+        <div class="d-flex align-items-center justify-content-between px-4">
+            <h3 class="m-0" style="color: #FFE4A1; font-weight: 700; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">
+                <i class="fas fa-tachometer-alt me-3"></i>Bảng điều khiển
+            </h3>
+            @if (Employee != null)
+            {
+                <div style="color: #FFE4A1; font-weight: 500;">
+                    <i class="fas fa-user-circle me-2"></i>Xin chào, <strong>@Employee.EmpName</strong>
+                </div>
+            }
+        </div>
     </LayoutHeader>
 
-    <LayoutContent>
-        <div class="m-3">
-            <DashboardButtonGroup Buttons="@EmployeeService" GroupName="Dịch vụ nhân viên" />
-            <DashboardButtonGroup Buttons="@DepartmentHeadService" GroupName="Dịch vụ trưởng phòng" />
-            <DashboardButtonGroup Buttons="@CompanyService" GroupName="Dịch vụ công ty" />
-
-
+    <LayoutContent Style="background: linear-gradient(180deg, #FFF9ED 0%, #FFFEF9 100%); min-height: calc(100vh - 120px);">
+        <div class="m-4">
+            @if (isLoading)
+            {
+                <div class="text-center py-5">
+                    <div class="spinner-border" style="color: #97322D;" role="status">
+                        <span class="visually-hidden">Đang tải...</span>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <DashboardButtonGroup Buttons="@EmployeeService" GroupName="Dịch vụ nhân viên" Icon="fas fa-user-tie" />
+                <DashboardButtonGroup Buttons="@DepartmentHeadService" GroupName="Dịch vụ trưởng phòng" Icon="fas fa-users-cog" />
+                <DashboardButtonGroup Buttons="@CompanyService" GroupName="Dịch vụ công ty" Icon="fas fa-building" />
+                <DashboardButtonGroup Buttons="@HRHeadService" GroupName="Dịch vụ trưởng phòng nhân lực" Icon="fas fa-user-shield" />
+                <DashboardButtonGroup Buttons="@ITStaffService" GroupName="Dịch vụ nhân viên IT" Icon="fas fa-laptop-code" />
+                <DashboardButtonGroup Buttons="@HRStaffService" GroupName="Dịch vụ nhân viên nhân sự" Icon="fas fa-clipboard-user" />
+            }
         </div>
     </LayoutContent>
-
-    
 </Layout>
 
 <Toaster />
+
+<style>
+    /* Card styling */
+    .card {
+        border: 2px solid #FFE4A1;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(151, 50, 45, 0.1);
+        transition: all 0.3s ease;
+        background: white;
+    }
+
+        .card:hover {
+            box-shadow: 0 8px 20px rgba(151, 50, 45, 0.2);
+            transform: translateY(-2px);
+        }
+
+    /* Header animation */
+    @@keyframes fadeInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .layout-header {
+        animation: fadeInDown 0.5s ease;
+    }
+</style>
 
 @code {
     bool toastVisible = false;
@@ -37,13 +90,18 @@
     private List<DashboardButton> EmployeeService = new();
     private List<DashboardButton> DepartmentHeadService = new();
     private List<DashboardButton> CompanyService = new();
-    private List<DashboardButton> ManagerService = new();
+    private List<DashboardButton> HRHeadService = new();
+    private List<DashboardButton> ITStaffService = new();
+    private List<DashboardButton> HRStaffService = new();
 
     [Inject] INotificationService NotificationService { get; set; }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender) return;
+
+        isLoading = true;
+        StateHasChanged();
 
         try
         {
@@ -59,6 +117,7 @@
         }
 
         BuildButtonGroups();
+        isLoading = false;
         StateHasChanged();
     }
 
@@ -69,19 +128,15 @@
         EmployeeService = new()
         {
             new() { Text = "Lịch tổng hợp", ImageSrc="https://cdn-icons-png.flaticon.com/512/3062/3062634.png", OnClick = EventCallback.Factory.Create(this, NavigateAttendance), Visible = HasPermission("has_clockin") },
-            //new() { Text = "Self KPI", ImageSrc="https://cdn-icons-png.flaticon.com/512/3135/3135715.png", OnClick = EventCallback.Factory.Create(this, NavigateSelfKpi), Visible = HasPermission("has_kpi") },
             new() { Text = "Lịch làm việc", ImageSrc="https://cdn-icons-png.flaticon.com/512/1077/1077976.png", OnClick = EventCallback.Factory.Create(this, NavigateSelfShift), Visible = HasPermission("has_shift") },
             new() { Text = "Bảng lương cá nhân", ImageSrc = "https://cdn-icons-png.flaticon.com/512/3135/3135695.png", OnClick = EventCallback.Factory.Create(this, NavigateSelfPayItem), Visible = HasPermission("view_employee_payroll") },
-            new() { Text = "Gio vuot", ImageSrc="https://cdn-icons-png.flaticon.com/512/1077/1077976.png", OnClick = EventCallback.Factory.Create(this, NavigateSelfOvertime), Visible = HasPermission("has_overtime_request") },
             new() { Text = "Nghi phep", ImageSrc="https://cdn-icons-png.flaticon.com/512/1077/1077976.png", OnClick = EventCallback.Factory.Create(this, NavigateSelfLeave), Visible = HasPermission("has_leave_request") },
-
+            new() { Text = "Giờ vượt", ImageSrc="https://cdn-icons-png.flaticon.com/512/1077/1077976.png", OnClick = EventCallback.Factory.Create(this, NavigateSelfOvertime), Visible = HasPermission("has_overtime_request") },
         };
 
         DepartmentHeadService = new()
         {
-            //new() { Text = "Dep KPI", ImageSrc="https://cdn-icons-png.flaticon.com/512/1995/1995574.png", OnClick = EventCallback.Factory.Create(this, NavigateDepKpi), Visible = HasPermission("assign_kpi") },
-            new() { Text = "Gio vuot phong ban", ImageSrc="https://cdn-icons-png.flaticon.com/512/1077/1077976.png", OnClick = EventCallback.Factory.Create(this, NavigateHeadOvertime), Visible = true },
-
+            new() { Text = "Giờ vượt phòng ban", ImageSrc="https://cdn-icons-png.flaticon.com/512/1077/1077976.png", OnClick = EventCallback.Factory.Create(this, NavigateHeadOvertime), Visible = true },
         };
 
         CompanyService = new()
@@ -102,7 +157,6 @@
         {
             new() { Text = "Xem thông kê chấm công", ImageSrc="https://cdn-icons-png.flaticon.com/512/3062/3062634.png", OnClick = EventCallback.Factory.Create(this, NavigateAllClockin), Visible = HasPermission("all_clockin") },
         };
-
     }
 
     private bool HasPermission(string task)
@@ -128,7 +182,6 @@
 
         Navigation.NavigateTo($"/payrun/{empId}/{month}/{year}");
     }
-
 
     private void NavigateDepKpi() => Navigation.NavigateTo("/kpi/head");
     private void NavigateHeadOvertime() => Navigation.NavigateTo("/overtime/head");

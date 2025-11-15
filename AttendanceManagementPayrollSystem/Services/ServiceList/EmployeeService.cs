@@ -15,5 +15,7 @@ namespace AttendanceManagementPayrollSystem.Services.ServiceList
 
 
         Task<IEnumerable<EmployeeGroupByDepartmentDTO>> GetEmployeesGroupedByDepartmentAsync();
+
+        Task<bool> UpdateStatusAsync(EmployeeStatusUpdateDTO dto);
     }
 }

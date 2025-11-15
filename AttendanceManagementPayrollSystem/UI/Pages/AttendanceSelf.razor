@@ -13,10 +13,66 @@
 <PageTitle>Lịch tổng hợp</PageTitle>
 
 <Card>
+<style>
+    .header-card {
+        background: linear-gradient(135deg, #FFE4A1 0%, #FFF5DC 100%);
+        border: 2px solid #97322D;
+        border-radius: 8px;
+    }
+
+    .calendar-card {
+        border: 2px solid #FFE4A1;
+        border-radius: 8px;
+    }
+
+    .calendar-card .card-header {
+        background-color: #97322D;
+        color: white;
+        font-weight: bold;
+    }
+
+    .detail-card {
+        background-color: #FFF9F0;
+        border: 2px solid #97322D;
+        border-radius: 8px;
+    }
+
+    .detail-card .card-header {
+        background-color: #FFE4A1;
+        color: #97322D;
+        font-weight: bold;
+        border-bottom: 2px solid #97322D;
+    }
+
+    .field-label {
+        color: #97322D;
+        font-weight: 600;
+    }
+
+    .picker-container .form-control {
+        border: 2px solid #FFE4A1;
+    }
+
+    .picker-container .form-control:focus {
+        border-color: #97322D;
+        box-shadow: 0 0 0 0.2rem rgba(151, 50, 45, 0.25);
+    }
+
+    .employee-info {
+        background-color: #FFE4A1;
+        padding: 10px 15px;
+        border-radius: 6px;
+        color: #97322D;
+        font-weight: 600;
+        margin-bottom: 15px;
+    }
+</style>
+
+<Card Class="header-card">
     <CardBody>
         <Div Class="d-flex flex-row align-items-start gap-3">
             <Field>
-                <FieldLabel>Xem theo</FieldLabel>
+                <FieldLabel Class="field-label">Xem theo</FieldLabel>
                 <Select TValue="DisplayedView" @bind-SelectedValue="SelectedView">
                     <SelectItem Value="DisplayedView.Annual">Theo năm</SelectItem>
                     <SelectItem Value="DisplayedView.Monthly">Theo tháng</SelectItem>
@@ -27,7 +83,7 @@
             @if (SelectedView == DisplayedView.Monthly)
             {
                 <Field>
-                    <FieldLabel>Chọn tháng/năm</FieldLabel>
+                    <FieldLabel Class="field-label">Chọn tháng/năm</FieldLabel>
                     <FieldBody>
                         <Div Class="d-flex flex-column picker-container" Position="Position.Relative">
                         <Blazorise.DatePicker TValue="DateTime?"
@@ -39,7 +95,7 @@
                 </Field>
 
                 <Field>
-                    <FieldLabel>Loại hiển thị</FieldLabel>
+                    <FieldLabel Class="field-label">Loại hiển thị</FieldLabel>
                     <FieldBody>
                         <Div Class="d-flex flex-row align-items-center gap-3">
                             <Check TValue="bool" @bind-Checked="ShowCongMonthly">Công</Check>
@@ -54,7 +110,7 @@
         {
             <Div Class="d-flex flex-row align-items-start gap-2">
                 <Field>
-                    <FieldLabel>Ngày bắt đầu</FieldLabel>
+                    <FieldLabel Class="field-label">Ngày bắt đầu</FieldLabel>
                     <FieldBody>
                         <Div Class="d-flex flex-column picker-container" Position="Position.Relative">
                             <Blazorise.DatePicker TValue="DateTime?"
@@ -66,13 +122,13 @@
                     <FieldHelp>Format: DD/MM/YYYY</FieldHelp>
                 </Field>
                 <Field>
-                    <FieldLabel>Số tháng hiển thị</FieldLabel>
+                    <FieldLabel Class="field-label">Số tháng hiển thị</FieldLabel>
                     <NumericEdit TValue="int" @bind-Value="MonthsToDisplay" Min="1" Max="12" />
                 </Field>
             </Div>
 
                 <Field>
-                    <FieldLabel>Loại hiển thị</FieldLabel>
+                    <FieldLabel Class="field-label">Loại hiển thị</FieldLabel>
                     <RadioGroup TValue="string"
                                 CheckedValue="@AnnualViewType"
                                 CheckedValueChanged="@OnAnnualViewTypeChanged">
@@ -90,11 +146,13 @@
 <div class="row mt-3">
     <!-- Left: Calendar view -->
     <div class="col-md-10 col-12">
-        <Card>
+        <Card Class="calendar-card">
             <CardHeader>Lịch</CardHeader>
             <CardBody>
                 <!-- Optional info above calendar -->
-                <p class="mb-2"><strong>Employee:</strong> @Employee?.EmpName</p>
+                <div class="employee-info">
+                    <strong>Employee:</strong> @Employee?.EmpName
+                </div>
 
                 <CalendarContainer DisplayedView="SelectedView" FirstDate="@SelectedDate" TasksList="@ShownTasks.ToArray()">
                     <AnnualView Months="@MonthsToDisplay" TaskClick="ViewDay" />
@@ -106,13 +164,13 @@
 
     <!-- Right: Day details -->
     <div class="col-md-2 col-12 mt-2 mt-md-0">
-        <Card>
+        <Card Class="detail-card">
             <CardHeader>Chi tiết ngày</CardHeader>
             <CardBody>
                 @if (SelectedDay != null)
                 {
                     <div>
-                        <p><strong>Ngày:</strong> @SelectedDay.Value.ToString("dd/MM/yyyy")</p>
+                        <p style="color: #97322D; font-weight: 600;"><strong>Ngày:</strong> @SelectedDay.Value.ToString("dd/MM/yyyy")</p>
 
                         @if (DayClockins != null && DayClockins.Any())
                         {
@@ -139,7 +197,7 @@
                 }
                 else
                 {
-                    <p>Chọn một ngày để xem chi tiết</p>
+                    <p style="color: #97322D;">Chọn một ngày để xem chi tiết</p>
                 }
             </CardBody>
         </Card>
