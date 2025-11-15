@@ -7,6 +7,10 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
     {
         Task<LeaveRequest> AddAsync(LeaveRequest request);
         Task<IEnumerable<LeaveRequest>> GetByEmployeeIdAsync(int empId);
+
+        Task<IEnumerable<LeaveRequest>> GetLeaveByEmployeeId(int empId, DateOnly? startDate, DateOnly? endDate);
+
+        IEnumerable<LeaveType> GetRates();
     }
 }
 

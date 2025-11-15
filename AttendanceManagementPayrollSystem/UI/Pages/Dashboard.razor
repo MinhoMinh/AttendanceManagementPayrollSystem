@@ -6,6 +6,8 @@
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
 
+<PageTitle>Bảng điều khiển</PageTitle>
+
 <Layout>
     <LayoutHeader>
         <h4 class="m-2">Bảng điều khiển</h4>
@@ -71,6 +73,7 @@
             new() { Text = "Lịch làm việc", ImageSrc="https://cdn-icons-png.flaticon.com/512/1077/1077976.png", OnClick = EventCallback.Factory.Create(this, NavigateSelfShift), Visible = HasPermission("has_shift") },
             new() { Text = "Bảng lương cá nhân", ImageSrc = "https://cdn-icons-png.flaticon.com/512/3135/3135695.png", OnClick = EventCallback.Factory.Create(this, NavigateSelfPayItem), Visible = HasPermission("view_employee_payroll") },
             new() { Text = "Gio vuot", ImageSrc="https://cdn-icons-png.flaticon.com/512/1077/1077976.png", OnClick = EventCallback.Factory.Create(this, NavigateSelfOvertime), Visible = HasPermission("has_overtime_request") },
+            new() { Text = "Nghi phep", ImageSrc="https://cdn-icons-png.flaticon.com/512/1077/1077976.png", OnClick = EventCallback.Factory.Create(this, NavigateSelfLeave), Visible = HasPermission("has_leave_request") },
 
         };
 
@@ -114,6 +117,7 @@
     private void NavigateSelfKpi() => Navigation.NavigateTo("/kpi/self");
     private void NavigateSelfShift() => Navigation.NavigateTo("/shift/self");
     private void NavigateSelfOvertime() => Navigation.NavigateTo("/overtime/self");
+    private void NavigateSelfLeave() => Navigation.NavigateTo("/leave/self");
     private void NavigateBonus() => Navigation.NavigateTo("/bonus-manager");
     private void NavigateSelfPayItem()
     {

@@ -147,5 +147,11 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
                             })
                             .ToListAsync();
         }
+
+        public async Task AddRoleForNewEmployee(EmployeeRole er)
+        {
+            this._context.EmployeeRoles.Add(er);
+            await this._context.SaveChangesAsync();
+        }
     }
 }

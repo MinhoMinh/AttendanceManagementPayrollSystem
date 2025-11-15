@@ -8,7 +8,7 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
         public static void DoScoped(WebApplicationBuilder builder)
         {
             builder.Services.AddDbContextPool<AttendanceManagementPayrollSystemContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
+                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection2"))
             );
             builder.Services.AddScoped<EmployeeRepository, EmployeeRepositoryImpl>();
             builder.Services.AddScoped<ClockinRepository, ClockinRepositoryImpl>();

@@ -9,6 +9,9 @@
 @inject IJSRuntime JS
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+
+<PageTitle>Lịch làm việc</PageTitle>
+
 <style>
     body {
         font-family: 'Inter', sans-serif;
@@ -200,9 +203,13 @@
                 if (emp == null) { loading = false; StateHasChanged(); return; }
                 employeeId = emp.EmpId.ToString();
                 employeeName = emp.EmpName;
-                var client = ClientFactory.CreateClient();
-                client.BaseAddress = new Uri("http://localhost:5038/");
-                shift = await client.GetFromJsonAsync<WeeklyShiftDto>($"api/shift/self?empId={emp.EmpId}");
+
+                var client = ClientFactory.CreateClient("ApiClient");
+
+                shift = await client.GetFromJsonAsync<WeeklyShiftDto>(
+                    $"api/shift/self?empId={emp.EmpId}"
+                );
+
             }
             catch (Exception ex)
             {

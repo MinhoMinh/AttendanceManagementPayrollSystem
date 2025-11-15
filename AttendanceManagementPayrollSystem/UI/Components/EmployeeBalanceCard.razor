@@ -55,25 +55,6 @@
 
 
 @code {
-    //[Parameter]
-    //public EmployeeBalanceDto Data { get; set; } = new EmployeeBalanceDto();
-
-    private EmployeeBalanceDto Data = new()
-        {
-            Id = 1,
-            EmpId = 1001,
-            PtoAvailable = 12.5m,
-            PtoUsed = 3.0m,
-            PtoTotal = 15.5m,
-            SickAvailable = 8.0m,
-            SickUsed = 1.0m,
-            SickTotal = 9.0m,
-            VacationAvailable = 10.0m,
-            VacationUsed = 2.0m,
-            VacationTotal = 12.0m,
-            OvertimeAvailable = 5.0m,
-            OvertimeUsed = 0.0m,
-            OvertimeTotal = 5.0m,
-            LastUpdated = DateTime.UtcNow
-        };
+    [Parameter]
+    public EmployeeBalanceDto Data { get; set; } = new EmployeeBalanceDto();
 }

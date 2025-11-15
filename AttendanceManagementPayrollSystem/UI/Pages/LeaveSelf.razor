@@ -1,12 +1,11 @@
-﻿@page "/overtime/self"
+﻿@page "/leave/self"
 @using System.Net.Http.Json
 @using AttendanceManagementPayrollSystem.DTO
 @using System.Text.Json
+@using AttendanceManagementPayrollSystem.DTOs
 @using AttendanceManagementPayrollSystem.Models
 @inject IJSRuntime JS
 @inject IHttpClientFactory HttpFactory
-
-<PageTitle>Giờ vượt</PageTitle>
 
 <div class="d-flex" style="width:100%; gap:1rem;">
 
@@ -20,12 +19,12 @@
                     <div class="d-flex" style="gap:0.5rem;">
                         <div>
                             <label>Tu ngay</label>
-                            <Blazorise.DatePicker TValue="DateOnly?" Date="fromDate" DateChanged="LoadData" />
+                            <Blazorise.DatePicker TValue="DateTime?" Date="fromDate" DateChanged="LoadData" />
                         </div>
 
                         <div>
                             <label>Den ngay</label>
-                            <Blazorise.DatePicker TValue="DateOnly?" Date="toDate" DateChanged="LoadData" />
+                            <Blazorise.DatePicker TValue="DateTime?" Date="toDate" DateChanged="LoadData" />
                         </div>
                     </div>
 
@@ -56,8 +55,8 @@
                             @foreach (var item in requests)
                             {
                                 <TableRow @onclick="() => Select(item)">
-                                    <TableRowCell>@item.ReqDate</TableRowCell>
-                                    <TableRowCell>@item.Hours</TableRowCell>
+                                    <TableRowCell>@item.StartDate</TableRowCell>
+                                    <TableRowCell>@item.NumbersOfDays</TableRowCell>
                                     <TableRowCell>@item.Status</TableRowCell>
                                 </TableRow>
                             }
@@ -75,19 +74,19 @@
         {
             <Card Class="p-3">
                 <CardBody>
-                    <h6 class="fw-bold mb-3">Chi tiết yêu cầu</h6>
+                    <h6 class="fw-bold mb-3">Chi tiết đơn nghỉ phép</h6>
 
-                    <div class="mb-2"><strong>Ngày:</strong> @selected.ReqDate</div>
-                    <div class="mb-2"><strong>Bắt đầu:</strong> @selected.StartTime</div>
-                    <div class="mb-2"><strong>Kết thúc:</strong> @selected.EndTime</div>
-                    <div class="mb-2"><strong>Giờ:</strong> @selected.Hours</div>
-                    <div class="mb-2"><strong>Loại:</strong> @selected.OvertimeTypeName</div>
+                    <div class="mb-2"><strong>Mã yêu cầu:</strong> @selected.ReqId</div>
+                    <div class="mb-2"><strong>Nhân viên ID:</strong> @selected.EmpId</div>
+                    <div class="mb-2"><strong>Bắt đầu:</strong> @selected.StartDate.ToShortDateString()</div>
+                    <div class="mb-2"><strong>Kết thúc:</strong> @selected.EndDate.ToShortDateString()</div>
+                    <div class="mb-2"><strong>Số ngày nghỉ:</strong> @selected.NumbersOfDays</div>
+                    <div class="mb-2"><strong>Loại nghỉ:</strong> @selected.TypeId</div>
                     <div class="mb-2"><strong>Trạng thái:</strong> @selected.Status</div>
                     <div class="mb-2"><strong>Lý do:</strong> @selected.Reason</div>
-                    <div class="mb-2"><strong>Duyệt bởi:</strong> @selected.ApprovedByName</div>
-                    <div class="mb-2"><strong>Ngày duyệt:</strong> @selected.ApprovedDate</div>
                 </CardBody>
             </Card>
+
         }
     </div>
 
@@ -98,38 +97,35 @@
        Class="overtime-modal"
        Backdrop="Backdrop.Static">
 
-    <ModalHeader>Thêm yêu cầu tăng ca</ModalHeader>
+    <ModalHeader>Thêm yêu cầu nghi phep</ModalHeader>
 
     <ModalBody class="p-3" style="background:#f5f5f5;">
-        <div class="mb-2">
-            <label>Ngày</label>
-            <Blazorise.DatePicker @bind-Date="newReqDate" />
-        </div>
+
 
         <div class="mb-2 d-flex" style="gap:0.5rem;">
             <div style="flex:1;">
                 <label>Bắt đầu</label>
-                <TimePicker TValue="TimeOnly?" @bind-Time="newStart"/>
+                <Blazorise.DatePicker TValue="DateOnly?" @bind-Date="newStart"/>
             </div>
 
             <div style="flex:1;">
                 <label>Kết thúc</label>
-                <TimePicker TValue="TimeOnly?" @bind-Time="newEnd" />
+                <Blazorise.DatePicker TValue="DateOnly?" @bind-Date="newEnd" />
             </div>
         </div>
 
         <div class="mb-2">
-            <label>Tổng giờ</label>
-            <p>@hoursDisplay</p>
+            <label>Tổng ngay</label>
+            <p>@daysDisplay</p>
         </div>
 
         <div class="mb-2">
-            <label>Loại tăng ca</label>
+            <label>Loại nghi phep</label>
             <Select TValue="int?" @bind-SelectedValue="selectedTypeId">
                 <SelectItem Value="@( (int?)null )">-- chọn --</SelectItem>
                 @foreach (var t in types)
                 {
-                    <SelectItem Value="t.Id">@t.OvertimeType</SelectItem>
+                    <SelectItem Value="t.Id">@t.Name</SelectItem>
                 }
             </Select>
         </div>
@@ -157,19 +153,23 @@
 
 @code {
     EmployeeDTO Employee;
-    DateOnly fromDate = DateOnly.FromDateTime(DateTime.Today.AddYears(-1));
-    DateOnly toDate = DateOnly.FromDateTime(DateTime.Today);
+    DateTime fromDate = DateTime.Today.AddYears(-1);
+    DateTime toDate = DateTime.Today;
 
-    List<OvertimeRequestDTO> requests;
-    List<OvertimeRateDTO> types = new();
-    OvertimeRequestDTO selected;
+    WeeklyShiftDto shift;
+    EmployeeBalanceDto balance;
+
+    List<LeaveRequestDTO> requests;
+    List<LeaveType> types = new();
+    LeaveRequestDTO selected;
     int? selectedTypeId;
 
     bool addVisible;
-    DateOnly newReqDate;
+    //DateTime newReqDate;
+
     string newReason;
-    TimeOnly? _newStart;
-    TimeOnly? newStart
+    DateOnly? _newStart;
+    DateOnly? newStart
     {
         get => _newStart;
         set
@@ -178,8 +178,8 @@
             Recalc();
         }
     }
-    TimeOnly? _newEnd;
-    TimeOnly? newEnd
+    DateOnly? _newEnd;
+    DateOnly? newEnd
     {
         get => _newEnd;
         set
@@ -193,11 +193,21 @@
     {
         if (newStart.HasValue && newEnd.HasValue)
         {
-            hours = (decimal)(newEnd.Value - newStart.Value).TotalHours;
-            if (hours < 0) hours = null;
-        }
-        else hours = null;
+            var start = newStart.Value;
+            var end = newEnd.Value;
 
+            if (end < start)
+            {
+                days = null;
+                return;
+            }
+
+            days = (decimal)(end.DayNumber - start.DayNumber + 1);
+        }
+        else
+        {
+            days = null;
+        }
     }
 
 
@@ -215,8 +225,8 @@
             }
 
             var client = HttpFactory.CreateClient("ApiClient");
-            var response = await client.GetFromJsonAsync<IEnumerable<OvertimeRateDTO>>(
-                $"api/overtime/rates");
+            var response = await client.GetFromJsonAsync<IEnumerable<LeaveType>>(
+                $"api/leave/rates");
             if (response == null)
             {
                 NotificationService.Warning("Không tìm thấy dữ liệu loai tăng ca", "Lỗi");
@@ -233,7 +243,7 @@
         }
     }
 
-    async Task LoadData(DateOnly? _)
+    async Task LoadData(DateTime? _)
     {
         if (Employee == null)
         {
@@ -242,12 +252,12 @@
         }
 
         var client = HttpFactory.CreateClient("ApiClient");
-        var response = await client.GetFromJsonAsync<List<OvertimeRequestDTO>>(
-            $"api/overtime/history?empId={Employee.EmpId}&startDate={fromDate}&endDate={toDate}");
+        var response = await client.GetFromJsonAsync<List<LeaveRequestDTO>>(
+            $"api/leave/history?empId={Employee.EmpId}&startDate={fromDate}&endDate={toDate}");
 
         if (response == null)
         {
-            NotificationService.Warning("Không tìm thấy dữ liệu tăng ca", "Lỗi");
+            NotificationService.Warning("Không tìm thấy dữ liệu nghi phep", "Lỗi");
             return;
         }
 
@@ -255,26 +265,26 @@
         StateHasChanged();
     }
 
-    void Select(OvertimeRequestDTO item) => selected = item;
+    void Select(LeaveRequestDTO item) => selected = item;
 
     void ShowAddModal()
     {
-        newReqDate = DateOnly.FromDateTime(DateTime.Today);
+        //newReqDate = DateOnly.FromDateTime(DateTime.Today);
         addVisible = true;
     }
     void HideAddModal() => addVisible = false;
 
     async Task Submit()
     {
-        if (hours == null)
+        if (days == null)
         {
             NotificationService.Warning("Không thể tìm thấy giờ.", "Lỗi");
             return;
         }
 
         if (selectedTypeId == null)
-        {
-            NotificationService.Warning("Chua chon loai tang cuong.", "Lỗi");
+    {
+            NotificationService.Warning("Chua chon loai ngay nghi.", "Lỗi");
             return;
         }
 
@@ -284,20 +294,20 @@
             return;
         }
 
-        var request = new OvertimeRequest
+        var request = new LeaveRequestDTO
             {
                 EmpId = Employee.EmpId,
-                ReqDate = newReqDate,
-                StartTime = newStart,
-                EndTime = newEnd,
-                Hours = hours,
+                TypeId = (int)selectedTypeId,
+                ReqDate = newStart.Value,
+                StartDate = newStart.Value,
+                EndDate = newEnd.Value,
+                NumbersOfDays = days.Value,
                 Reason = newReason,
-                Status = "Pending",
-                OvertimeType = selectedTypeId
+                Status = "Pending"
             };
 
         var client = HttpFactory.CreateClient("ApiClient");
-        var res = await client.PostAsJsonAsync("api/overtime/request", request);
+        var res = await client.PostAsJsonAsync("api/leave/request", request);
 
         if (!res.IsSuccessStatusCode)
         {
@@ -311,7 +321,7 @@
     }
 
 
-    decimal? hours;
-    string hoursDisplay => hours?.ToString("0.##") ?? "0";
+    decimal? days;
+    string daysDisplay => days?.ToString("0.##") ?? "0";
 
 }

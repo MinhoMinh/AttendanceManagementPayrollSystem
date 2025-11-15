@@ -22,5 +22,31 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
                 .OrderByDescending(lr => lr.ReqDate)
                 .ToListAsync();
         }
+
+        public async Task<IEnumerable<LeaveRequest>> GetLeaveByEmployeeId(int empId, DateOnly? startDate, DateOnly? endDate)
+        {
+            var query = _context.LeaveRequests
+            .Include(o => o.Type)
+            .Include(o => o.ApprovedByNavigation)
+            .Where(o => o.EmpId == empId);
+
+            if (startDate.HasValue)
+                query = query.Where(o => o.ReqDate >= startDate.Value);
+
+            if (endDate.HasValue)
+                query = query.Where(o => o.ReqDate <= endDate.Value);
+
+            var list = await query
+                .OrderByDescending(o => o.ReqDate)
+                .ToListAsync();
+
+            Console.WriteLine($"count {list.Count}");
+            return list;
+        }
+
+        public IEnumerable<LeaveType> GetRates()
+        {
+                return _context.LeaveTypes;
+        }
     }
 }

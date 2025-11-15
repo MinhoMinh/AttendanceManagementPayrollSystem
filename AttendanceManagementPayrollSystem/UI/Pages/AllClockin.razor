@@ -1,6 +1,7 @@
 ﻿@page "/allclockin"
 @using AttendanceManagementPayrollSystem.DTO
 @inject HttpClient Http
+@inject IHttpClientFactory HttpClientFactory
 
 <div class="page-container">
     <div class="header-section">
@@ -350,8 +351,13 @@
 
     protected override async Task OnInitializedAsync()
     {
-        departments = await Http.GetFromJsonAsync<List<DepartmentAttendanceDTO>>("https://localhost:7088/api/ManagerAttendanceApi/summary");
-        allClockins = await Http.GetFromJsonAsync<List<ClockinDTO>>("https://localhost:7088/api/ManagerAttendanceApi/allclockins");
+        var client = HttpClientFactory.CreateClient("ApiClient");
+
+        departments = await client.GetFromJsonAsync<List<DepartmentAttendanceDTO>>(
+            "api/ManagerAttendanceApi/summary");
+
+        allClockins = await client.GetFromJsonAsync<List<ClockinDTO>>(
+            "api/ManagerAttendanceApi/allclockins");
     }
 
     private void OnDepartmentChanged(ChangeEventArgs e)

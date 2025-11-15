@@ -83,7 +83,7 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
     {
         modelBuilder.Entity<AllowanceType>(entity =>
         {
-            entity.HasKey(e => e.TypeId).HasName("PK__Allowanc__2C000598A050F4EF");
+            entity.HasKey(e => e.TypeId).HasName("PK__Allowanc__2C00059823950832");
 
             entity.ToTable("AllowanceType");
 
@@ -128,7 +128,7 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
 
         modelBuilder.Entity<ClockInAdjustmentRequest>(entity =>
         {
-            entity.HasKey(e => e.RequestId).HasName("PK__ClockInA__33A8519A7465CDE5");
+            entity.HasKey(e => e.RequestId).HasName("PK__ClockInA__33A8519A1C7612A7");
 
             entity.ToTable("ClockInAdjustmentRequest");
 
@@ -291,7 +291,7 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
 
         modelBuilder.Entity<DepartmentWeeklyShift>(entity =>
         {
-            entity.HasKey(e => e.DeptShiftId).HasName("PK__Departme__E496BB67DE208A6F");
+            entity.HasKey(e => e.DeptShiftId).HasName("PK__Departme__E496BB67073DDD54");
 
             entity.ToTable("DepartmentWeeklyShift");
 
@@ -377,7 +377,7 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
 
         modelBuilder.Entity<EmployeeAllowance>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Employee__3213E83F6280950A");
+            entity.HasKey(e => e.Id).HasName("PK__Employee__3213E83FFFB9B990");
 
             entity.ToTable("EmployeeAllowance");
 
@@ -456,7 +456,7 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
 
         modelBuilder.Entity<EmployeeDependent>(entity =>
         {
-            entity.HasKey(e => e.DependentId).HasName("PK__Employee__9BC67C11CF16E27D");
+            entity.HasKey(e => e.DependentId).HasName("PK__Employee__9BC67C111F9AAE39");
 
             entity.ToTable("EmployeeDependent");
 
@@ -486,7 +486,7 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
 
         modelBuilder.Entity<EmployeePermission>(entity =>
         {
-            entity.HasKey(e => e.UserPermissionId).HasName("PK__Employee__A90F88D2600ED421");
+            entity.HasKey(e => e.UserPermissionId).HasName("PK__Employee__A90F88D2A2D539E4");
 
             entity.ToTable("EmployeePermission");
 
@@ -497,7 +497,7 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
             entity.HasOne(d => d.Permission).WithMany(p => p.EmployeePermissions)
                 .HasForeignKey(d => d.PermissionId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__EmployeeP__Permi__2645B050");
+                .HasConstraintName("FK__EmployeeP__Permi__681373AD");
 
             entity.HasOne(d => d.User).WithMany(p => p.EmployeePermissions)
                 .HasForeignKey(d => d.UserId)
@@ -524,12 +524,12 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
             entity.HasOne(d => d.Role).WithMany(p => p.EmployeeRoles)
                 .HasForeignKey(d => d.RoleId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__EmployeeR__RoleI__282DF8C2");
+                .HasConstraintName("FK__EmployeeR__RoleI__69FBBC1F");
         });
 
         modelBuilder.Entity<HolidayCalendar>(entity =>
         {
-            entity.HasKey(e => e.HolidayId).HasName("PK__HolidayC__253884EA23976800");
+            entity.HasKey(e => e.HolidayId).HasName("PK__HolidayC__253884EA2FD0D4FE");
 
             entity.ToTable("HolidayCalendar");
 
@@ -630,7 +630,7 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
 
         modelBuilder.Entity<LeaveRequest>(entity =>
         {
-            entity.HasKey(e => e.ReqId).HasName("PK__LeaveReq__1513A6FBE8BFCD5B");
+            entity.HasKey(e => e.ReqId).HasName("PK__LeaveReq__1513A6FBB157D435");
 
             entity.ToTable("LeaveRequest");
 
@@ -665,12 +665,12 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
             entity.HasOne(d => d.Type).WithMany(p => p.LeaveRequests)
                 .HasForeignKey(d => d.TypeId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__LeaveRequ__type___2EDAF651");
+                .HasConstraintName("FK__LeaveRequ__type___6EC0713C");
         });
 
         modelBuilder.Entity<LeaveType>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__LeaveTyp__3213E83FB60F4492");
+            entity.HasKey(e => e.Id).HasName("PK__LeaveTyp__3213E83F849677EA");
 
             entity.ToTable("LeaveType");
 
@@ -714,7 +714,7 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
 
         modelBuilder.Entity<OvertimeRequest>(entity =>
         {
-            entity.HasKey(e => e.ReqId).HasName("PK__Overtime__1513A6FB50DAB7F7");
+            entity.HasKey(e => e.ReqId).HasName("PK__Overtime__1513A6FBF8ACD461");
 
             entity.ToTable("OvertimeRequest");
 
@@ -916,9 +916,9 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
 
         modelBuilder.Entity<Permission>(entity =>
         {
-            entity.HasKey(e => e.PermissionId).HasName("PK__Permissi__EFA6FB0FD9613D7A");
+            entity.HasKey(e => e.PermissionId).HasName("PK__Permissi__EFA6FB0FC69FBB8C");
 
-            entity.HasIndex(e => e.PermissionName, "UQ__Permissi__0FFDA357E86675B9").IsUnique();
+            entity.HasIndex(e => e.PermissionName, "UQ__Permissi__0FFDA3571B2ADC9E").IsUnique();
 
             entity.Property(e => e.PermissionId).HasColumnName("PermissionID");
             entity.Property(e => e.Description).HasMaxLength(255);
@@ -929,9 +929,9 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
 
         modelBuilder.Entity<Role>(entity =>
         {
-            entity.HasKey(e => e.RoleId).HasName("PK__Roles__8AFACE3A9EDF86D5");
+            entity.HasKey(e => e.RoleId).HasName("PK__Roles__8AFACE3A8077274D");
 
-            entity.HasIndex(e => e.RoleName, "UQ__Roles__8A2B616013929811").IsUnique();
+            entity.HasIndex(e => e.RoleName, "UQ__Roles__8A2B616025BEF27A").IsUnique();
 
             entity.Property(e => e.RoleId).HasColumnName("RoleID");
             entity.Property(e => e.Description).HasMaxLength(255);
@@ -946,11 +946,11 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
                     r => r.HasOne<Permission>().WithMany()
                         .HasForeignKey("PermissionId")
                         .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("FK__RolePermi__Permi__3B40CD36"),
+                        .HasConstraintName("FK__RolePermi__Permi__01D345B0"),
                     l => l.HasOne<Role>().WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("FK__RolePermi__RoleI__3C34F16F"),
+                        .HasConstraintName("FK__RolePermi__RoleI__02C769E9"),
                     j =>
                     {
                         j.HasKey("RoleId", "PermissionId").HasName("PK__RolePerm__120F469AC923DC9A");
@@ -992,7 +992,7 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
 
         modelBuilder.Entity<TaxBracket>(entity =>
         {
-            entity.HasKey(e => e.BracketId).HasName("PK__TaxBrack__8AC2D799BE6974DA");
+            entity.HasKey(e => e.BracketId).HasName("PK__TaxBrack__8AC2D7999ED09AD8");
 
             entity.ToTable("TaxBracket");
 
@@ -1009,7 +1009,7 @@ public partial class AttendanceManagementPayrollSystemContext : DbContext
 
         modelBuilder.Entity<WeeklyShift>(entity =>
         {
-            entity.HasKey(e => e.ShiftId).HasName("PK__WeeklySh__C0A83881105C1064");
+            entity.HasKey(e => e.ShiftId).HasName("PK__WeeklySh__C0A838816C75570B");
 
             entity.ToTable("WeeklyShift");
 

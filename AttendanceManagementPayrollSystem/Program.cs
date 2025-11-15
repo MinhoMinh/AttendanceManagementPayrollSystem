@@ -21,7 +21,9 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowReactApp", policy =>
     {
         policy.SetIsOriginAllowed(origin =>
-            origin.StartsWith("http://localhost:") || origin.StartsWith("https://localhost:")
+            origin.StartsWith("http://localhost:") ||
+            origin.StartsWith("https://localhost:") ||
+            origin == "https://attendancemanagementpayrollsystem20251115091257.azurewebsites.net"
         )
         .AllowAnyHeader()
         .AllowAnyMethod();
@@ -77,7 +79,7 @@ RepositoryManager.DoScoped(builder);
 
 builder.Services.AddHttpClient("ApiClient", client =>
 {
-    client.BaseAddress = new Uri("http://localhost:5038/");
+    client.BaseAddress = new Uri(builder.Configuration.GetConnectionString("ApiClientBaseUrl"));
 });
 
 builder.Services

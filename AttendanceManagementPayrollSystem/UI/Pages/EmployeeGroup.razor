@@ -968,9 +968,10 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var http = HttpFactory.CreateClient();
+        var http = HttpFactory.CreateClient("ApiClient");
+
         departments = await http.GetFromJsonAsync<List<EmployeeGroupByDepartmentDTO>>(
-            "https://localhost:7088/api/employee/getgroupbydepforview");
+            "api/employee/getgroupbydepforview");
     }
 
     private async Task OpenCreateModal()
@@ -981,8 +982,11 @@
 
         try
         {
-            var http = HttpFactory.CreateClient();
-            departmentList = await http.GetFromJsonAsync<List<DepartmentDTO>>("https://localhost:7088/api/department/exceptmanager") ?? new();
+            var http = HttpFactory.CreateClient("ApiClient");
+
+            departmentList = await http.GetFromJsonAsync<List<DepartmentDTO>>(
+                "api/department/exceptmanager"
+            ) ?? new();
         }
         catch
         {
@@ -995,6 +999,7 @@
         }
     }
 
+
     private void CloseCreateModal()
     {
         showCreateModal = false;
@@ -1004,19 +1009,20 @@
     private async Task HandleCreateEmployee()
     {
         isSubmitting = true;
+
         try
         {
-            var http = HttpFactory.CreateClient();
-            var response = await http.PostAsJsonAsync("https://localhost:7088/api/employee", newEmployee);
+            var http = HttpFactory.CreateClient("ApiClient");
+
+            var response = await http.PostAsJsonAsync("api/employee", newEmployee);
 
             if (response.IsSuccessStatusCode)
             {
                 ShowToast("Tài khoản nhân viên mới đã được tạo thành công!", "success");
                 CloseCreateModal();
 
-                // Refresh danh sách nhân viên
                 departments = await http.GetFromJsonAsync<List<EmployeeGroupByDepartmentDTO>>(
-                    "https://localhost:7088/api/employee/getgroupbydepforview");
+                    "api/employee/getgroupbydepforview");
             }
             else
             {
@@ -1034,6 +1040,7 @@
             StateHasChanged();
         }
     }
+
 
     private void ShowToast(string message, string type)
     {

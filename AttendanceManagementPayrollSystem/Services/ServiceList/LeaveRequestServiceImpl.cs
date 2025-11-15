@@ -2,6 +2,8 @@
 using AttendanceManagementPayrollSystem.DTOs;
 using AttendanceManagementPayrollSystem.Models;
 using AttendanceManagementPayrollSystem.DataAccess.Repositories;
+using AttendanceManagementPayrollSystem.DTO;
+using AttendanceManagementPayrollSystem.Services.Mapper;
 
 namespace AttendanceManagementPayrollSystem.Services.ServiceList
 {
@@ -17,7 +19,7 @@ namespace AttendanceManagementPayrollSystem.Services.ServiceList
         public async Task<LeaveRequestDTO> AddAsync(LeaveRequestDTO dto)
         {
 
-            var totalDays = (dto.EndDate.ToDateTime(TimeOnly.MinValue) - dto.StartDate.ToDateTime(TimeOnly.MinValue)).TotalDays + 1;
+            //var totalDays = (dto.EndDate.ToDateTime(TimeOnly.MinValue) - dto.StartDate.ToDateTime(TimeOnly.MinValue)).TotalDays + 1;
 
             var entity = new LeaveRequest
             {
@@ -27,8 +29,8 @@ namespace AttendanceManagementPayrollSystem.Services.ServiceList
                 EndDate = dto.EndDate,
                 Reason = dto.Reason,
                 Status = "Pending",
-                NumbersOfDays = (decimal)totalDays,
-                TypeId = dto.typeId
+                NumbersOfDays = dto.NumbersOfDays,
+                TypeId = dto.TypeId
             };
 
             await _repository.AddAsync(entity);
@@ -41,12 +43,50 @@ namespace AttendanceManagementPayrollSystem.Services.ServiceList
             {
                 ReqId = lr.ReqId,
                 EmpId = lr.EmpId,
+                TypeId = lr.TypeId,
+                ReqDate = lr.ReqDate,
                 StartDate = lr.StartDate,
                 EndDate = lr.EndDate,
+                NumbersOfDays = lr.NumbersOfDays,
                 Reason = lr.Reason,
-                typeId = lr.TypeId,
-                Status = "Pending"
+                Status = lr.Status,
+                ApprovedBy = lr.ApprovedBy,
+                ApprovedDate = lr.ApprovedDate,
+                ApprovedByName = lr.ApprovedByNavigation.EmpName
             }).ToList();
+        }
+
+        public async Task<IEnumerable<LeaveRequestDTO>> GetLeaveHistoryByEmployee(int empId, DateOnly? startDate, DateOnly? endDate)
+        {
+            var data = await _repository.GetLeaveByEmployeeId(empId, startDate, endDate);
+
+            return data.Select(lr => new LeaveRequestDTO
+            {
+                ReqId = lr.ReqId,
+                EmpId = lr.EmpId,
+                StartDate = lr.StartDate,
+                EndDate = lr.EndDate,
+                NumbersOfDays = lr.NumbersOfDays,
+                Reason = lr.Reason,
+                TypeId = lr.TypeId,
+                Status = lr.Status
+            }).ToList();
+        }
+
+        public IEnumerable<LeaveType> GetRates()
+        {
+            var data = _repository.GetRates();
+                    //.Select(x => new OvertimeRateDTO
+                    //{
+                    //    Id = x.Id,
+                    //    OvertimeType = x.OvertimeType,
+                    //    RateMultiplier = x.RateMultiplier,
+                    //    EffectiveDate = x.EffectiveDate,
+                    //    CreatedBy = x.CreatedBy
+                    //})
+                    //.ToList();
+
+                return data;
         }
     }
 }

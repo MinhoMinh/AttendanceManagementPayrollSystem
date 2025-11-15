@@ -130,9 +130,11 @@ else
     {
         try
         {
-            var client = HttpFactory.CreateClient();
+            var client = HttpFactory.CreateClient("ApiClient");
+
             payRuns = await client.GetFromJsonAsync<List<PayRunPreviewDTO>>(
-                $"https://localhost:7088/api/pay-run/getpayrun/{empId}/{month}/{year}");
+                $"api/pay-run/getpayrun/{empId}/{month}/{year}"
+            );
         }
         catch (Exception ex)
         {
@@ -143,6 +145,7 @@ else
             isLoading = false;
         }
     }
+
 
     private void SelectEmployee(int empId, int payrunId)
     {
