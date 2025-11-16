@@ -17,6 +17,7 @@ namespace AttendanceManagementPayrollSystem.Services.ServiceList
         private readonly SalaryPolicyRepository _salaryPolicyRepo;
         private readonly TaxRepository _taxRepo;
         private readonly InsuranceRateRepository _insuranceRepo;
+        private readonly ILeaveRequestRepository _leaveRepo;
 
         private readonly ShiftService _shiftService;
         private readonly BonusService _bonusService;
@@ -24,7 +25,7 @@ namespace AttendanceManagementPayrollSystem.Services.ServiceList
         public PayRunServiceImpl(ShiftService shiftService, SalaryPolicyRepository salaryPolicyRepo, ClockinRepository clockinRepo,
             PayRunRepository payrollRepo, EmployeeRepository empRepo, HolidayCalendarRepository holidayRepo, 
             IOvertimeRepository overtimeRepo, TaxRepository taxRepo, InsuranceRateRepository insuranceRepo,
-            BonusService bonusService)
+            BonusService bonusService, ILeaveRequestRepository leaveRepo)
         {
             _salaryPolicyRepo = salaryPolicyRepo;
             _shiftService = shiftService;
@@ -37,6 +38,7 @@ namespace AttendanceManagementPayrollSystem.Services.ServiceList
             _overtimeRepo = overtimeRepo;
             _taxRepo = taxRepo;
             _insuranceRepo = insuranceRepo;
+            _leaveRepo = leaveRepo;
         }
 
         public async Task<PayRunContext> GetPayRunContext(int month, int year) 
@@ -99,6 +101,7 @@ namespace AttendanceManagementPayrollSystem.Services.ServiceList
 
             var bonus = await _bonusService.GetBonusByTime(DateOnly.FromDateTime(periodStart), DateOnly.FromDateTime(periodEnd));
 
+            var leaves = await _leaveRepo.GetApprovedLeaveByDate(DateOnly.FromDateTime(periodStart), DateOnly.FromDateTime(periodEnd));
 
             var holidays = context.Holidays;
 
@@ -115,7 +118,10 @@ namespace AttendanceManagementPayrollSystem.Services.ServiceList
                     .Where(b => b.EmpBonus.Any(e => e.EmpId == employee.EmpId))
                     .ToList();
 
-                var payItem = PayRunCalculator.CalculatePay(context, employee, shift, overtimes, empBonus);
+                var empLeave = leaves
+                    .Where(l => l.EmpId == employee.EmpId).ToList();
+
+                var payItem = PayRunCalculator.CalculatePay(context, employee, shift, overtimes, empBonus, empLeave);
                 payRunDto.PayRunItems.Add(payItem);
             }
 

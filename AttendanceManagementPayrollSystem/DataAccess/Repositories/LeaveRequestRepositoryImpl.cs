@@ -23,6 +23,13 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
             return await this._context.LeaveRequests.Where(lr => lr.ReqDate >= startDate && lr.ReqDate <= endDate).ToListAsync();
         }
 
+        public async Task<IEnumerable<LeaveRequest>> GetApprovedLeaveByDate(DateOnly? startDate, DateOnly? endDate)
+        {
+            return await this._context.LeaveRequests
+                .Where(lr => lr.ReqDate >= startDate && lr.ReqDate <= endDate && lr.Status == "Approved")
+                .ToListAsync();
+        }
+
         public async Task<IEnumerable<LeaveRequest>> GetByEmployeeIdAsync(int empId)
         {
             return await _context.LeaveRequests

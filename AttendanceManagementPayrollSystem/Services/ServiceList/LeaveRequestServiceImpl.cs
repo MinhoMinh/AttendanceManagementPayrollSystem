@@ -101,7 +101,6 @@ namespace AttendanceManagementPayrollSystem.Services.ServiceList
                 ApprovedBy=lr.ApprovedBy,
                 ApprovedByName=lr.ApprovedByNavigation?.EmpName,
                 ApprovedDate=lr.ApprovedDate,
-                ReqDate=lr.ReqDate
             }).ToList();
         }
 

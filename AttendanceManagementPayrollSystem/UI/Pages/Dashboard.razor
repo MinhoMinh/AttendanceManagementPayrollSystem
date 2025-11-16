@@ -38,9 +38,6 @@
                 <DashboardButtonGroup Buttons="@EmployeeService" GroupName="Dịch vụ nhân viên" Icon="fas fa-user-tie" />
                 <DashboardButtonGroup Buttons="@DepartmentHeadService" GroupName="Dịch vụ trưởng phòng" Icon="fas fa-users-cog" />
                 <DashboardButtonGroup Buttons="@CompanyService" GroupName="Dịch vụ công ty" Icon="fas fa-building" />
-                <DashboardButtonGroup Buttons="@HRHeadService" GroupName="Dịch vụ trưởng phòng nhân lực" Icon="fas fa-user-shield" />
-                <DashboardButtonGroup Buttons="@ITStaffService" GroupName="Dịch vụ nhân viên IT" Icon="fas fa-laptop-code" />
-                <DashboardButtonGroup Buttons="@HRStaffService" GroupName="Dịch vụ nhân viên nhân sự" Icon="fas fa-clipboard-user" />
             }
         </div>
     </LayoutContent>
@@ -90,9 +87,6 @@
     private List<DashboardButton> EmployeeService = new();
     private List<DashboardButton> DepartmentHeadService = new();
     private List<DashboardButton> CompanyService = new();
-    private List<DashboardButton> HRHeadService = new();
-    private List<DashboardButton> ITStaffService = new();
-    private List<DashboardButton> HRStaffService = new();
 
     [Inject] INotificationService NotificationService { get; set; }
 
@@ -130,17 +124,20 @@
             new() { Text = "Lịch tổng hợp", ImageSrc="https://cdn-icons-png.flaticon.com/512/3062/3062634.png", OnClick = EventCallback.Factory.Create(this, NavigateAttendance), Visible = HasPermission("has_clockin") },
             new() { Text = "Lịch làm việc", ImageSrc="https://cdn-icons-png.flaticon.com/512/1077/1077976.png", OnClick = EventCallback.Factory.Create(this, NavigateSelfShift), Visible = HasPermission("has_shift") },
             new() { Text = "Bảng lương cá nhân", ImageSrc = "https://cdn-icons-png.flaticon.com/512/3135/3135695.png", OnClick = EventCallback.Factory.Create(this, NavigateSelfPayItem), Visible = HasPermission("view_employee_payroll") },
-            new() { Text = "Nghi phep", ImageSrc="https://cdn-icons-png.flaticon.com/512/1077/1077976.png", OnClick = EventCallback.Factory.Create(this, NavigateSelfLeave), Visible = HasPermission("has_leave_request") },
+            new() { Text = "Nghi phép", ImageSrc="https://cdn-icons-png.flaticon.com/512/1077/1077976.png", OnClick = EventCallback.Factory.Create(this, NavigateSelfLeave), Visible = HasPermission("has_leave_request") },
             new() { Text = "Giờ vượt", ImageSrc="https://cdn-icons-png.flaticon.com/512/1077/1077976.png", OnClick = EventCallback.Factory.Create(this, NavigateSelfOvertime), Visible = HasPermission("has_overtime_request") },
         };
 
         DepartmentHeadService = new()
         {
-            new() { Text = "Giờ vượt phòng ban", ImageSrc="https://cdn-icons-png.flaticon.com/512/1077/1077976.png", OnClick = EventCallback.Factory.Create(this, NavigateHeadOvertime), Visible = true },
+            new() { Text = "Chấm công phòng ban", ImageSrc="https://cdn-icons-png.flaticon.com/512/1077/1077976.png", OnClick = EventCallback.Factory.Create(this, NavigateAllClockin), Visible = HasPermission("view_employee_clockin") },
+            new() { Text = "Giờ vượt phòng ban", ImageSrc="https://cdn-icons-png.flaticon.com/512/1077/1077976.png", OnClick = EventCallback.Factory.Create(this, NavigateHeadOvertime), Visible = HasPermission("overtime_request_management") },
+            new() { Text = "Nghỉ phép phòng ban", ImageSrc="https://cdn-icons-png.flaticon.com/512/1077/1077976.png", OnClick = EventCallback.Factory.Create(this, NavigateLeaveRequestManagement), Visible = HasPermission("leave_request_management") },
         };
 
         CompanyService = new()
         {
+            new() { Text = "Thông tin nhân viên", ImageSrc = "https://cdn-icons-png.flaticon.com/512/1828/1828926.png", OnClick = EventCallback.Factory.Create(this, NavigateCompanyEmployee), Visible = HasPermission("view_company_employee") },
             new() { Text = "Cập nhật chấm công", ImageSrc = "https://cdn-icons-png.flaticon.com/512/1828/1828926.png", OnClick = EventCallback.Factory.Create(this, NavigateUploadClockins), Visible = HasPermission("upload_clockin") },
             new() { Text = "Bảng lương công ty", ImageSrc = "https://cdn-icons-png.flaticon.com/512/3135/3135695.png", OnClick = EventCallback.Factory.Create(this, NavigatePayRun), Visible = HasPermission("view_payroll_run") },
             new() { Text = "Thiết lập ngày lễ", ImageSrc = "https://cdn-icons-png.flaticon.com/512/616/616408.png", OnClick = EventCallback.Factory.Create(this, NavigateHolidaySetup), Visible = HasPermission("edit_holiday_calendar") },
@@ -150,9 +147,6 @@
             new() { Text = "Quản lý tài khoản nhân viên", ImageSrc = "https://cdn-icons-png.flaticon.com/512/1828/1828926.png", OnClick = EventCallback.Factory.Create(this, NavigateAccountManagement), Visible = HasPermission("employee_account_management") },
             new() { Text = "Khai báo người phụ thuộc", ImageSrc = "https://cdn-icons-png.flaticon.com/512/1828/1828926.png", OnClick = EventCallback.Factory.Create(this, NavigateDependentManagement), Visible = HasPermission("declare_dependent") },
             new() { Text = "Quản lý thưởng", ImageSrc = "https://cdn-icons-png.flaticon.com/512/1828/1828926.png", OnClick = EventCallback.Factory.Create(this, NavigateBonus), Visible = HasPermission("manage_bonus") },
-            new() { Text = "Xem thông kê chấm công", ImageSrc="https://cdn-icons-png.flaticon.com/512/3062/3062634.png", OnClick = EventCallback.Factory.Create(this, NavigateAllClockin), Visible = HasPermission("all_clockin") },
-
-        //
         };
 
     }
@@ -188,7 +182,11 @@
 
     private void NavigateDepKpi() => Navigation.NavigateTo("/kpi/head");
     private void NavigateHeadOvertime() => Navigation.NavigateTo("/overtime/head");
+    private void NavigateLeaveRequestManagement() => Navigation.NavigateTo("/approve-leave-requests");
 
+
+    //employees/group/view
+    private void NavigateCompanyEmployee() => Navigation.NavigateTo("/employees/group/view");
     private void NavigateUploadClockins() => Navigation.NavigateTo("/xlsupload");
     private void NavigatePayRun() => Navigation.NavigateTo("/payruns");
     private void NavigateHolidaySetup() => Navigation.NavigateTo("/department-holiday");

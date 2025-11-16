@@ -11,6 +11,8 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
 
         Task<IEnumerable<LeaveRequest>> GetLeaveByEmployeeId(int empId, DateOnly? startDate, DateOnly? endDate);
 
+        Task<IEnumerable<LeaveRequest>> GetApprovedLeaveByDate(DateOnly? startDate, DateOnly? endDate);
+
         IEnumerable<LeaveType> GetRates();
 
         Task<IEnumerable<LeaveRequest>> GetAllLeaveRequestByDate(DateOnly? startDate, DateOnly? endDate);

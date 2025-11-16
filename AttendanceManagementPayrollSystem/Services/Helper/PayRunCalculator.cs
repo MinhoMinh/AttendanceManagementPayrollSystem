@@ -6,7 +6,8 @@ namespace AttendanceManagementPayrollSystem.Services.Helper
     public class PayRunCalculator
     {
         public static PayRunItemDto CalculatePay(PayRunContext context, Employee employee,
-            WeeklyShiftDto shift, List<OvertimeRequest>? overtimes, List<Bonu> bonus)
+            WeeklyShiftDto shift, List<OvertimeRequest>? overtimes, List<Bonu> bonus,
+            List<LeaveRequest> leaves)
         {
 
             PayRunItemDto itemDto = new PayRunItemDto

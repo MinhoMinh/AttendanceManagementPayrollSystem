@@ -202,7 +202,7 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
         {
             return await _context.PayRuns
                 .Where(pr => pr.CreatedDate >= start &&
-                             pr.CreatedDate <= end &&
+                             pr.CreatedDate <= end.AddDays(1) &&
                              pr.Status.Equals("FinalApproved") &&
                              pr.PayRunItems.Any(i => i.EmpId == empId))
                 .Select(pr => new PayRunPreviewDTO
