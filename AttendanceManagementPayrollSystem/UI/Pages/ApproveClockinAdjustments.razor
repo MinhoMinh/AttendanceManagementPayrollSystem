@@ -6,171 +6,774 @@
 @inject INotificationService NotificationService
 @using System.Net.Http.Json
 
-<h3 class="border-bottom pb-2 mb-3">
-    Duyệt yêu cầu chỉnh sửa chấm công
-</h3>
+<style>
+    :root {
+        --primary-color: #97322D;
+        --secondary-color: #FFE4A1;
+        --primary-light: #B84940;
+        --secondary-dark: #F5D98B;
+    }
 
-<div class="mb-3 d-flex align-items-center">
-    <label class="me-2">Từ:</label>
-    <InputDate @bind-Value="fromDate" class="form-control me-3" style="width: 200px;" />
-    <label class="me-2">Đến:</label>
-    <InputDate @bind-Value="toDate" class="form-control me-3" style="width: 200px;" />
-    <button class="btn btn-primary" @onclick="LoadData">Tìm</button>
+    @@keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @@keyframes slideInLeft {
+        from {
+            opacity: 0;
+            transform: translateX(-30px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    @@keyframes slideInRight {
+        from {
+            opacity: 0;
+            transform: translateX(30px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    @@keyframes pulse {
+        0%, 100% {
+            transform: scale(1);
+        }
+
+        50% {
+            transform: scale(1.05);
+        }
+    }
+
+    @@keyframes shimmer {
+        0% {
+            background-position: -1000px 0;
+        }
+
+        100% {
+            background-position: 1000px 0;
+        }
+    }
+
+    body {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        min-height: 100vh;
+    }
+
+    .page-header {
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 20px;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 30px rgba(151, 50, 45, 0.3);
+        position: relative;
+        overflow: hidden;
+        animation: fadeInUp 0.6s ease-out;
+    }
+
+        .page-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+            animation: pulse 4s ease-in-out infinite;
+        }
+
+        .page-header h3 {
+            margin: 0;
+            font-weight: 700;
+            font-size: 2rem;
+            position: relative;
+            z-index: 1;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .page-header i {
+            margin-right: 0.5rem;
+            filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.2));
+        }
+
+    .filter-section {
+        background: white;
+        padding: 2rem;
+        border-radius: 20px;
+        margin-bottom: 2rem;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        border: 3px solid var(--secondary-color);
+        animation: fadeInUp 0.6s ease-out 0.1s both;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .filter-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 228, 161, 0.3), transparent);
+            animation: shimmer 3s infinite;
+        }
+
+        .filter-section label {
+            font-weight: 600;
+            color: var(--primary-color);
+            font-size: 0.95rem;
+            margin-bottom: 0.5rem;
+        }
+
+    .form-control {
+        border: 2px solid var(--secondary-color);
+        border-radius: 12px;
+        padding: 0.75rem 1rem;
+        transition: all 0.3s ease;
+        font-size: 1rem;
+    }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.25rem rgba(255, 228, 161, 0.5);
+            transform: scale(1.02);
+        }
+
+    .btn-primary {
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
+        border: none;
+        color: white;
+        padding: 0.75rem 2rem;
+        border-radius: 12px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(151, 50, 45, 0.3);
+        position: relative;
+        overflow: hidden;
+    }
+
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn-primary:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(151, 50, 45, 0.4);
+        }
+
+    .btn-success {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        border: none;
+        border-radius: 12px;
+        font-weight: 600;
+        padding: 0.75rem 1.5rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+    }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+        }
+
+    .btn-danger {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        border: none;
+        border-radius: 12px;
+        font-weight: 600;
+        padding: 0.75rem 1.5rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+    }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(220, 53, 69, 0.4);
+        }
+
+    .btn-secondary {
+        background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+        border: none;
+        border-radius: 12px;
+        font-weight: 600;
+        padding: 0.75rem 1.5rem;
+        transition: all 0.3s ease;
+    }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(108, 117, 125, 0.4);
+        }
+
+    .left-panel {
+        animation: slideInLeft 0.6s ease-out;
+    }
+
+    .right-panel {
+        animation: slideInRight 0.6s ease-out;
+    }
+
+    .accordion {
+        background: white;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        border: 3px solid var(--secondary-color);
+    }
+
+    .accordion-item {
+        border: none;
+        border-bottom: 2px solid var(--secondary-color);
+    }
+
+        .accordion-item:last-child {
+            border-bottom: none;
+        }
+
+    .accordion-header {
+        background: white;
+    }
+
+    .accordion-button {
+        background: linear-gradient(135deg, var(--secondary-color) 0%, var(--secondary-dark) 100%);
+        color: var(--primary-color);
+        font-weight: 700;
+        font-size: 1.1rem;
+        padding: 1.25rem 1.5rem;
+        border: none;
+        transition: all 0.3s ease;
+    }
+
+        .accordion-button:not(.collapsed) {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
+            color: white;
+            box-shadow: none;
+        }
+
+        .accordion-button:focus {
+            box-shadow: none;
+            border: none;
+        }
+
+        .accordion-button::after {
+            filter: brightness(0) saturate(100%);
+        }
+
+        .accordion-button:not(.collapsed)::after {
+            filter: brightness(0) invert(1);
+        }
+
+    .accordion-body {
+        padding: 1.5rem;
+        background: #fafafa;
+    }
+
+        .accordion-body h6 {
+            color: var(--primary-color);
+            font-weight: 700;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--secondary-color);
+        }
+
+    .list-group-item {
+        border: 2px solid #f0f0f0;
+        border-radius: 12px !important;
+        margin-bottom: 0.75rem;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+        background: white;
+        position: relative;
+        overflow: hidden;
+        padding: 1rem;
+    }
+
+        .list-group-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 4px;
+            background: var(--secondary-color);
+            transform: scaleY(0);
+            transition: transform 0.3s ease;
+        }
+
+        .list-group-item:hover::before {
+            transform: scaleY(1);
+        }
+
+        .list-group-item:hover {
+            border-color: var(--secondary-color);
+            background: linear-gradient(to right, #fffdf7, white);
+            transform: translateX(8px) scale(1.02);
+            box-shadow: 0 5px 20px rgba(255, 228, 161, 0.4);
+        }
+
+        .list-group-item.active {
+            background: linear-gradient(135deg, var(--secondary-color) 0%, var(--secondary-dark) 100%) !important;
+            border-color: var(--primary-color) !important;
+            color: var(--primary-color) !important;
+            transform: translateX(8px) scale(1.02);
+            box-shadow: 0 8px 25px rgba(151, 50, 45, 0.3);
+        }
+
+            .list-group-item.active::before {
+                transform: scaleY(1);
+                background: var(--primary-color);
+                width: 5px;
+            }
+
+        .list-group-item strong {
+            color: var(--primary-color);
+            font-size: 1rem;
+        }
+
+    .card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+        overflow: hidden;
+        border: 3px solid var(--secondary-color);
+    }
+
+    .card-header {
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
+        color: white;
+        padding: 1.5rem;
+        font-weight: 700;
+        font-size: 1.3rem;
+        border: none;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .card-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+
+    .card-body {
+        padding: 2.5rem;
+    }
+
+    .card dt {
+        color: var(--primary-color);
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        font-size: 1rem;
+    }
+
+    .card dd {
+        color: #495057;
+        margin-bottom: 1.5rem;
+        padding-left: 0.5rem;
+        font-size: 1.05rem;
+        border-left: 3px solid var(--secondary-color);
+        padding-left: 1rem;
+    }
+
+    .badge {
+        padding: 0.6rem 1.5rem;
+        font-size: 1rem;
+        border-radius: 25px;
+        font-weight: 600;
+    }
+
+        .badge.bg-warning {
+            background: linear-gradient(135deg, #ffc107 0%, #ffb300 100%) !important;
+            color: #000 !important;
+            box-shadow: 0 4px 15px rgba(255, 193, 7, 0.4);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .badge.bg-success {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%) !important;
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4);
+        }
+
+        .badge.bg-danger {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%) !important;
+            box-shadow: 0 4px 15px rgba(220, 53, 69, 0.4);
+        }
+
+    .alert-info {
+        background: linear-gradient(135deg, var(--secondary-color) 0%, var(--secondary-dark) 100%);
+        border: 3px solid var(--primary-color);
+        color: var(--primary-color);
+        border-radius: 20px;
+        padding: 3rem;
+        text-align: center;
+        font-weight: 600;
+        box-shadow: 0 10px 30px rgba(255, 228, 161, 0.3);
+    }
+
+        .alert-info i {
+            font-size: 3rem;
+            animation: pulse 2s ease-in-out infinite;
+            display: block;
+            margin-bottom: 1rem;
+        }
+
+    .alert-secondary {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border: 3px solid #dee2e6;
+        color: #495057;
+        border-radius: 15px;
+        padding: 1.5rem;
+        font-weight: 600;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    .form-label {
+        color: var(--primary-color);
+        font-weight: 700;
+        margin-bottom: 0.75rem;
+        font-size: 1rem;
+    }
+
+    textarea.form-control {
+        resize: vertical;
+        min-height: 100px;
+    }
+
+    .modal-content {
+        border-radius: 20px;
+        border: none;
+        overflow: hidden;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+
+    .modal-header {
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
+        color: white;
+        border: none;
+        padding: 1.5rem 2rem;
+    }
+
+        .modal-header .btn-close {
+            filter: brightness(0) invert(1);
+        }
+
+    .modal-body {
+        padding: 2.5rem;
+        background: linear-gradient(to bottom, white 0%, #f8f9fa 100%);
+        font-size: 1.1rem;
+    }
+
+    .modal-footer {
+        background: #f8f9fa;
+        border-top: 2px solid #e9ecef;
+        padding: 1.5rem 2rem;
+    }
+
+    .modal.show .modal-dialog {
+        animation: fadeInUp 0.3s ease-out;
+    }
+
+    .loading-state {
+        text-align: center;
+        padding: 3rem;
+        color: var(--primary-color);
+        animation: fadeInUp 0.6s ease-out;
+    }
+
+        .loading-state .spinner-border {
+            width: 3rem;
+            height: 3rem;
+            border-width: 0.3rem;
+            border-color: var(--primary-color);
+            border-right-color: transparent;
+        }
+
+    .text-muted {
+        color: #6c757d !important;
+    }
+
+    .section-count {
+        background: var(--primary-color);
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 700;
+        margin-left: 0.5rem;
+    }
+
+    .status-indicator {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 0.5rem;
+        animation: pulse 2s ease-in-out infinite;
+    }
+
+    .status-pending {
+        background: #ffc107;
+    }
+
+    .status-approved {
+        background: #28a745;
+    }
+
+    .status-denied {
+        background: #dc3545;
+    }
+</style>
+
+<div class="page-header">
+    <h3>
+        <i class="bi bi-check2-square"></i> Duyệt yêu cầu chỉnh sửa chấm công
+    </h3>
+</div>
+
+<div class="filter-section">
+    <div class="d-flex align-items-center flex-wrap gap-3">
+        <div>
+            <label>Từ ngày:</label>
+            <InputDate @bind-Value="fromDate" class="form-control" />
+        </div>
+        <div>
+            <label>Đến ngày:</label>
+            <InputDate @bind-Value="toDate" class="form-control" />
+        </div>
+        <div class="d-flex align-items-end">
+            <button class="btn btn-primary" @onclick="LoadData">
+                <i class="bi bi-search"></i> Tìm kiếm
+            </button>
+        </div>
+    </div>
 </div>
 
 <div class="row">
-    <!-- BÊN TRÁI: Accordion danh sách phòng ban -->
-    <div class="col-4">
-        <Accordion>
-            @if (groups == null)
-            {
-                <p>Đang tải dữ liệu...</p>
-            }
-            else
-            {
+    <!-- BÊN TRÁI: Danh sách phòng ban -->
+    <div class="col-lg-4 col-md-12 mb-4 left-panel">
+        @if (groups == null)
+        {
+            <div class="loading-state">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-3 fw-bold">Đang tải dữ liệu...</p>
+            </div>
+        }
+        else
+        {
+            <Accordion>
                 @foreach (var dep in groups)
                 {
                     <AccordionItem>
                         <AccordionHeader>
-                            <AccordionToggle>@dep.Department</AccordionToggle>
+                            <AccordionToggle>
+                                <i class="bi bi-building"></i> @dep.Department
+                                <span class="section-count">@(dep.pending.Count + dep.approved.Count + dep.denied.Count)</span>
+                            </AccordionToggle>
                         </AccordionHeader>
                         <AccordionBody>
-                            <h6>Đang chờ duyệt</h6>
+                            <h6>
+                                <span class="status-indicator status-pending"></span>
+                                Đang chờ duyệt
+                                <span class="section-count">@dep.pending.Count</span>
+                            </h6>
                             @if (dep.pending.Count == 0)
                             {
-                                <p class="text-muted small">Không có đơn nào.</p>
+                                <p class="text-muted small text-center">Không có đơn nào.</p>
                             }
                             else
                             {
-                                <ul class="list-group small">
+                                <div class="list-group">
                                     @foreach (var item in dep.pending)
                                     {
-                                        <li class="list-group-item list-group-item-action"
-                                            @onclick="() => SelectRequest(item)">
-                                            <strong>@item.EmployeeName</strong> - @item.Message
-                                            <div class="text-muted small">@item.CreatedAt?.ToString("dd/MM/yyyy HH:mm")</div>
-                                        </li>
+                                        <div class="list-group-item @(selectedRequest?.RequestId == item.RequestId ? "active" : "")"
+                                             @onclick="() => SelectRequest(item)">
+                                            <strong>@item.EmployeeName</strong>
+                                            <div class="text-muted small mt-1">@item.Message</div>
+                                            <div class="text-muted small mt-1">
+                                                <i class="bi bi-clock"></i> @item.CreatedAt?.ToString("dd/MM/yyyy HH:mm")
+                                            </div>
+                                        </div>
                                     }
-                                </ul>
+                                </div>
                             }
                         </AccordionBody>
                         <AccordionBody>
-                            <h6>Đã duyệt</h6>
+                            <h6>
+                                <span class="status-indicator status-approved"></span>
+                                Đã duyệt
+                                <span class="section-count">@dep.approved.Count</span>
+                            </h6>
                             @if (dep.approved.Count == 0)
                             {
-                                <p class="text-muted small">Không có đơn nào.</p>
+                                <p class="text-muted small text-center">Không có đơn nào.</p>
                             }
                             else
                             {
-                                <ul class="list-group small">
+                                <div class="list-group">
                                     @foreach (var item in dep.approved)
                                     {
-                                        <li class="list-group-item list-group-item-action"
-                                            @onclick="() => SelectRequest(item)">
-                                            <strong>@item.EmployeeName</strong> - @item.Message
-                                            <div class="text-muted small">@item.CreatedAt?.ToString("dd/MM/yyyy HH:mm")</div>
-                                        </li>
+                                        <div class="list-group-item @(selectedRequest?.RequestId == item.RequestId ? "active" : "")"
+                                             @onclick="() => SelectRequest(item)">
+                                            <strong>@item.EmployeeName</strong>
+                                            <div class="text-muted small mt-1">@item.Message</div>
+                                            <div class="text-muted small mt-1">
+                                                <i class="bi bi-clock"></i> @item.CreatedAt?.ToString("dd/MM/yyyy HH:mm")
+                                            </div>
+                                        </div>
                                     }
-                                </ul>
+                                </div>
                             }
                         </AccordionBody>
                         <AccordionBody>
-                            <h6>Đã từ chối</h6>
+                            <h6>
+                                <span class="status-indicator status-denied"></span>
+                                Đã từ chối
+                                <span class="section-count">@dep.denied.Count</span>
+                            </h6>
                             @if (dep.denied.Count == 0)
                             {
-                                <p class="text-muted small">Không có đơn nào.</p>
+                                <p class="text-muted small text-center">Không có đơn nào.</p>
                             }
                             else
                             {
-                                <ul class="list-group small">
+                                <div class="list-group">
                                     @foreach (var item in dep.denied)
                                     {
-                                        <li class="list-group-item list-group-item-action"
-                                            @onclick="() => SelectRequest(item)">
-                                            <strong>@item.EmployeeName</strong> - @item.Message
-                                            <div class="text-muted small">@item.CreatedAt?.ToString("dd/MM/yyyy HH:mm")</div>
-                                        </li>
+                                        <div class="list-group-item @(selectedRequest?.RequestId == item.RequestId ? "active" : "")"
+                                             @onclick="() => SelectRequest(item)">
+                                            <strong>@item.EmployeeName</strong>
+                                            <div class="text-muted small mt-1">@item.Message</div>
+                                            <div class="text-muted small mt-1">
+                                                <i class="bi bi-clock"></i> @item.CreatedAt?.ToString("dd/MM/yyyy HH:mm")
+                                            </div>
+                                        </div>
                                     }
-                                </ul>
+                                </div>
                             }
                         </AccordionBody>
                     </AccordionItem>
                 }
-            }
-        </Accordion>
-
+            </Accordion>
+        }
     </div>
 
     <!-- BÊN PHẢI: Chi tiết yêu cầu -->
-    <div class="col-8">
+    <div class="col-lg-8 col-md-12 right-panel">
         @if (selectedRequest == null)
         {
-            <div class="alert alert-info">Chọn một yêu cầu bên trái để xem chi tiết.</div>
+            <div class="alert-info">
+                <i class="bi bi-info-circle"></i>
+                <p class="mb-0 fs-5">Chọn một yêu cầu bên trái để xem chi tiết</p>
+            </div>
         }
         else
         {
-            <div class="card shadow-sm">
+            <div class="card">
                 <div class="card-header">
-                    <strong>Chi tiết yêu cầu chỉnh sửa</strong>
+                    <i class="bi bi-file-text"></i> Chi tiết yêu cầu chỉnh sửa
                 </div>
                 <div class="card-body">
                     <dl class="row">
-                        <dt class="col-sm-4">Nhân viên:</dt>
+                        <dt class="col-sm-4"><i class="bi bi-person"></i> Nhân viên:</dt>
                         <dd class="col-sm-8">@selectedRequest.EmployeeName</dd>
 
-                        <dt class="col-sm-4">Nội dung:</dt>
+                        <dt class="col-sm-4"><i class="bi bi-chat-left-text"></i> Nội dung:</dt>
                         <dd class="col-sm-8">@selectedRequest.Message</dd>
 
-                        <dt class="col-sm-4">Giá trị yêu cầu:</dt>
-                        <dd class="col-sm-8">@selectedRequest.RequestedValue</dd>
+                        <dt class="col-sm-4"><i class="bi bi-pencil-square"></i> Giá trị yêu cầu:</dt>
+                        <dd class="col-sm-8"><strong>@selectedRequest.RequestedValue</strong></dd>
 
-                        <dt class="col-sm-4">Ngày gửi:</dt>
+                        <dt class="col-sm-4"><i class="bi bi-calendar-event"></i> Ngày gửi:</dt>
                         <dd class="col-sm-8">@selectedRequest.CreatedAt?.ToString("dd/MM/yyyy HH:mm")</dd>
 
-                        <dt class="col-sm-4">Trạng thái hiện tại:</dt>
+                        <dt class="col-sm-4"><i class="bi bi-flag"></i> Trạng thái:</dt>
                         <dd class="col-sm-8">
                             @if (selectedRequest.Status == "Approved")
                             {
-                                <span class="badge bg-success">Đã duyệt</span>
+                                <span class="badge bg-success">✓ Đã duyệt</span>
                             }
                             else if (selectedRequest.Status == "Denied")
                             {
-                                <span class="badge bg-danger">Đã từ chối</span>
+                                <span class="badge bg-danger">✗ Đã từ chối</span>
                             }
                             else
                             {
-                                <span class="badge bg-warning">Đang chờ duyệt</span>
+                                <span class="badge bg-warning">⏱ Đang chờ duyệt</span>
                             }
                         </dd>
                     </dl>
 
-                    
-
                     @if (selectedRequest.Status == "Pending")
                     {
-                        <div class="mb-3">
-                            <label class="form-label">Phản hồi:</label>
-                            <textarea class="form-control" rows="3" @bind="comment"
+                        <div class="mb-4">
+                            <label class="form-label">
+                                <i class="bi bi-chat-dots"></i> Phản hồi:
+                            </label>
+                            <textarea class="form-control" rows="4" @bind="comment"
                                       placeholder="Nhập phản hồi cho nhân viên..."></textarea>
                         </div>
 
                         <div class="d-flex justify-content-end gap-2">
-                            <button class="btn btn-secondary" @onclick="CancelDetail">Huỷ</button>
-                            <button class="btn btn-danger" @onclick='() => SetStatus("Denied")'>Từ chối</button>
-                            <button class="btn btn-success" @onclick='() => SetStatus("Approved")'>Duyệt</button>
+                            <button class="btn btn-secondary" @onclick="CancelDetail">
+                                <i class="bi bi-x-lg"></i> Hủy
+                            </button>
+                            <button class="btn btn-danger" @onclick='() => SetStatus("Denied")'>
+                                <i class="bi bi-x-circle"></i> Từ chối
+                            </button>
+                            <button class="btn btn-success" @onclick='() => SetStatus("Approved")'>
+                                <i class="bi bi-check-circle"></i> Duyệt
+                            </button>
                         </div>
                     }
                     else
                     {
-                        <div class="alert alert-secondary text-center mb-0">
-                            Yêu cầu này đã được xử lý.
+                        <div class="alert-secondary text-center mb-0">
+                            <i class="bi bi-info-circle"></i> Yêu cầu này đã được xử lý.
                         </div>
                     }
                 </div>
             </div>
         }
     </div>
-
 </div>
 
 <!-- Modal xác nhận -->
@@ -178,15 +781,22 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="confirmModalLabel">Xác nhận gửi phản hồi</h5>
+                <h5 class="modal-title" id="confirmModalLabel">
+                    <i class="bi bi-question-circle"></i> Xác nhận gửi phản hồi
+                </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
             </div>
             <div class="modal-body">
-                Bạn có chắc muốn gửi phản hồi cho yêu cầu này không?
+                <i class="bi bi-exclamation-triangle text-warning" style="font-size: 2rem; display: block; text-align: center; margin-bottom: 1rem;"></i>
+                <p class="text-center mb-0">Bạn có chắc muốn gửi phản hồi cho yêu cầu này không?</p>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                <button type="button" class="btn btn-primary" @onclick="ConfirmSend">Xác nhận</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-lg"></i> Hủy
+                </button>
+                <button type="button" class="btn btn-primary" @onclick="ConfirmSend">
+                    <i class="bi bi-check-lg"></i> Xác nhận
+                </button>
             </div>
         </div>
     </div>
@@ -223,7 +833,6 @@
         selectedStatus = status;
         JS.InvokeVoidAsync("ShowConfirmModal");
     }
-
 
     private async Task ConfirmSend()
     {

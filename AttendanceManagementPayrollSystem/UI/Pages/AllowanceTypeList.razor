@@ -1,0 +1,527 @@
+﻿@page "/allowance-types"
+@using System.Net.Http.Json
+@inject IHttpClientFactory HttpFactory
+
+<style>
+    :root {
+        --primary-color: #97322D;
+        --secondary-color: #FFE4A1;
+        --primary-dark: #7a271f;
+    }
+
+    .allowance-container {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #FFE4A1 0%, #fff5d9 50%, #ffffff 100%);
+        padding: 1.5rem 0;
+    }
+
+    .page-header {
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+        border-radius: 12px;
+        padding: 1.25rem 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 4px 12px rgba(151, 50, 45, 0.3);
+        color: var(--secondary-color);
+        border: 2px solid var(--secondary-color);
+        transition: all 0.3s ease;
+    }
+
+        .page-header:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(151, 50, 45, 0.4);
+        }
+
+        .page-header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .page-header .subtitle {
+            font-size: 0.85rem;
+            opacity: 0.9;
+            margin: 0.25rem 0 0 0;
+        }
+
+    .add-btn {
+        background: var(--secondary-color);
+        color: var(--primary-color);
+        border: 2px solid var(--primary-color);
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+        white-space: nowrap;
+    }
+
+        .add-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(151, 50, 45, 0.3);
+            background: var(--primary-color);
+            color: var(--secondary-color);
+        }
+
+    .stats-card {
+        background: white;
+        border-radius: 10px;
+        padding: 1rem 1.25rem;
+        box-shadow: 0 2px 8px rgba(151, 50, 45, 0.12);
+        margin-bottom: 1.5rem;
+        border: 2px solid var(--secondary-color);
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+        .stats-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(151, 50, 45, 0.2);
+            border-color: var(--primary-color);
+        }
+
+    .stats-icon {
+        font-size: 2rem;
+        color: var(--primary-color);
+    }
+
+    .stats-number {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin: 0;
+        line-height: 1;
+    }
+
+    .stats-label {
+        color: #6c757d;
+        font-size: 0.85rem;
+        margin: 0.25rem 0 0 0;
+    }
+
+    .search-box {
+        background: white;
+        border-radius: 10px;
+        padding: 1rem;
+        box-shadow: 0 2px 8px rgba(151, 50, 45, 0.12);
+        margin-bottom: 1.5rem;
+        border: 2px solid var(--secondary-color);
+    }
+
+    .search-input {
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        padding: 0.5rem 0.75rem 0.5rem 2.5rem;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+    }
+
+        .search-input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.15rem rgba(151, 50, 45, 0.15);
+        }
+
+    .search-icon {
+        position: absolute;
+        left: 0.75rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #6c757d;
+        font-size: 1rem;
+    }
+
+    .clear-search-btn {
+        position: absolute;
+        right: 0.4rem;
+        top: 50%;
+        transform: translateY(-50%);
+        background: var(--secondary-color);
+        color: var(--primary-color);
+        border: none;
+        border-radius: 6px;
+        padding: 0.3rem 0.6rem;
+        font-size: 0.85rem;
+        transition: all 0.3s ease;
+    }
+
+        .clear-search-btn:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+    .allowance-card {
+        background: white;
+        border-radius: 10px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 2px 8px rgba(151, 50, 45, 0.12);
+        transition: all 0.3s ease;
+        border: 2px solid var(--secondary-color);
+    }
+
+        .allowance-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(151, 50, 45, 0.2);
+            border-color: var(--primary-color);
+        }
+
+    .card-id-badge {
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 0.75rem;
+        display: inline-block;
+    }
+
+    .card-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin: 0.75rem 0 0.5rem 0;
+    }
+
+    .info-row {
+        display: flex;
+        align-items: center;
+        margin: 0.4rem 0;
+        color: #6c757d;
+        font-size: 0.85rem;
+    }
+
+        .info-row i {
+            margin-right: 0.4rem;
+            color: var(--primary-color);
+            font-size: 0.9rem;
+        }
+
+    .value-display {
+        background: linear-gradient(135deg, var(--secondary-color), #ffd97d);
+        color: var(--primary-color);
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
+        font-size: 1.25rem;
+        font-weight: 700;
+        text-align: center;
+        margin: 0.75rem 0;
+        border: 2px solid var(--primary-color);
+    }
+
+    .calc-badge {
+        padding: 0.3rem 0.75rem;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 0.75rem;
+        display: inline-block;
+    }
+
+        .calc-badge.fixed {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .calc-badge.percentage {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .calc-badge.variable {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+    .loading-spinner {
+        text-align: center;
+        padding: 3rem;
+    }
+
+    .spinner {
+        width: 50px;
+        height: 50px;
+        border: 3px solid var(--secondary-color);
+        border-top: 3px solid var(--primary-color);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 0 auto;
+    }
+
+    @@keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem 2rem;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(151, 50, 45, 0.12);
+        border: 2px solid var(--secondary-color);
+    }
+
+        .empty-state i {
+            font-size: 4rem;
+            color: var(--secondary-color);
+            margin-bottom: 1rem;
+        }
+
+        .empty-state h3 {
+            color: var(--primary-color);
+            margin-bottom: 0.75rem;
+            font-size: 1.3rem;
+        }
+
+    .error-alert {
+        background: #f8d7da;
+        border: 2px solid #f5c6cb;
+        border-radius: 10px;
+        padding: 1rem;
+        color: #721c24;
+        font-size: 0.9rem;
+    }
+
+    .retry-btn {
+        background: var(--primary-color);
+        color: white;
+        border: none;
+        padding: 0.4rem 1rem;
+        border-radius: 6px;
+        margin-left: 0.75rem;
+        font-size: 0.85rem;
+        transition: all 0.3s ease;
+    }
+
+        .retry-btn:hover {
+            background: var(--primary-dark);
+        }
+
+    .grid-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1rem;
+    }
+
+    @@media (max-width: 768px) {
+        .grid-container {
+            grid-template-columns: 1fr;
+        }
+
+        .page-header h1 {
+            font-size: 1.25rem;
+        }
+
+        .stats-number {
+            font-size: 1.5rem;
+        }
+    }
+</style>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+
+<div class="allowance-container">
+    <div class="container-fluid px-3">
+        <!-- Header -->
+        <div class="page-header">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1>
+                        <i class="bi bi-wallet2 me-2"></i>Quản lý Loại Phụ Cấp
+                    </h1>
+                    <p class="subtitle">Quản lý và theo dõi các loại phụ cấp trong hệ thống</p>
+                </div>
+                <div class="col-md-4 text-md-end mt-2 mt-md-0">
+                    <button class="add-btn" @onclick="OpenAddModal">
+                        <i class="bi bi-plus-circle me-1"></i>Thêm mới
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        @if (loading)
+        {
+            <div class="loading-spinner">
+                <div class="spinner"></div>
+                <p class="mt-2 text-muted" style="font-size: 0.9rem;">Đang tải dữ liệu...</p>
+            </div>
+        }
+        else if (!string.IsNullOrEmpty(error))
+        {
+            <div class="error-alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                <strong>Lỗi!</strong> @error
+                <button class="retry-btn" @onclick="LoadAllowanceTypes">
+                    <i class="bi bi-arrow-clockwise me-1"></i>Thử lại
+                </button>
+            </div>
+        }
+        else if (!AllowanceTypes.Any())
+        {
+            <div class="empty-state">
+                <i class="bi bi-inbox"></i>
+                <h3>Chưa có loại phụ cấp nào</h3>
+                <p class="text-muted mb-3" style="font-size: 0.9rem;">Hãy thêm loại phụ cấp đầu tiên để bắt đầu quản lý</p>
+                <button class="add-btn" @onclick="OpenAddModal">
+                    <i class="bi bi-plus-circle me-2"></i>Thêm loại phụ cấp đầu tiên
+                </button>
+            </div>
+        }
+        else
+        {
+            <!-- Stats & Search Row -->
+            <div class="row align-items-center mb-3">
+                <div class="col-md-4">
+                    <div class="stats-card">
+                        <i class="bi bi-list-check stats-icon"></i>
+                        <div>
+                            <h2 class="stats-number">@FilteredAllowanceTypes.Count()</h2>
+                            <p class="stats-label">Tổng số loại phụ cấp</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-8">
+                    <div class="search-box">
+                        <div class="position-relative">
+                            <i class="bi bi-search search-icon"></i>
+                            <input type="text"
+                                   class="form-control search-input"
+                                   placeholder="Tìm kiếm theo tên loại phụ cấp..."
+                                   @bind="searchTerm"
+                                   @bind:event="oninput" />
+                            @if (!string.IsNullOrEmpty(searchTerm))
+                            {
+                                <button class="clear-search-btn" @onclick="ClearSearch">
+                                    <i class="bi bi-x-lg"></i>
+                                </button>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Allowance Cards Grid -->
+            <div class="grid-container">
+                @foreach (var item in FilteredAllowanceTypes)
+                {
+                    <div class="allowance-card">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <span class="card-id-badge">
+                                <i class="bi bi-hash"></i>@item.TypeId
+                            </span>
+                            <span class="calc-badge @GetCalculationTypeClass(item.CalculationType)">
+                                <i class="bi bi-calculator"></i> @GetCalculationTypeDisplay(item.CalculationType)
+                            </span>
+                        </div>
+
+                        <h3 class="card-title">@item.TypeName</h3>
+
+                        <div class="value-display">
+                            @item.Value.ToString("N0") VNĐ
+                        </div>
+
+                        <div class="info-row">
+                            <i class="bi bi-calendar-event"></i>
+                            <span><strong>Áp dụng:</strong> @item.EffectiveStartDate.ToString("dd/MM/yyyy")</span>
+                        </div>
+
+                        <div class="info-row">
+                            <i class="bi bi-clock-history"></i>
+                            <span><strong>Tạo lúc:</strong> @item.CreatedAt.ToString("dd/MM/yyyy HH:mm")</span>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+<AddAllowanceTypeModal @ref="addAllowanceModal" OnSaved="LoadAllowanceTypes" />
+
+@code {
+    private List<AllowanceDTO> AllowanceTypes = new();
+    private bool loading = true;
+    private string error;
+    private string searchTerm = "";
+    private AddAllowanceTypeModal addAllowanceModal;
+
+    private IEnumerable<AllowanceDTO> FilteredAllowanceTypes =>
+        string.IsNullOrWhiteSpace(searchTerm)
+            ? AllowanceTypes
+            : AllowanceTypes.Where(x => x.TypeName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase));
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAllowanceTypes();
+    }
+
+    private async Task LoadAllowanceTypes()
+    {
+        loading = true;
+        error = null;
+        try
+        {
+            var client = HttpFactory.CreateClient("ApiClient");
+            var result = await client.GetFromJsonAsync<List<AllowanceDTO>>("api/allowancetype");
+            AllowanceTypes = result ?? new List<AllowanceDTO>();
+        }
+        catch (Exception ex)
+        {
+            error = $"Không thể tải dữ liệu: {ex.Message}";
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private void OpenAddModal()
+    {
+        addAllowanceModal?.Open();
+    }
+
+    private void ClearSearch()
+    {
+        searchTerm = "";
+    }
+
+    private string GetCalculationTypeClass(string calculationType)
+    {
+        return calculationType?.ToLower() switch
+        {
+            "fixed" => "fixed",
+            "percentage" => "percentage",
+            "variable" => "variable",
+            _ => ""
+        };
+    }
+
+    private string GetCalculationTypeDisplay(string calculationType)
+    {
+        return calculationType?.ToLower() switch
+        {
+            "fixed" => "Cố định",
+            "percentage" => "Phần trăm",
+            "variable" => "Biến động",
+            _ => calculationType
+        };
+    }
+
+    public class AllowanceDTO
+    {
+        public int TypeId { get; set; }
+        public string TypeName { get; set; }
+        public string CalculationType { get; set; }
+        public decimal Value { get; set; }
+        public DateTime EffectiveStartDate { get; set; }
+        public DateTime CreatedAt { get; set; }
+    }
+}

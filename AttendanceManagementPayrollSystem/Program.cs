@@ -4,6 +4,7 @@ using Blazorise;
 using Blazorise.Bootstrap5;
 using Blazorise.Icons.FontAwesome;
 using AttendanceManagementPayrollSystem.Services.ServiceList;
+using AttendanceManagementPayrollSystem.Services;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -48,6 +49,9 @@ builder.Services.AddScoped<ClockinComponentService, ClockinComponentServiceImpl>
 builder.Services.AddScoped<EmployeeService, EmployeeServiceImpl>();
 builder.Services.AddScoped<DepartmentWeeklyShiftService, DepartmentWeeklyShiftServiceImpl>();
 builder.Services.AddScoped<EmployeeDependentService, EmployeeDependentServiceImpl>();
+builder.Services.AddScoped<EmployeeAllowanceService, EmployeeAllowanceServiceImpl>();
+builder.Services.AddScoped<AllowanceTypeService, AllowanceTypeServiceImpl>();
+
 
 
 

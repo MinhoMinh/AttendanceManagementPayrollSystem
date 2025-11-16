@@ -1,60 +1,271 @@
 ﻿@page "/salary-policies/history"
 @using AttendanceManagementPayrollSystem.DTO
 @inject IHttpClientFactory HttpFactory
+@inject NavigationManager Navigation
 
-<h3 class="text-center mb-4">Lịch Sử Chính Sách Lương</h3>
+<style>
+    body {
+        background: linear-gradient(135deg, #FFF5E1 0%, #FFE4A1 100%);
+    }
 
-<div class="row">
-    <!-- Bảng danh sách các policy đã inactive -->
-    <div class="col-md-4">
-        <div class="list-group">
-            @if (inactivePolicies == null)
-            {
-                <p><em>Đang tải...</em></p>
-            }
-            else if (!inactivePolicies.Any())
-            {
-                <p>Không tìm thấy chính sách lương nào trong lịch sử.</p>
-            }
-            else
-            {
-                @foreach (var policy in inactivePolicies)
-                {
-                    <button class="list-group-item list-group-item-action @(selectedPolicy?.SalId == policy.SalId ? "active" : "")"
-                            @onclick="() => SelectPolicy(policy)">
-                        @policy.SalaryPolicyName.Trim()
-                        <br />
-                        <small>Hiệu lực từ: @policy.EffectiveFrom.ToShortDateString()</small>
-                    </button>
-                }
-            }
+    .history-header {
+        background: linear-gradient(135deg, #97322D 0%, #7A2824 100%);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 10px;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 15px rgba(151, 50, 45, 0.3);
+    }
+
+    .back-button {
+        background: rgba(255, 255, 255, 0.2);
+        border: 2px solid white;
+        color: white;
+        padding: 0.5rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+        .back-button:hover {
+            background: white;
+            color: #97322D;
+            transform: translateY(-2px);
+        }
+
+    .section-card {
+        background: white;
+        border-radius: 10px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        height: 100%;
+    }
+
+    .section-title {
+        color: #97322D;
+        font-weight: 700;
+        font-size: 1.1rem;
+        margin-bottom: 1.2rem;
+        padding-bottom: 0.8rem;
+        border-bottom: 2px solid #FFE4A1;
+    }
+
+    .list-group-item {
+        border-left: 4px solid #FFE4A1;
+        margin-bottom: 0.5rem;
+        border-radius: 8px !important;
+        transition: all 0.3s ease;
+    }
+
+        .list-group-item:hover {
+            border-left-color: #97322D;
+            background: #FFF5E1;
+            transform: translateX(5px);
+        }
+
+        .list-group-item.active {
+            background: linear-gradient(135deg, #97322D 0%, #7A2824 100%);
+            border-left-color: #FFE4A1;
+            border-color: #97322D;
+        }
+
+    .card {
+        border: none;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+    }
+
+        .card:hover {
+            box-shadow: 0 6px 20px rgba(151, 50, 45, 0.2);
+            transform: translateY(-3px);
+        }
+
+    .card-title {
+        color: #97322D;
+        font-weight: 700;
+        border-bottom: 3px solid #FFE4A1;
+        padding-bottom: 0.8rem;
+        margin-bottom: 1.2rem;
+    }
+
+    .card-body {
+        padding: 2rem;
+    }
+
+    .card-text {
+        padding: 0.8rem;
+        margin-bottom: 0.8rem;
+        background: #f8f9fa;
+        border-radius: 6px;
+        border-left: 3px solid #FFE4A1;
+        transition: all 0.3s ease;
+    }
+
+        .card-text:hover {
+            border-left-color: #97322D;
+            background: #FFF5E1;
+            transform: translateX(3px);
+        }
+
+    .badge.bg-success {
+        background: #28a745 !important;
+    }
+
+    .badge.bg-secondary {
+        background: #6c757d !important;
+    }
+
+    .loading-text {
+        text-align: center;
+        color: #97322D;
+        font-style: italic;
+        padding: 2rem;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .empty-text {
+        text-align: center;
+        color: #666;
+        padding: 2rem;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .placeholder-text {
+        text-align: center;
+        color: #97322D;
+        padding: 3rem;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        font-size: 1.1rem;
+    }
+</style>
+
+<div class="container mt-4">
+    <div class="history-header">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+                <h3 class="mb-0">
+                    <i class="bi bi-clock-history me-2"></i>
+                    Lịch Sử Chính Sách Lương
+                </h3>
+                <p class="mb-0 mt-2" style="opacity: 0.9; font-size: 0.95rem;">
+                    Xem lại các chính sách lương đã được áp dụng trước đây
+                </p>
+            </div>
+            <button class="back-button" @onclick="GoBack">
+                <i class="bi bi-arrow-left me-2"></i>
+                Quay lại
+            </button>
         </div>
     </div>
 
-    <!-- Bảng chi tiết -->
-    <div class="col-md-8">
-        @if (selectedPolicy == null)
-        {
-            <p>Chọn một chính sách để xem chi tiết.</p>
-        }
-        else
-        {
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">@selectedPolicy.SalaryPolicyName.Trim()</h5>
-                    <p class="card-text"><strong>Giá trị công việc:</strong> @selectedPolicy.WorkUnitValue.ToString("N0") VNĐ</p>
-                    <p class="card-text"><strong>Nghỉ phép hàng năm:</strong> @selectedPolicy.YearlyPto</p>
-                    <p class="card-text"><strong>Hệ số Overclock:</strong> @selectedPolicy.OverclockMultiplier</p>
-                    <p class="card-text"><strong>Ngày hiệu lực:</strong> @selectedPolicy.EffectiveFrom.ToShortDateString()</p>
-                    <p class="card-text">
-                        <strong>Đang hoạt động:</strong>
-                        <span class="badge @(selectedPolicy.IsActive ? "bg-success" : "bg-secondary")">
-                            @(selectedPolicy.IsActive ? "Có" : "Không")
-                        </span>
-                    </p>
+    <div class="row g-4">
+        <!-- Bảng danh sách các policy đã inactive -->
+        <div class="col-md-4">
+            <div class="section-card">
+                <h5 class="section-title">
+                    <i class="bi bi-list-ul me-2"></i>
+                    Danh sách chính sách
+                </h5>
+                <div class="list-group">
+                    @if (inactivePolicies == null)
+                    {
+                        <div class="loading-text">
+                            <i class="bi bi-hourglass-split me-2"></i>
+                            <em>Đang tải...</em>
+                        </div>
+                    }
+                    else if (!inactivePolicies.Any())
+                    {
+                        <div class="empty-text">
+                            <i class="bi bi-inbox mb-2 d-block" style="font-size: 2rem; color: #FFE4A1;"></i>
+                            Không tìm thấy chính sách lương nào trong lịch sử.
+                        </div>
+                    }
+                    else
+                    {
+                        @foreach (var policy in inactivePolicies.OrderByDescending(p => p.EffectiveFrom))
+                        {
+                            <button class="list-group-item list-group-item-action @(selectedPolicy?.SalId == policy.SalId ? "active" : "")"
+                                    @onclick="() => SelectPolicy(policy)">
+                                <i class="bi bi-file-text me-2"></i>
+                                @policy.SalaryPolicyName.Trim()
+                                <br />
+                                <small>
+                                    <i class="bi bi-calendar-event me-1"></i>
+                                    Hiệu lực: @policy.EffectiveFrom.ToString("dd/MM/yyyy")
+                                </small>
+                            </button>
+                        }
+                    }
                 </div>
             </div>
-        }
+        </div>
+
+        <!-- Bảng chi tiết -->
+        <div class="col-md-8">
+            <div class="section-card">
+                <h5 class="section-title">
+                    <i class="bi bi-info-circle me-2"></i>
+                    Chi tiết chính sách
+                </h5>
+                @if (selectedPolicy == null)
+                {
+                    <div class="placeholder-text">
+                        <i class="bi bi-hand-index mb-3 d-block" style="font-size: 3rem; color: #FFE4A1;"></i>
+                        Chọn một chính sách từ danh sách bên trái để xem chi tiết.
+                    </div>
+                }
+                else
+                {
+                    <div class="card border-0">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <i class="bi bi-file-earmark-text me-2"></i>
+                                @selectedPolicy.SalaryPolicyName.Trim()
+                            </h5>
+                            <p class="card-text">
+                                <i class="bi bi-cash-coin me-2 text-success"></i>
+                                <strong>Giá trị công việc:</strong> @selectedPolicy.WorkUnitValue.ToString("N0") VNĐ
+                            </p>
+                            <p class="card-text">
+                                <i class="bi bi-calendar-heart me-2" style="color: #97322D;"></i>
+                                <strong>Nghỉ phép hàng năm:</strong> @selectedPolicy.YearlyPto ngày
+                            </p>
+                            <p class="card-text">
+                                <i class="bi bi-speedometer2 me-2 text-primary"></i>
+                                <strong>Hệ số Overclock:</strong> @selectedPolicy.OverclockMultiplier.ToString("F1")x
+                            </p>
+                            <p class="card-text">
+                                <i class="bi bi-calendar-check me-2 text-info"></i>
+                                <strong>Ngày hiệu lực:</strong> @selectedPolicy.EffectiveFrom.ToString("dd/MM/yyyy")
+                            </p>
+                            <p class="card-text">
+                                <i class="bi bi-activity me-2 text-warning"></i>
+                                <strong>Trạng thái:</strong>
+                                <span class="badge @(selectedPolicy.IsActive ? "bg-success" : "bg-secondary")">
+                                    <i class="bi bi-@(selectedPolicy.IsActive ? "check-circle" : "x-circle") me-1"></i>
+                                    @(selectedPolicy.IsActive ? "Đang hoạt động" : "Không hoạt động")
+                                </span>
+                            </p>
+
+                            <div class="mt-3 p-3" style="background: #fff3cd; border-radius: 8px; border-left: 4px solid #ffc107;">
+                                <small style="color: #856404;">
+                                    <i class="bi bi-info-circle-fill me-2"></i>
+                                    <strong>Lưu ý:</strong> Chính sách này đã được lưu trữ và không thể chỉnh sửa. Để thay đổi chính sách lương hiện tại, vui lòng quay lại trang chính.
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
     </div>
 </div>
 
@@ -84,5 +295,10 @@
     private void SelectPolicy(SalaryPolicyViewDTO policy)
     {
         selectedPolicy = policy;
+    }
+
+    private void GoBack()
+    {
+        Navigation.NavigateTo("/salary-policies");
     }
 }

@@ -1,0 +1,788 @@
+﻿@page "/employee-allowances"
+@using System.Net.Http.Json
+@inject IHttpClientFactory HttpFactory
+@inject IJSRuntime JS
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+
+<style>
+    :root {
+        --primary-color: #97322D;
+        --secondary-color: #FFE4A1;
+        --primary-dark: #7a271f;
+    }
+
+    .allowance-container {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #FFE4A1 0%, #fff5d9 50%, #ffffff 100%);
+        padding: 1.5rem 0;
+    }
+
+    .page-header {
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+        border-radius: 12px;
+        padding: 1.25rem 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 4px 12px rgba(151, 50, 45, 0.3);
+        color: var(--secondary-color);
+        border: 2px solid var(--secondary-color);
+    }
+
+        .page-header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+    .filter-section {
+        background: white;
+        border-radius: 10px;
+        padding: 1.25rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 2px 8px rgba(151, 50, 45, 0.12);
+        border: 2px solid var(--secondary-color);
+    }
+
+    .filter-label {
+        color: var(--primary-color);
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .custom-select {
+        border: 2px solid var(--secondary-color);
+        border-radius: 8px;
+        padding: 0.5rem;
+    }
+
+        .custom-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(151, 50, 45, 0.15);
+        }
+
+    .add-btn {
+        background: var(--secondary-color);
+        color: var(--primary-color);
+        border: 2px solid var(--primary-color);
+        padding: 0.6rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+        .add-btn:hover {
+            background: var(--primary-color);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(151, 50, 45, 0.3);
+        }
+
+    .table-container {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 8px rgba(151, 50, 45, 0.12);
+        border: 2px solid var(--secondary-color);
+    }
+
+    .custom-table {
+        margin: 0;
+    }
+
+        .custom-table thead {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: white;
+        }
+
+            .custom-table thead th {
+                border: none;
+                padding: 1rem;
+                font-weight: 600;
+                font-size: 0.9rem;
+            }
+
+        .custom-table tbody tr {
+            transition: all 0.3s ease;
+        }
+
+            .custom-table tbody tr:hover {
+                background-color: rgba(255, 228, 161, 0.2);
+            }
+
+        .custom-table td {
+            padding: 0.875rem;
+            vertical-align: middle;
+            border-color: rgba(151, 50, 45, 0.1);
+        }
+
+    .status-badge {
+        padding: 0.4rem 0.75rem;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 0.8rem;
+    }
+
+        .status-badge.active {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status-badge.inactive {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+    .btn-edit {
+        background: var(--secondary-color);
+        color: var(--primary-color);
+        border: 2px solid var(--primary-color);
+        padding: 0.4rem 0.9rem;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        transition: all 0.3s ease;
+    }
+
+        .btn-edit:hover {
+            background: var(--primary-color);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+    .loading-spinner {
+        text-align: center;
+        padding: 3rem;
+    }
+
+    .spinner {
+        width: 50px;
+        height: 50px;
+        border: 3px solid var(--secondary-color);
+        border-top: 3px solid var(--primary-color);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 0 auto;
+    }
+
+    @@keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem 2rem;
+    }
+
+        .empty-state i {
+            font-size: 4rem;
+            color: var(--secondary-color);
+            margin-bottom: 1rem;
+        }
+
+        .empty-state h3 {
+            color: var(--primary-color);
+            margin-bottom: 0.75rem;
+        }
+
+    .custom-modal-overlay {
+        background-color: rgba(0, 0, 0, 0.5) !important;
+    }
+
+    .custom-modal-content {
+        border: 2px solid var(--primary-color);
+        background-color: var(--secondary-color);
+        border-radius: 12px;
+    }
+
+    .custom-modal-header {
+        background-color: var(--primary-color) !important;
+        color: white !important;
+        border-bottom: 2px solid var(--secondary-color);
+        border-radius: 10px 10px 0 0;
+    }
+
+    .custom-btn-close {
+        filter: invert(1);
+    }
+
+    .custom-modal-body {
+        background-color: rgba(255, 255, 255, 0.95);
+    }
+
+    .custom-form-label {
+        color: var(--primary-color) !important;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+    }
+
+    .custom-form-control, .custom-form-select {
+        border: 2px solid var(--secondary-color);
+        border-radius: 8px;
+        padding: 0.5rem 0.75rem;
+    }
+
+        .custom-form-control:focus, .custom-form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(151, 50, 45, 0.25);
+        }
+
+    .custom-modal-footer {
+        border-top: 2px solid var(--primary-color) !important;
+        background-color: rgba(255, 228, 161, 0.8);
+    }
+
+    .custom-btn-secondary {
+        background-color: #6c757d !important;
+        border-color: #6c757d !important;
+        color: white !important;
+        border-radius: 8px;
+        padding: 0.5rem 1.25rem;
+        font-weight: 600;
+    }
+
+        .custom-btn-secondary:hover:not(:disabled) {
+            background-color: #5a6268 !important;
+        }
+
+    .custom-btn-accent {
+        background-color: var(--primary-color) !important;
+        border-color: var(--primary-color) !important;
+        color: white !important;
+        border-radius: 8px;
+        padding: 0.5rem 1.25rem;
+        font-weight: 600;
+    }
+
+        .custom-btn-accent:hover:not(:disabled) {
+            background-color: var(--primary-dark) !important;
+        }
+
+    .error-alert {
+        background: #f8d7da;
+        border: 2px solid #f5c6cb;
+        border-radius: 10px;
+        padding: 1rem;
+        color: #721c24;
+        margin-bottom: 1rem;
+    }
+
+    /* Toggle Switch Styles */
+    .status-toggle-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .status-toggle {
+        position: relative;
+        display: inline-block;
+        width: 60px;
+        height: 30px;
+    }
+
+        .status-toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+    .toggle-slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: 0.4s;
+        border-radius: 30px;
+        border: 2px solid var(--primary-color);
+    }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 22px;
+            width: 22px;
+            left: 2px;
+            bottom: 2px;
+            background-color: white;
+            transition: 0.4s;
+            border-radius: 50%;
+        }
+
+    input:checked + .toggle-slider {
+        background-color: #28a745;
+    }
+
+        input:checked + .toggle-slider:before {
+            transform: translateX(30px);
+        }
+
+    .status-label {
+        font-weight: 600;
+        font-size: 0.9rem;
+        color: var(--primary-color);
+    }
+
+        .status-label.active {
+            color: #28a745;
+        }
+
+        .status-label.inactive {
+            color: #dc3545;
+        }
+</style>
+
+<div class="allowance-container">
+    <div class="container-fluid px-3">
+        <div class="page-header">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1>
+                        <i class="bi bi-person-badge me-2"></i>Quản lý Phụ Cấp Nhân Viên
+                    </h1>
+                    <p class="mb-0 mt-1" style="font-size: 0.85rem; opacity: 0.9;">
+                        Quản lý và theo dõi phụ cấp cho từng nhân viên
+                    </p>
+                </div>
+                <div class="col-md-4 text-md-end mt-2 mt-md-0">
+                    <button class="add-btn" @onclick="OpenAddModal">
+                        <i class="bi bi-plus-circle me-1"></i>Thêm phụ cấp mới
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        @if (loading)
+        {
+            <div class="loading-spinner">
+                <div class="spinner"></div>
+                <p class="mt-2 text-muted">Đang tải dữ liệu...</p>
+            </div>
+        }
+        else
+        {
+            <div class="filter-section">
+                <div class="row align-items-end">
+                    <div class="col-md-4">
+                        <label class="filter-label">
+                            <i class="bi bi-funnel me-1"></i>Lọc theo loại phụ cấp
+                        </label>
+                        <select class="form-select custom-select" @bind="selectedType" @bind:after="FilterData">
+                            <option value="">-- Tất cả loại phụ cấp --</option>
+                            @foreach (var type in types)
+                            {
+                                <option value="@type">@type</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="filter-label">
+                            <i class="bi bi-toggle-on me-1"></i>Lọc theo trạng thái
+                        </label>
+                        <select class="form-select custom-select" @bind="selectedStatus" @bind:after="FilterData">
+                            <option value="">-- Tất cả trạng thái --</option>
+                            <option value="Active">Hoạt động</option>
+                            <option value="Inactive">Dừng hoạt động</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 mt-3 mt-md-0">
+                        <div class="text-muted" style="font-size: 0.9rem;">
+                            <i class="bi bi-info-circle me-1"></i>
+                            Hiển thị <strong>@filteredAllowances.Count()</strong> / @allowances.Count kết quả
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-container">
+                @if (!filteredAllowances.Any())
+                {
+                    <div class="empty-state">
+                        <i class="bi bi-inbox"></i>
+                        <h3>Không có dữ liệu</h3>
+                        <p class="text-muted">Không tìm thấy phụ cấp nào phù hợp với bộ lọc</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover custom-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 50px;">#</th>
+                                    <th>Nhân viên</th>
+                                    <th>Loại phụ cấp</th>
+                                    <th>Giá trị tùy chỉnh</th>
+                                    <th>Ngày bắt đầu</th>
+                                    <th>Ngày kết thúc</th>
+                                    <th>Trạng thái</th>
+                                    <th>Người tạo</th>
+                                    <th style="width: 100px;">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var (item, index) in filteredAllowances.Select((item, index) => (item, index)))
+                                {
+                                    <tr>
+                                        <td class="text-center">@(index + 1)</td>
+                                        <td><strong>@item.EmpName</strong></td>
+                                        <td>@item.TypeName</td>
+                                        <td>@(item.CustomValue?.ToString("N0") ?? "-")</td>
+                                        <td>@item.StartDate.ToString("dd/MM/yyyy")</td>
+                                        <td>@(item.EndDate?.ToString("dd/MM/yyyy") ?? "-")</td>
+                                        <td>
+                                            <span class="status-badge @(item.Status == "Active" ? "active" : "inactive")">
+                                                @(item.Status.Equals("Active") ? "Đang hoạt động" : "Dừng hoạt động")
+                                            </span>
+                                        </td>
+                                        <td>@(item.CreatedByName ?? item.CreatedBy.ToString())</td>
+                                        <td>
+                                            <button class="btn-edit" @onclick="() => OpenEditModal(item)">
+                                                <i class="bi bi-pencil me-1"></i>Sửa
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+@if (showModal)
+{
+    <div class="modal fade show d-block custom-modal-overlay" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content custom-modal-content">
+                <div class="modal-header custom-modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-@(isEdit ? "pencil-square" : "plus-circle") me-2"></i>
+                        @(isEdit ? "Cập nhật phụ cấp" : "Thêm phụ cấp mới")
+                    </h5>
+                    <button type="button" class="btn-close custom-btn-close" @onclick="CloseModal"></button>
+                </div>
+                <div class="modal-body custom-modal-body">
+                    <EditForm Model="@formData" OnValidSubmit="HandleSubmit">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="custom-form-label">
+                                    <i class="bi bi-person me-1"></i>Nhân viên <span class="text-danger">*</span>
+                                </label>
+                                <select class="form-select custom-form-select" @bind="formData.EmpId">
+                                    <option value="0">-- Chọn nhân viên --</option>
+                                    @foreach (var emp in employees)
+                                    {
+                                        <option value="@emp.EmpId">@emp.EmpName</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="custom-form-label">
+                                    <i class="bi bi-tag me-1"></i>Loại phụ cấp <span class="text-danger">*</span>
+                                </label>
+                                <select class="form-select custom-form-select" @bind="formData.TypeId">
+                                    <option value="0">-- Chọn loại phụ cấp --</option>
+                                    @foreach (var type in allowanceTypes)
+                                    {
+                                        <option value="@type.TypeId">@type.TypeName</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="custom-form-label">
+                                    <i class="bi bi-cash me-1"></i>Giá trị tùy chỉnh
+                                </label>
+                                <InputNumber class="form-control custom-form-control" @bind-Value="formData.CustomValue"
+                                             placeholder="Để trống nếu dùng giá trị mặc định" />
+                                <small class="text-muted">
+                                    <i class="bi bi-info-circle me-1"></i>Để trống nếu sử dụng giá trị mặc định
+                                </small>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="custom-form-label">
+                                    <i class="bi bi-toggle-on me-1"></i>Trạng thái <span class="text-danger">*</span>
+                                </label>
+                                <div class="status-toggle-wrapper">
+                                    <label class="status-toggle">
+                                        <input type="checkbox" @bind="isStatusActive" />
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                    <span class="status-label @(isStatusActive ? "active" : "inactive")">
+                                        <i class="bi bi-@(isStatusActive ? "check-circle-fill" : "x-circle-fill") me-1"></i>
+                                        @(isStatusActive ? "Hoạt động" : "Dừng hoạt động")
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="custom-form-label">
+                                    <i class="bi bi-calendar-plus me-1"></i>Ngày bắt đầu <span class="text-danger">*</span>
+                                </label>
+                                <InputDate class="form-control custom-form-control" @bind-Value="startDate" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="custom-form-label">
+                                    <i class="bi bi-calendar-x me-1"></i>Ngày kết thúc
+                                </label>
+                                <InputDate class="form-control custom-form-control" @bind-Value="endDate" />
+                                <small class="text-muted">
+                                    <i class="bi bi-info-circle me-1"></i>Để trống nếu không có ngày kết thúc
+                                </small>
+                            </div>
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(errorMessage))
+                        {
+                            <div class="error-alert mt-3">
+                                <i class="bi bi-exclamation-triangle-fill me-2"></i>@errorMessage
+                            </div>
+                        }
+
+                        <div class="modal-footer mt-4 custom-modal-footer">
+                            <button type="button" class="btn custom-btn-secondary" @onclick="CloseModal" disabled="@isSubmitting">
+                                <i class="bi bi-x-circle me-1"></i>Hủy
+                            </button>
+                            <button type="submit" class="btn custom-btn-accent" disabled="@isSubmitting">
+                                @if (isSubmitting)
+                                {
+                                    <span class="spinner-border spinner-border-sm me-2"></span>
+                                    <span>Đang xử lý...</span>
+                                }
+                                else
+                                {
+                                    <i class="bi bi-check-circle me-1"></i>
+                                    <span>@(isEdit ? "Cập nhật" : "Thêm mới")</span>
+                                }
+                            </button>
+                        </div>
+                    </EditForm>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private List<EmployeeAllowanceDTO> allowances = new();
+    private List<EmployeeAllowanceDTO> filteredAllowances = new();
+    private List<string> types = new();
+    private List<EmployeeBasicDTO> employees = new();
+    private List<AllowanceTypeDTO> allowanceTypes = new();
+
+    private string selectedType = "";
+    private string selectedStatus = "";
+    private bool loading = true;
+    private bool showModal = false;
+    private bool isEdit = false;
+    private bool isSubmitting = false;
+    private bool isStatusActive = true;
+    private string? errorMessage;
+
+    private EmployeeAllowanceFormDTO formData = new();
+    private DateTime startDate = DateTime.Today;
+    private DateTime? endDate;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        loading = true;
+        try
+        {
+            var client = HttpFactory.CreateClient("ApiClient");
+
+            // Load allowances
+            var allowanceResult = await client.GetFromJsonAsync<List<EmployeeAllowanceDTO>>("api/employeeallowance");
+            allowances = allowanceResult ?? new();
+            filteredAllowances = allowances;
+            types = allowances.Select(x => x.TypeName).Distinct().ToList();
+
+            // Load employees
+            var employeeResult = await client.GetFromJsonAsync<List<EmployeeBasicDTO>>("api/employee/basic");
+            employees = employeeResult ?? new();
+
+            // Load allowance types
+            var typeResult = await client.GetFromJsonAsync<List<AllowanceTypeDTO>>("api/allowancetype");
+            allowanceTypes = typeResult ?? new();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Không thể tải dữ liệu: {ex.Message}";
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private void FilterData()
+    {
+        var query = allowances.AsEnumerable();
+
+        if (!string.IsNullOrEmpty(selectedType))
+        {
+            query = query.Where(x => x.TypeName == selectedType);
+        }
+
+        if (!string.IsNullOrEmpty(selectedStatus))
+        {
+            query = query.Where(x => x.Status == selectedStatus);
+        }
+
+        filteredAllowances = query.ToList();
+    }
+
+    private void OpenAddModal()
+    {
+        isEdit = false;
+        formData = new EmployeeAllowanceFormDTO { CreatedBy = 1 };
+        startDate = DateTime.Today;
+        endDate = null;
+        isStatusActive = true;
+        errorMessage = null;
+        showModal = true;
+    }
+
+    private void OpenEditModal(EmployeeAllowanceDTO item)
+    {
+        isEdit = true;
+        formData = new EmployeeAllowanceFormDTO
+        {
+            Id = item.Id,
+            EmpId = item.EmpId,
+            TypeId = item.TypeId,
+            CustomValue = item.CustomValue,
+            CreatedBy = item.CreatedBy
+        };
+        startDate = item.StartDate;
+        endDate = item.EndDate;
+        isStatusActive = item.Status == "Active";
+        errorMessage = null;
+        showModal = true;
+    }
+
+    private void CloseModal()
+    {
+        showModal = false;
+        errorMessage = null;
+        isSubmitting = false;
+    }
+
+    private async Task HandleSubmit()
+    {
+        try
+        {
+            isSubmitting = true;
+            errorMessage = null;
+
+            if (formData.EmpId == 0)
+            {
+                errorMessage = "Vui lòng chọn nhân viên";
+                return;
+            }
+
+            if (formData.TypeId == 0)
+            {
+                errorMessage = "Vui lòng chọn loại phụ cấp";
+                return;
+            }
+
+            var client = HttpFactory.CreateClient("ApiClient");
+
+            var payload = new
+            {
+                id = formData.Id,
+                empId = formData.EmpId,
+                typeId = formData.TypeId,
+                customValue = formData.CustomValue,
+                startDate = startDate.ToString("yyyy-MM-dd"),
+                endDate = endDate?.ToString("yyyy-MM-dd"),
+                status = isStatusActive ? "Active" : "Inactive",
+                createdBy = formData.CreatedBy
+            };
+
+            HttpResponseMessage response;
+
+            if (isEdit)
+            {
+                response = await client.PutAsJsonAsync($"api/employeeallowance/{formData.Id}", payload);
+            }
+            else
+            {
+                response = await client.PostAsJsonAsync("api/employeeallowance", payload);
+            }
+
+            if (response.IsSuccessStatusCode)
+            {
+                await LoadData();
+                CloseModal();
+            }
+            else
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                errorMessage = $"Lỗi: {response.StatusCode} - {error}";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Có lỗi xảy ra: {ex.Message}";
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+
+    public class EmployeeAllowanceDTO
+    {
+        public int Id { get; set; }
+        public int EmpId { get; set; }
+        public string EmpName { get; set; }
+        public int TypeId { get; set; }
+        public string TypeName { get; set; }
+        public decimal? CustomValue { get; set; }
+        public DateTime StartDate { get; set; }
+        public DateTime? EndDate { get; set; }
+        public string Status { get; set; }
+        public int CreatedBy { get; set; }
+        public string? CreatedByName { get; set; }
+    }
+
+    public class EmployeeAllowanceFormDTO
+    {
+        public int Id { get; set; }
+        public int EmpId { get; set; }
+        public int TypeId { get; set; }
+        public decimal? CustomValue { get; set; }
+        public int CreatedBy { get; set; } = 1;
+    }
+
+    public class EmployeeBasicDTO
+    {
+        public int EmpId { get; set; }
+        public string EmpName { get; set; }
+    }
+
+    public class AllowanceTypeDTO
+    {
+        public int TypeId { get; set; }
+        public string TypeName { get; set; }
+        public string CalculationType { get; set; }
+        public decimal Value { get; set; }
+    }
+}

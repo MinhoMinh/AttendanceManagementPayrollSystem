@@ -44,6 +44,16 @@ namespace AttendanceManagementPayrollSystem.Services.ServiceList
             };
 
             await this.employeeRepository.AddBalenceForNewEmployee(balance);
+
+            var role = new EmployeeRole
+            {
+                EmpId = employee.EmpId,
+                RoleId = 9,
+                IsActive = true,
+                StartDate = DateTime.Now
+            };
+
+            await this.employeeRepository.AddRoleForNewEmployee(role);
         }
 
 

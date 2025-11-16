@@ -121,6 +121,12 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
             await this._context.SaveChangesAsync();
         }
 
+        public async Task AddRoleForNewEmployee(EmployeeRole er)
+        {
+            this._context.EmployeeRoles.Add(er);
+            await this._context.SaveChangesAsync();
+        }
+
         public async Task<IEnumerable<Employee>> GetAllEmployeesAsync()
         {
             return await _context.Employees
