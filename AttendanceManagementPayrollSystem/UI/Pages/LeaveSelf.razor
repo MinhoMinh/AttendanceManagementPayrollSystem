@@ -794,6 +794,8 @@
     private bool _initialized;
     private decimal calculatedDays = 0;
 
+    [Inject] INotificationService NotificationService { get; set; }
+
     private List<LeaveRequestDTO> pendingRequests =>
         leaveRequests.Where(x => x.Status == "Pending").ToList();
 
@@ -819,12 +821,12 @@
                 }
                 else
                 {
-                    await JS.InvokeVoidAsync("alert", "Không thể tìm thấy thông tin nhân viên!");
+                    NotificationService.Warning("Không thể tìm thấy thông tin!", "Lỗi");
                 }
             }
             catch (Exception ex)
             {
-                await JS.InvokeVoidAsync("alert", $"Lỗi: {ex.Message}");
+                NotificationService.Warning($"Lỗi: {ex.Message}", "Lỗi");
             }
             StateHasChanged();
         }
@@ -865,7 +867,7 @@
         catch (Exception ex)
         {
             Console.WriteLine($"Error loading data: {ex.Message}");
-            await JS.InvokeVoidAsync("alert", $"Lỗi khi tải dữ liệu: {ex.Message}");
+            NotificationService.Warning($"Lỗi khi tải dữ liệu: {ex.Message}", "Lỗi");
         }
         finally
         {
@@ -926,19 +928,19 @@
     {
         if (newRequest.TypeId == 0)
         {
-            await JS.InvokeVoidAsync("alert", "Vui lòng chọn loại nghỉ phép");
+            NotificationService.Warning($"Vui lòng chọn loại nghỉ phép", "Lỗi");
             return;
         }
 
         if (!newStartDate.HasValue || !newEndDate.HasValue)
         {
-            await JS.InvokeVoidAsync("alert", "Vui lòng chọn ngày bắt đầu và kết thúc");
+            NotificationService.Warning($"Vui lòng chọn ngày bắt đầu và kết thúc", "Lỗi");
             return;
         }
 
         if (newEndDate < newStartDate)
         {
-            await JS.InvokeVoidAsync("alert", "Ngày kết thúc phải sau ngày bắt đầu");
+            NotificationService.Warning($"Ngày kết thúc phải sau ngày bắt đầu", "Lỗi");
             return;
         }
 
@@ -950,12 +952,14 @@
             newRequest.EndDate = DateOnly.FromDateTime(newEndDate.Value);
             newRequest.NumbersOfDays = calculatedDays;
             newRequest.EmpId = Employee?.EmpId ?? 0;
+            newRequest.EmpName = Employee?.EmpName ?? "";
 
             var client = HttpFactory.CreateClient("ApiClient");
             var response = await client.PostAsJsonAsync("api/leave/request", newRequest);
 
             if (response.IsSuccessStatusCode)
             {
+                NotificationService.Success($"Tạo yêu cầu thành công");
                 await JS.InvokeVoidAsync("alert", "Tạo yêu cầu thành công");
                 await JS.InvokeVoidAsync("eval", "bootstrap.Modal.getInstance(document.getElementById('createModal')).hide()");
                 await LoadData();
@@ -963,12 +967,12 @@
             else
             {
                 var content = await response.Content.ReadAsStringAsync();
-                await JS.InvokeVoidAsync("alert", $"Không thể tạo yêu cầu.\nStatus: {response.StatusCode}\nDetails: {content}");
+                NotificationService.Warning($"Không thể tạo yêu cầu.\nStatus: {response.StatusCode}\nDetails: {content}", "Lỗi");
             }
         }
         catch (Exception ex)
         {
-            await JS.InvokeVoidAsync("alert", $"Lỗi: {ex.Message}");
+            NotificationService.Warning($"Lỗi: {ex.Message}", "Lỗi");
         }
         finally
         {

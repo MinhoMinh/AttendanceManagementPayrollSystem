@@ -38,24 +38,18 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
                 .ToListAsync();
         }
 
+
+
         public async Task<IEnumerable<LeaveRequest>> GetLeaveByEmployeeId(int empId, DateOnly? startDate, DateOnly? endDate)
         {
             var list = await _context.LeaveRequests
-            .Include(o => o.Type)
-            .Include(o => o.ApprovedByNavigation)
-            .Where(o => o.EmpId == empId && o.ReqDate >= startDate && o.ReqDate <= endDate)
-            .OrderByDescending(o => o.ReqDate)
-            .ToListAsync();
-
-            //if (startDate.HasValue)
-            //    query = query.Where(o => o.ReqDate >= startDate);
-
-            //if (endDate.HasValue)
-            //    query = query.Where(o => o.ReqDate <= endDate);
-
-            //var list = await query
-            //    .OrderByDescending(o => o.ReqDate)
-            //    .ToListAsync();
+        .Include(o => o.Type)
+        .Include(o => o.ApprovedByNavigation)
+        .Where(o => o.EmpId == empId
+            && o.StartDate <= endDate
+            && o.EndDate >= startDate)
+        .OrderByDescending(o => o.StartDate)
+        .ToListAsync();
 
             return list;
         }

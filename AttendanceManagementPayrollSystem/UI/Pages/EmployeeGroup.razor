@@ -1108,7 +1108,7 @@
 
     private async Task LoadEmployees()
     {
-        var http = HttpFactory.CreateClient();
+        var http = HttpFactory.CreateClient("ApiClient");
         departments = await http.GetFromJsonAsync<List<EmployeeGroupByDepartmentDTO>>(
             "api/employee/getgroupbydepforview");
     }

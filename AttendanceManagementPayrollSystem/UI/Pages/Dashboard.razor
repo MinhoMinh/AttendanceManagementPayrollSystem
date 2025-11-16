@@ -122,32 +122,35 @@
         EmployeeService = new()
         {
             new() { Text = "Lịch tổng hợp", ImageSrc="https://cdn-icons-png.flaticon.com/512/3062/3062634.png", OnClick = EventCallback.Factory.Create(this, NavigateAttendance), Visible = HasPermission("has_clockin") },
-            new() { Text = "Lịch làm việc", ImageSrc="https://cdn-icons-png.flaticon.com/512/1077/1077976.png", OnClick = EventCallback.Factory.Create(this, NavigateSelfShift), Visible = HasPermission("has_shift") },
+            new() { Text = "Lịch làm việc", ImageSrc="https://cdn-icons-png.flaticon.com/512/2922/2922515.png", OnClick = EventCallback.Factory.Create(this, NavigateSelfShift), Visible = HasPermission("has_shift") },
             new() { Text = "Bảng lương cá nhân", ImageSrc = "https://cdn-icons-png.flaticon.com/512/3135/3135695.png", OnClick = EventCallback.Factory.Create(this, NavigateSelfPayItem), Visible = HasPermission("view_employee_payroll") },
-            new() { Text = "Nghi phép", ImageSrc="https://cdn-icons-png.flaticon.com/512/1077/1077976.png", OnClick = EventCallback.Factory.Create(this, NavigateSelfLeave), Visible = HasPermission("has_leave_request") },
-            new() { Text = "Giờ vượt", ImageSrc="https://cdn-icons-png.flaticon.com/512/1077/1077976.png", OnClick = EventCallback.Factory.Create(this, NavigateSelfOvertime), Visible = HasPermission("has_overtime_request") },
+            new() { Text = "Nghỉ phép", ImageSrc="https://cdn-icons-png.flaticon.com/512/747/747310.png", OnClick = EventCallback.Factory.Create(this, NavigateSelfLeave), Visible = HasPermission("has_leave_request") },
+            new() { Text = "Giờ vượt", ImageSrc="https://cdn-icons-png.flaticon.com/512/1827/1827951.png", OnClick = EventCallback.Factory.Create(this, NavigateSelfOvertime), Visible = HasPermission("has_overtime_request") },
         };
 
         DepartmentHeadService = new()
         {
-            new() { Text = "Chấm công phòng ban", ImageSrc="https://cdn-icons-png.flaticon.com/512/1077/1077976.png", OnClick = EventCallback.Factory.Create(this, NavigateAllClockin), Visible = HasPermission("view_employee_clockin") },
-            new() { Text = "Giờ vượt phòng ban", ImageSrc="https://cdn-icons-png.flaticon.com/512/1077/1077976.png", OnClick = EventCallback.Factory.Create(this, NavigateHeadOvertime), Visible = HasPermission("overtime_request_management") },
-            new() { Text = "Nghỉ phép phòng ban", ImageSrc="https://cdn-icons-png.flaticon.com/512/1077/1077976.png", OnClick = EventCallback.Factory.Create(this, NavigateLeaveRequestManagement), Visible = HasPermission("leave_request_management") },
+            new() { Text = "Giờ vượt phòng ban", ImageSrc="https://cdn-icons-png.flaticon.com/512/1995/1995483.png", OnClick = EventCallback.Factory.Create(this, NavigateHeadOvertime), Visible = HasPermission("overtime_request_management") },
+            new() { Text = "Nghỉ phép phòng ban", ImageSrc="https://cdn-icons-png.flaticon.com/512/709/709612.png", OnClick = EventCallback.Factory.Create(this, NavigateLeaveRequestManagement), Visible = HasPermission("leave_request_management") },
         };
 
         CompanyService = new()
         {
+            new() { Text = "Chấm công phòng ban", ImageSrc="https://cdn-icons-png.flaticon.com/512/2920/2920256.png", OnClick = EventCallback.Factory.Create(this, NavigateAllClockin), Visible = HasPermission("view_employee_clockin") },
             new() { Text = "Thông tin nhân viên", ImageSrc = "https://cdn-icons-png.flaticon.com/512/1828/1828926.png", OnClick = EventCallback.Factory.Create(this, NavigateCompanyEmployee), Visible = HasPermission("view_company_employee") },
-            new() { Text = "Cập nhật chấm công", ImageSrc = "https://cdn-icons-png.flaticon.com/512/1828/1828926.png", OnClick = EventCallback.Factory.Create(this, NavigateUploadClockins), Visible = HasPermission("upload_clockin") },
-            new() { Text = "Bảng lương công ty", ImageSrc = "https://cdn-icons-png.flaticon.com/512/3135/3135695.png", OnClick = EventCallback.Factory.Create(this, NavigatePayRun), Visible = HasPermission("view_payroll_run") },
+            new() { Text = "Cập nhật chấm công", ImageSrc = "https://cdn-icons-png.flaticon.com/512/2921/2921222.png", OnClick = EventCallback.Factory.Create(this, NavigateUploadClockins), Visible = HasPermission("upload_clockin") },
+            new() { Text = "Bảng lương công ty", ImageSrc = "https://cdn-icons-png.flaticon.com/512/2920/2920224.png", OnClick = EventCallback.Factory.Create(this, NavigatePayRun), Visible = HasPermission("view_payroll_run") },
             new() { Text = "Thiết lập ngày lễ", ImageSrc = "https://cdn-icons-png.flaticon.com/512/616/616408.png", OnClick = EventCallback.Factory.Create(this, NavigateHolidaySetup), Visible = HasPermission("edit_holiday_calendar") },
             new() { Text = "Chính sách lương", ImageSrc = "https://cdn-icons-png.flaticon.com/512/709/709496.png", OnClick = EventCallback.Factory.Create(this, NavigateSalaryPolicy), Visible = HasPermission("edit_salary_policy") },
             new() { Text = "Chính sách bảo hiểm/thuế", ImageSrc = "https://cdn-icons-png.flaticon.com/512/942/942799.png", OnClick = EventCallback.Factory.Create(this, NavigateInsuranceTaxPolicy), Visible = HasPermission("edit_tax_insurance") },
-            new() { Text = "Quản lý ca làm việc", ImageSrc = "https://cdn-icons-png.flaticon.com/512/1828/1828926.png", OnClick = EventCallback.Factory.Create(this, NavigateShiftManagement), Visible = HasPermission("shift_management") },
-            new() { Text = "Quản lý tài khoản nhân viên", ImageSrc = "https://cdn-icons-png.flaticon.com/512/1828/1828926.png", OnClick = EventCallback.Factory.Create(this, NavigateAccountManagement), Visible = HasPermission("employee_account_management") },
-            new() { Text = "Khai báo người phụ thuộc", ImageSrc = "https://cdn-icons-png.flaticon.com/512/1828/1828926.png", OnClick = EventCallback.Factory.Create(this, NavigateDependentManagement), Visible = HasPermission("declare_dependent") },
-            new() { Text = "Quản lý thưởng", ImageSrc = "https://cdn-icons-png.flaticon.com/512/1828/1828926.png", OnClick = EventCallback.Factory.Create(this, NavigateBonus), Visible = HasPermission("manage_bonus") },
+            new() { Text = "Quản lý ca làm việc", ImageSrc = "https://cdn-icons-png.flaticon.com/512/1827/1827933.png", OnClick = EventCallback.Factory.Create(this, NavigateShiftManagement), Visible = HasPermission("shift_management") },
+            new() { Text = "Quản lý tài khoản nhân viên", ImageSrc = "https://cdn-icons-png.flaticon.com/512/306/306473.png", OnClick = EventCallback.Factory.Create(this, NavigateAccountManagement), Visible = HasPermission("employee_account_management") },
+            new() { Text = "Khai báo người phụ thuộc", ImageSrc = "https://cdn-icons-png.flaticon.com/512/456/456212.png", OnClick = EventCallback.Factory.Create(this, NavigateDependentManagement), Visible = HasPermission("declare_dependent") },
+            new() { Text = "Quản lý thưởng", ImageSrc = "https://cdn-icons-png.flaticon.com/512/1828/1828919.png", OnClick = EventCallback.Factory.Create(this, NavigateBonus), Visible = HasPermission("manage_bonus") },
+            new() { Text = "Quản lý loại phụ cấp", ImageSrc = "https://cdn-icons-png.flaticon.com/512/1828/1828911.png", OnClick = EventCallback.Factory.Create(this, NavigateAllowanceType), Visible = HasPermission("edit_allowance") },
+            new() { Text = "Gán phụ cấp", ImageSrc = "https://cdn-icons-png.flaticon.com/512/1828/1828843.png", OnClick = EventCallback.Factory.Create(this, NavigateEmployeeAllowance), Visible = HasPermission("edit_allowance") },
         };
+
 
     }
 
@@ -165,15 +168,8 @@
     private void NavigateSelfOvertime() => Navigation.NavigateTo("/overtime/self");
     private void NavigateSelfLeave() => Navigation.NavigateTo("/leave/self");
     private void NavigateBonus() => Navigation.NavigateTo("/bonus-manager");
-    // private void NavigateSelfPayItem()
-    // {
-    //     if (Employee == null) return;
-    //     int empId = Employee.EmpId;
-    //     int month = DateTime.Now.AddYears(-1).Month;
-    //     int year = DateTime.Now.AddYears(-1).Year;
-
-    //     Navigation.NavigateTo($"/payrun/{empId}/{month}/{year}");
-    // }
+    private void NavigateAllowanceType() => Navigation.NavigateTo("/allowance-types");
+    private void NavigateEmployeeAllowance() => Navigation.NavigateTo("/employee-allowances");
 
     private void NavigateSelfPayItem()
     {

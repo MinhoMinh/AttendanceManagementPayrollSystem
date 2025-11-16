@@ -7,7 +7,7 @@
 @using System.Data
 @inject IHttpClientFactory ClientFactory
 
-<h3>Upload XLS</h3>
+<h3>Tải lên tệp XLS</h3>
 
 <InputFile OnChange="UploadFile" accept=".xls" />
 
@@ -19,21 +19,21 @@
 @if (Clockins != null && Clockins.Any())
 {
     <div class="d-flex justify-content-end mb-2">
-        <button class="btn btn-primary btn-sm" @onclick="Generate">Generate</button>
+        <button class="btn btn-primary btn-sm" @onclick="Generate">Tạo dữ liệu</button>
     </div>
 
-    <h4>Processed Clockins</h4>
+    <h4>Dữ liệu chấm công đã xử lý</h4>
 
     <table class="table table-sm table-bordered">
         <thead>
             <tr>
                 <th></th>
-                <th>EmpId</th>
-                <th>Date</th>
-                <th>WorkUnits</th>
-                <th>Scheduled</th>
-                <th>ClockLog</th>
-                <th>Work Breakdown</th>
+                <th>Mã NV</th>
+                <th>Tháng</th>
+                <th>Đơn vị làm việc</th>
+                <th>Đơn vị kế hoạch</th>
+                <th>Nhật ký chấm công</th>
+                <th>Chi tiết đơn vị</th>
             </tr>
         </thead>
         <tbody>
@@ -48,39 +48,85 @@
                         </button>
                     </td>
                     <td>@c.EmpId</td>
-                    <td>@c.Date.ToString("yyyy-MM-dd")</td>
-                    <td>@c.WorkUnits</td>
-                    <td>@c.ScheduledUnits</td>
+                    <td>@c.Date.ToString("yyyy-MM")</td>
+                    <td>@(c.WorkUnits?.ToString("F2") ?? "0.00")</td>
+                    <td>@(c.ScheduledUnits?.ToString("F2") ?? "0.00")</td>
                     <td>@c.ClockLog</td>
                     <td>@c.WorkUnitBreakdown</td>
                 </tr>
 
-                @if (isExpanded && c.DailyRecords != null && c.DailyRecords.Any())
+                @if (isExpanded)
                 {
                     <tr>
                         <td></td>
                         <td colspan="6">
-                            <table class="table table-sm">
-                                <thead>
-                                    <tr>
-                                        <th>Day</th>
-                                        <th>Logs</th>
-                                        <th>Actual</th>
-                                        <th>Scheduled</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach (var d in c.DailyRecords)
-                                    {
+
+                            <!-- Daily Records -->
+                            @if (c.DailyRecords != null && c.DailyRecords.Any())
+                            {
+                                <h6>Bảng chi tiết theo ngày</h6>
+                                <table class="table table-sm mb-3">
+                                    <thead>
                                         <tr>
-                                            <td>@d.Day</td>
-                                            <td>@string.Join(", ", d.Logs)</td>
-                                            <td>@(d.ActualUnit ?? 0m).ToString("F2")</td>
-                                            <td>@(d.ScheduledUnit ?? 0m).ToString("F2")</td>
+                                            <th>Ngày</th>
+                                            <th>Nhật ký</th>
+                                            <th>Thực tế</th>
+                                            <th>Kế hoạch</th>
                                         </tr>
-                                    }
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var d in c.DailyRecords)
+                                        {
+                                            <tr>
+                                                <td>@d.Day</td>
+                                                <td>@string.Join(", ", d.Logs)</td>
+                                                <td>@((d.ActualUnit ?? 0m).ToString("F2"))</td>
+                                                <td>@((d.ScheduledUnit ?? 0m).ToString("F2"))</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            }
+
+                            <!-- Components -->
+                            @if (c.Components != null && c.Components.Any())
+                            {
+                                <h6>Thành phần chấm công</h6>
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Ca</th>
+                                            <th>Ngày</th>
+                                            <th>Giờ vào</th>
+                                            <th>Giờ ra</th>
+                                            <th>Nhật ký</th>
+                                            <th>Mô tả</th>
+                                            <th>Giờ làm</th>
+                                            <th>Giờ kế hoạch</th>
+                                            <th>Đơn vị làm việc</th>
+                                            <th>Đơn vị kế hoạch</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var comp in c.Components)
+                                        {
+                                            <tr>
+                                                <td>@comp.Shift</td>
+                                                <td>@comp.Date?.ToString("yyyy-MM-dd")</td>
+                                                <td>@comp.CheckIn?.ToString("HH:mm")</td>
+                                                <td>@comp.CheckOut?.ToString("HH:mm")</td>
+                                                <td>@comp.ClockinLog</td>
+                                                <td>@comp.Description</td>
+                                                <td>@(comp.WorkHours?.ToString("F2") ?? "")</td>
+                                                <td>@(comp.ScheduledHours?.ToString("F2") ?? "")</td>
+                                                <td>@(comp.WorkUnits?.ToString("F2") ?? "")</td>
+                                                <td>@(comp.ScheduledUnits?.ToString("F2") ?? "")</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            }
+
                         </td>
                     </tr>
                 }
@@ -98,45 +144,6 @@
 
     [Inject] INotificationService NotificationService { get; set; }
 
-    // public async Task UploadFile(InputFileChangeEventArgs e)
-    // {
-    //     var file = e.File;
-    //     if (file == null) return;
-
-    //     try
-    //     {
-    //         using var mem = new MemoryStream();
-    //         using var stream = file.OpenReadStream(MAX_FILESIZE);
-    //         await stream.CopyToAsync(mem);
-    //         mem.Position = 0;
-
-    //         using var client = ClientFactory.CreateClient("ApiClient");
-
-    //         using var content = new StreamContent(mem);
-    //         content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.ms-excel");
-    //         var response = await client.PostAsync("api/clockin/uploadxls", content);
-
-
-    //         var content = new MultipartFormDataContent();
-    //         content.Add(new StreamContent(mem), "file", file.Name);
-
-    //         var response = await client.PostAsync("api/clockin/uploadxls", content);
-
-    //         if (response.IsSuccessStatusCode)
-    //         {
-    //             Clockins = await response.Content.ReadFromJsonAsync<List<ClockinDTO>>();
-    //             Status = "File processed successfully";
-    //         }
-    //         else
-    //         {
-    //             Status = $"Upload failed: {response.StatusCode}";
-    //         }
-    //     }
-    //     catch (Exception ex)
-    //     {
-    //         Status = ex.Message;
-    //     }
-    // }
 
     private HashSet<int> expandedRows = new();
 

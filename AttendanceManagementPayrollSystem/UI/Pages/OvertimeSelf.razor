@@ -34,7 +34,7 @@
                                 <i class="bi bi-calendar-event me-1"></i>
                                 Từ ngày
                             </label>
-                            <DatePicker TValue="DateOnly?" Date="fromDate" DateChanged="LoadData" />
+                            <Blazorise.DatePicker TValue="DateOnly?" Date="fromDate" DateChanged="LoadData" />
                         </div>
 
                         <div class="date-separator">
@@ -46,7 +46,7 @@
                                 <i class="bi bi-calendar-check me-1"></i>
                                 Đến ngày
                             </label>
-                            <DatePicker TValue="DateOnly?" Date="toDate" DateChanged="LoadData" />
+                            <Blazorise.DatePicker TValue="DateOnly?" Date="toDate" DateChanged="LoadData" />
                         </div>
                     </div>
 
@@ -259,7 +259,7 @@
                 <i class="bi bi-calendar-event me-1"></i>
                 Ngày làm thêm
             </label>
-            <DatePicker @bind-Date="newReqDate" />
+            <Blazorise.DatePicker @bind-Date="newReqDate" />
         </div>
 
         <div class="time-group">

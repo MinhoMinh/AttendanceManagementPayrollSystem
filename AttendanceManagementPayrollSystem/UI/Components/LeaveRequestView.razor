@@ -1,0 +1,142 @@
+﻿@using AttendanceManagementPayrollSystem.DTO
+@using AttendanceManagementPayrollSystem.DTOs
+@using Blazorise
+
+<style>
+    .leave-card {
+        border: 2px solid #CDE9CE;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        background: #F8FFF8;
+    }
+
+    .leave-card:hover {
+        box-shadow: 0 5px 12px rgba(0, 0, 0, 0.2);
+        transform: translateY(-2px);
+    }
+
+    .leave-card .card-header {
+        background: linear-gradient(135deg, #4A8F4A, #3C723C);
+        color: white;
+        font-weight: 600;
+        padding: 0.75rem 1rem;
+        border-bottom: 2px solid #CDE9CE;
+    }
+
+    .leave-card .card-body {
+        padding: 1rem;
+    }
+
+    .leave-card .field-label {
+        color: #3C723C;
+        font-weight: 600;
+        font-size: 0.9rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .leave-card .field-body {
+        color: #444;
+        margin-bottom: 0.75rem;
+    }
+
+    .badge-status {
+        padding: 0.4rem 0.75rem;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 0.85rem;
+    }
+
+    .leave-approved {
+        background: #90EE90;
+        color: #255B25;
+        border: 1px solid #255B25;
+    }
+
+    .leave-pending {
+        background: #FFF3CD;
+        color: #946E00;
+        border: 1px solid #946E00;
+    }
+
+    .leave-rejected {
+        background: #FFB6B6;
+        color: #8F1E1E;
+        border: 1px solid #8F1E1E;
+    }
+</style>
+
+<Card Class="leave-card mb-3">
+    <CardHeader class="d-flex justify-content-between align-items-center">
+        <strong>Đơn nghỉ phép</strong>
+    </CardHeader>
+
+    <CardBody>
+
+        <Field>
+            <FieldLabel>Ngày yêu cầu</FieldLabel>
+            <FieldBody>@Component.ReqDate.ToString("yyyy-MM-dd")</FieldBody>
+        </Field>
+
+        <Field>
+            <FieldLabel>Từ ngày / Đến ngày</FieldLabel>
+            <FieldBody>
+                <div class="d-flex flex-row gap-3">
+                    <span>@Component.StartDate.ToString("yyyy-MM-dd")</span>
+                    <span>@Component.EndDate.ToString("yyyy-MM-dd")</span>
+                </div>
+            </FieldBody>
+        </Field>
+
+        <Field>
+            <FieldLabel>Số ngày</FieldLabel>
+            <FieldBody>@Component.NumbersOfDays.ToString("F2")</FieldBody>
+        </Field>
+
+        <Field>
+            <FieldLabel>Loại nghỉ</FieldLabel>
+            <FieldBody>@Component.TypeName</FieldBody>
+        </Field>
+
+        <Field>
+            <FieldLabel>Tình trạng</FieldLabel>
+            <FieldBody>
+                @if (Component.Status == "Approved")
+                {
+                    <span class="badge-status leave-approved">Đã duyệt</span>
+                }
+                else if (Component.Status == "Pending")
+                {
+                    <span class="badge-status leave-pending">Chờ duyệt</span>
+                }
+                else
+                {
+                    <span class="badge-status leave-rejected">Từ chối</span>
+                }
+            </FieldBody>
+        </Field>
+
+        <Field>
+            <FieldLabel>Lý do</FieldLabel>
+            <FieldBody>@(string.IsNullOrWhiteSpace(Component.Reason) ? "--" : Component.Reason)</FieldBody>
+        </Field>
+
+        @if (Component.ApprovedByName is not null)
+        {
+            <Field>
+                <FieldLabel>Người duyệt</FieldLabel>
+                <FieldBody>@Component.ApprovedByName</FieldBody>
+            </Field>
+
+            <Field>
+                <FieldLabel>Ngày duyệt</FieldLabel>
+                <FieldBody>@(Component.ApprovedDate?.ToString("yyyy-MM-dd") ?? "--")</FieldBody>
+            </Field>
+        }
+    </CardBody>
+</Card>
+
+@code {
+    [Parameter] public LeaveRequestDTO Component { get; set; }
+}

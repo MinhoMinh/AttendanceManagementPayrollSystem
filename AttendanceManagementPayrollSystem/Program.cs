@@ -55,16 +55,8 @@ builder.Services.AddScoped<EmployeeDependentService, EmployeeDependentServiceImp
 builder.Services.AddScoped<BonusService, BonusServiceImpl>();
 builder.Services.AddScoped<IAttendanceService, AttendanceServiceImpl>();
 builder.Services.AddScoped<IAttendanceRepository, AttendanceRepositoryImpl>();
-//builder.Services.AddScoped<ClockInAdjustmentRequestService, ClockInAdjustmentRequestServiceImpl>();
-//builder.Services.AddScoped<ClockinComponentService, ClockinComponentServiceImpl>();
 builder.Services.AddScoped<EmployeeAllowanceService, EmployeeAllowanceServiceImpl>();
 builder.Services.AddScoped<AllowanceTypeService, AllowanceTypeServiceImpl>();
-
-
-
-
-
-
 
 
 builder.Services.AddControllers()
@@ -101,10 +93,6 @@ builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 
 var app = builder.Build();
-
-
-    app.UseDeveloperExceptionPage();
-
 
 
 // Configure the HTTP request pipeline.
