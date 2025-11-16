@@ -1,0 +1,311 @@
+﻿@using System.Net.Http.Json
+@inject IHttpClientFactory HttpFactory
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+
+@if (IsVisible)
+{
+    <div class="modal fade show d-block custom-modal-overlay" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content custom-modal-content">
+                <div class="modal-header custom-modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-cash-coin me-2"></i>Thêm loại phụ cấp
+                    </h5>
+                    <button type="button" class="btn-close custom-btn-close" @onclick="Close"></button>
+                </div>
+
+                <div class="modal-body custom-modal-body">
+                    <EditForm Model="@Form" OnValidSubmit="SubmitAsync">
+                        <div class="row g-3">
+                            <!-- Tên loại phụ cấp -->
+                            <div class="col-md-6">
+                                <label class="form-label custom-form-label">
+                                    Tên loại phụ cấp <span class="text-danger">*</span>
+                                </label>
+                                <InputText class="form-control custom-form-control"
+                                           @bind-Value="Form.TypeName"
+                                           placeholder="Nhập tên loại phụ cấp" />
+                            </div>
+
+                            <!-- Loại tính toán -->
+                            <div class="col-md-6">
+                                <label class="form-label custom-form-label">
+                                    Loại tính toán <span class="text-danger">*</span>
+                                </label>
+                                <InputSelect class="form-select custom-form-select" @bind-Value="Form.CalculationType">
+                                    <option value="">-- Chọn loại tính toán --</option>
+                                    <option value="Fixed">Cố định (Fixed)</option>
+                                    <option value="Percentage">Phần trăm (Percentage)</option>
+                                </InputSelect>
+                            </div>
+
+                            <!-- Ngày hiệu lực -->
+                            <div class="col-md-6">
+                                <label class="form-label custom-form-label">
+                                    Ngày hiệu lực <span class="text-danger">*</span>
+                                </label>
+                                <InputDate class="form-control custom-form-control"
+                                           @bind-Value="effectiveStartDate" />
+                            </div>
+
+                            <!-- Giá trị -->
+                            <div class="col-md-6">
+                                <label class="form-label custom-form-label">
+                                    Giá trị <span class="text-danger">*</span>
+                                </label>
+                                <InputNumber class="form-control custom-form-control"
+                                             @bind-Value="Form.Value"
+                                             step="0.01"
+                                             placeholder="Nhập giá trị" />
+                                <small class="text-muted">
+                                    @if (Form.CalculationType == "Percentage")
+                                    {
+                                        <span>Nhập giá trị % (ví dụ: 10 cho 10%)</span>
+                                    }
+                                    else if (Form.CalculationType == "Fixed")
+                                    {
+                                        <span>Nhập số tiền cố định</span>
+                                    }
+                                </small>
+                            </div>
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(Error))
+                        {
+                            <div class="alert custom-alert-danger mt-3 mb-0">
+                                <i class="bi bi-exclamation-triangle-fill me-2"></i>@Error
+                            </div>
+                        }
+
+                        @if (!string.IsNullOrEmpty(successMessage))
+                        {
+                            <div class="alert custom-alert-success mt-3 mb-0">
+                                <i class="bi bi-check-circle-fill me-2"></i>@successMessage
+                            </div>
+                        }
+
+                        <div class="modal-footer mt-4 border-top pt-3 custom-modal-footer">
+                            <button type="button" class="btn custom-btn-secondary" @onclick="Close" disabled="@isSubmitting">
+                                <i class="bi bi-x-circle me-2"></i>Hủy
+                            </button>
+                            <button type="submit" class="btn custom-btn-accent" disabled="@isSubmitting">
+                                @if (isSubmitting)
+                                {
+                                    <span class="spinner-border spinner-border-sm me-2"></span>
+                                    <span>Đang xử lý...</span>
+                                }
+                                else
+                                {
+                                    <i class="bi bi-check-circle me-2"></i>
+                                    <span>Lưu</span>
+                                }
+                            </button>
+                        </div>
+                    </EditForm>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<style>
+    /* Custom modal overlay */
+    .custom-modal-overlay {
+        background-color: rgba(0, 0, 0, 0.5) !important;
+    }
+
+    /* Custom modal content */
+    .custom-modal-content {
+        border: 2px solid #97322D;
+        background-color: #FFE4A1;
+    }
+
+    /* Custom modal header */
+    .custom-modal-header {
+        background-color: #97322D !important;
+        color: white !important;
+        border-bottom: 2px solid #FFE4A1;
+    }
+
+    /* Custom close button */
+    .custom-btn-close {
+        filter: invert(1);
+    }
+
+    /* Custom modal body */
+    .custom-modal-body {
+        background-color: rgba(255, 255, 255, 0.95);
+    }
+
+    /* Custom form labels */
+    .custom-form-label {
+        color: #97322D !important;
+        font-weight: bold;
+    }
+
+    /* Custom form controls */
+    .custom-form-control {
+        border: 1px solid #97322D;
+    }
+
+        .custom-form-control:focus {
+            border-color: #97322D;
+            box-shadow: 0 0 0 0.2rem rgba(151, 50, 45, 0.25);
+        }
+
+    /* Custom form select */
+    .custom-form-select {
+        border: 1px solid #97322D;
+    }
+
+        .custom-form-select:focus {
+            border-color: #97322D;
+            box-shadow: 0 0 0 0.2rem rgba(151, 50, 45, 0.25);
+        }
+
+    /* Custom alerts */
+    .custom-alert-danger {
+        background-color: rgba(220, 53, 69, 0.1) !important;
+        border-color: #dc3545 !important;
+        color: #dc3545 !important;
+    }
+
+    .custom-alert-success {
+        background-color: rgba(25, 135, 84, 0.1) !important;
+        border-color: #198754 !important;
+        color: #198754 !important;
+    }
+
+    /* Custom modal footer */
+    .custom-modal-footer {
+        border-top: 2px solid #97322D !important;
+        background-color: rgba(255, 228, 161, 0.8);
+    }
+
+    /* Custom secondary button */
+    .custom-btn-secondary {
+        background-color: #6c757d !important;
+        border-color: #6c757d !important;
+        color: white !important;
+    }
+
+        .custom-btn-secondary:hover:not(:disabled) {
+            background-color: #5a6268 !important;
+            border-color: #545b62 !important;
+        }
+
+    /* Custom accent button (Save) */
+    .custom-btn-accent {
+        background-color: #97322D !important;
+        border-color: #97322D !important;
+        color: white !important;
+    }
+
+        .custom-btn-accent:hover:not(:disabled) {
+            background-color: #7a2824 !important;
+            border-color: #6d2320 !important;
+        }
+
+        /* Disabled button style */
+        .custom-btn-accent:disabled,
+        .custom-btn-secondary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+</style>
+
+@code {
+    // ==== PARAMETERS ====
+    [Parameter] public EventCallback OnSaved { get; set; }
+
+    // ==== FORM MODEL ====
+    public AddAllowanceDTO Form { get; set; } = new();
+
+    public string? Error { get; set; }
+    public string? successMessage { get; set; }
+    private bool IsVisible = false;
+    private bool isSubmitting = false;
+    private DateOnly effectiveStartDate = DateOnly.FromDateTime(DateTime.Now);
+
+    // ==== CLOSE MODAL ====
+    private void Close()
+    {
+        IsVisible = false;
+        Error = null;
+        successMessage = null;
+        isSubmitting = false;
+        StateHasChanged();
+    }
+
+    // ==== SUBMIT ====
+    private async Task SubmitAsync()
+    {
+        try
+        {
+            isSubmitting = true;
+            Error = null;
+            successMessage = null;
+
+            var dto = new AddAllowanceDTO
+            {
+                TypeName = Form.TypeName?.Trim(),
+                CalculationType = Form.CalculationType,
+                EffectiveStartDate = effectiveStartDate,
+                Value = Form.Value,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            var client = HttpFactory.CreateClient("ApiClient");
+            var response = await client.PostAsJsonAsync("api/allowancetype", dto);
+
+            if (response.IsSuccessStatusCode)
+            {
+                successMessage = "Thêm loại phụ cấp thành công!";
+                await Task.Delay(1000);
+                await OnSaved.InvokeAsync();
+                Close();
+
+                // Reset form
+                Form = new AddAllowanceDTO();
+                effectiveStartDate = DateOnly.FromDateTime(DateTime.Now);
+            }
+            else
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                Error = $"Lỗi: {response.StatusCode} - {error}";
+            }
+        }
+        catch (Exception ex)
+        {
+            Error = $"Có lỗi xảy ra: {ex.Message}";
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+
+    public void Open()
+    {
+        // Reset form
+        Form = new AddAllowanceDTO();
+        effectiveStartDate = DateOnly.FromDateTime(DateTime.Now);
+        Error = null;
+        successMessage = null;
+        isSubmitting = false;
+
+        IsVisible = true;
+        StateHasChanged();
+    }
+
+    // ==== DTO ====
+    public class AddAllowanceDTO
+    {
+        public string? TypeName { get; set; }
+        public string? CalculationType { get; set; }
+        public DateOnly? EffectiveStartDate { get; set; }
+        public decimal Value { get; set; }
+        public DateTime CreatedAt { get; set; }
+    }
+}

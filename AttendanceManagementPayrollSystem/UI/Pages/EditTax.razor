@@ -7,184 +7,627 @@
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
 
-<h3 class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
-    <span>Chỉnh sửa bảng thuế</span>
-    <button class="btn btn-sm btn-outline-secondary" @onclick="BackToRatesTax">
-        <i class="bi bi-arrow-left"></i> Quay lại
-    </button>
-</h3>
+<style>
+    .custom-page-wrapper {
+        background: linear-gradient(135deg, #FFE4A1 0%, #fff5d9 50%, #ffffff 100%);
+        min-height: 100vh;
+        padding: 2rem;
+    }
 
-@if (!string.IsNullOrEmpty(successMessage) && showToast)
-{
-    <div class="toast-fixed">
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="bi bi-check-circle-fill me-2"></i> @successMessage
-            <button type="button" class="btn-close" @onclick="() => showToast = false"></button>
-        </div>
-    </div>
-}
+    .page-header {
+        background: linear-gradient(135deg, #97322D 0%, #7a2824 100%);
+        color: #FFE4A1;
+        padding: 1.5rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 12px rgba(151, 50, 45, 0.3);
+        border: 2px solid #FFE4A1;
+        transition: all 0.3s ease;
+    }
 
-<div class="row">
-    <!-- Cột trái: Lịch sử thuế -->
-    <div class="col-4 border-end" style="max-height:70vh; overflow-y:auto;">
-        <h5>Lịch sử thuế</h5>
-
-        @if (taxHistory == null)
-        {
-            <p><em>Đang tải...</em></p>
+        .page-header:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(151, 50, 45, 0.4);
         }
-        else
-        {
-            @foreach (var t in taxHistory)
-            {
-                <div class="tax-item p-2 border-bottom @(selectedTax?.TaxId == t.TaxId ? "bg-light" : "")"
-                     @onclick="() => SelectTax(t)">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <strong>@t.TaxName</strong><br />
-                            <small>Từ: @t.EffectiveFrom</small><br />
-                            @GetBadge(t)
-                        </div>
-                        @GetActionButtons(t)
-                    </div>
-                </div>
+
+    .back-btn {
+        background: linear-gradient(135deg, #FFE4A1 0%, #ffd67a 100%);
+        color: #97322D;
+        border: 2px solid #97322D;
+        transition: all 0.3s ease;
+        font-weight: 600;
+    }
+
+        .back-btn:hover {
+            transform: translateX(-4px);
+            box-shadow: 0 4px 12px rgba(151, 50, 45, 0.3);
+            background: linear-gradient(135deg, #ffd67a 0%, #FFE4A1 100%);
+            color: #97322D;
+        }
+
+    .history-card {
+        background: white;
+        border: 2px solid #FFE4A1;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(151, 50, 45, 0.15);
+        height: 70vh;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        transition: all 0.3s ease;
+    }
+
+        .history-card:hover {
+            box-shadow: 0 8px 20px rgba(151, 50, 45, 0.25);
+            border-color: #97322D;
+        }
+
+    .history-header {
+        background: linear-gradient(135deg, #97322D 0%, #7a2824 100%);
+        color: #FFE4A1;
+        padding: 1rem 1.5rem;
+        border-bottom: 3px solid #FFE4A1;
+        font-weight: 600;
+        font-size: 1.1rem;
+    }
+
+    .history-body {
+        flex: 1;
+        overflow-y: auto;
+        padding: 1rem;
+    }
+
+        .history-body::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .history-body::-webkit-scrollbar-track {
+            background: #fff5d9;
+        }
+
+        .history-body::-webkit-scrollbar-thumb {
+            background: #97322D;
+            border-radius: 4px;
+        }
+
+            .history-body::-webkit-scrollbar-thumb:hover {
+                background: #7a2824;
             }
+
+    .tax-item {
+        background: white;
+        border: 2px solid #FFE4A1;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 0.75rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+        .tax-item:hover {
+            transform: translateX(4px);
+            box-shadow: 0 4px 12px rgba(151, 50, 45, 0.2);
+            border-color: #97322D;
         }
 
-        <div class="mt-3 text-end">
-            <button class="btn btn-sm btn-outline-success" @onclick="StartAdd">
-                <i class="bi bi-plus-circle"></i> Thêm mới
-            </button>
+        .tax-item.selected {
+            background: linear-gradient(135deg, #FFE4A1 0%, #fff5d9 100%);
+            border-color: #97322D;
+            border-width: 3px;
+            transform: scale(1.02);
+        }
+
+    .detail-card {
+        background: white;
+        border: 2px solid #FFE4A1;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 4px 12px rgba(151, 50, 45, 0.15);
+        min-height: 70vh;
+        transition: all 0.3s ease;
+    }
+
+        .detail-card:hover {
+            box-shadow: 0 8px 20px rgba(151, 50, 45, 0.25);
+            border-color: #97322D;
+        }
+
+    .detail-header {
+        border-bottom: 3px solid #FFE4A1;
+        padding-bottom: 1rem;
+        margin-bottom: 1.5rem;
+        color: #97322D;
+    }
+
+    .add-new-btn {
+        background: linear-gradient(135deg, #FFE4A1 0%, #ffd67a 100%);
+        color: #97322D;
+        border: 2px solid #97322D;
+        transition: all 0.3s ease;
+        font-weight: 600;
+        width: 100%;
+        margin-top: 1rem;
+    }
+
+        .add-new-btn:hover {
+            transform: scale(1.03);
+            box-shadow: 0 4px 12px rgba(151, 50, 45, 0.3);
+            background: linear-gradient(135deg, #ffd67a 0%, #FFE4A1 100%);
+            color: #97322D;
+        }
+
+    .action-btn {
+        transition: all 0.3s ease;
+        margin: 0 0.25rem;
+        border-width: 2px;
+    }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+    .btn-outline-primary {
+        border-color: #97322D;
+        color: #97322D;
+    }
+
+        .btn-outline-primary:hover {
+            background: linear-gradient(135deg, #97322D 0%, #7a2824 100%);
+            border-color: #97322D;
+            color: #FFE4A1;
+        }
+
+    .btn-outline-success {
+        border-color: #28a745;
+        color: #28a745;
+        border-width: 2px;
+    }
+
+        .btn-outline-success:hover {
+            background: #28a745;
+            border-color: #28a745;
+            color: white;
+        }
+
+    .btn-outline-danger {
+        border-color: #dc3545;
+        color: #dc3545;
+    }
+
+        .btn-outline-danger:hover {
+            background: #dc3545;
+            border-color: #dc3545;
+            color: white;
+        }
+
+    .btn-outline-warning {
+        border-color: #ffc107;
+        color: #856404;
+    }
+
+        .btn-outline-warning:hover {
+            background: #ffc107;
+            border-color: #ffc107;
+            color: #212529;
+        }
+
+    .btn-success {
+        background: linear-gradient(135deg, #28a745 0%, #218838 100%);
+        border: none;
+    }
+
+        .btn-success:hover {
+            background: linear-gradient(135deg, #218838 0%, #1e7e34 100%);
+            transform: scale(1.05);
+        }
+
+    .btn-secondary {
+        background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+        border: none;
+    }
+
+        .btn-secondary:hover {
+            background: linear-gradient(135deg, #5a6268 0%, #545b62 100%);
+        }
+
+    .form-control {
+        border: 2px solid #FFE4A1;
+        transition: all 0.3s ease;
+    }
+
+        .form-control:focus {
+            border-color: #97322D;
+            box-shadow: 0 0 0 0.25rem rgba(151, 50, 45, 0.25);
+        }
+
+    .form-label {
+        color: #97322D;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .custom-table {
+        border: 2px solid #FFE4A1;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+        .custom-table thead {
+            background: linear-gradient(135deg, #97322D 0%, #7a2824 100%);
+            color: #FFE4A1;
+        }
+
+            .custom-table thead th {
+                border: none;
+                padding: 0.75rem;
+            }
+
+        .custom-table tbody tr {
+            transition: all 0.3s ease;
+            border-bottom: 1px solid #FFE4A1;
+        }
+
+            .custom-table tbody tr:hover {
+                background: #fffdf9;
+                transform: scale(1.01);
+            }
+
+    .bracket-row {
+        background: white;
+        border: 2px solid #FFE4A1;
+        border-radius: 8px;
+        padding: 0.75rem;
+        margin-bottom: 0.75rem;
+        transition: all 0.3s ease;
+    }
+
+        .bracket-row:hover {
+            box-shadow: 0 2px 8px rgba(151, 50, 45, 0.15);
+            border-color: #97322D;
+        }
+
+    .bracket-header {
+        background: linear-gradient(135deg, #FFE4A1 0%, #fff5d9 100%);
+        color: #97322D;
+        font-weight: 600;
+        padding: 0.5rem;
+        border-radius: 6px;
+        margin-bottom: 1rem;
+    }
+
+    .toast-fixed {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        animation: slideInRight 0.3s ease;
+    }
+
+    @@keyframes slideInRight {
+        from
+
+    {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+
+    }
+
+    .alert-success {
+        background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%) !important;
+        border: 2px solid #28a745 !important;
+        color: #155724 !important;
+        box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4) !important;
+        font-weight: 500 !important;
+    }
+
+    .modal-content {
+        border: 2px solid #97322D;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .modal-header {
+        background: linear-gradient(135deg, #97322D 0%, #7a2824 100%);
+        color: #FFE4A1;
+        border-bottom: 3px solid #FFE4A1;
+    }
+
+        .modal-header .btn-close {
+            filter: brightness(0) invert(1);
+        }
+
+    .modal-footer {
+        background: linear-gradient(135deg, #fffdf9 0%, #FFE4A1 100%);
+        border-top: 2px solid #97322D;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: #97322D;
+    }
+
+        .empty-state i {
+            font-size: 4rem;
+            color: #FFE4A1;
+            margin-bottom: 1rem;
+        }
+
+    .badge {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+</style>
+
+<div class="custom-page-wrapper">
+    <div class="container-fluid">
+        <div class="page-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h3 class="mb-1">
+                        <i class="bi bi-calculator me-2"></i>
+                        Chỉnh sửa bảng thuế
+                    </h3>
+                    <p class="mb-0 opacity-75">Quản lý các bảng thuế và bậc thuế</p>
+                </div>
+                <button class="btn back-btn" @onclick="BackToRatesTax">
+                    <i class="bi bi-arrow-left me-2"></i> Quay lại
+                </button>
+            </div>
         </div>
-    </div>
 
-    <!-- Cột phải: Chi tiết hoặc Form -->
-    <div class="col-8">
-        @if (selectedTax == null && !isAdding)
+        @if (!string.IsNullOrEmpty(successMessage) && showToast)
         {
-            <p><em>Chọn một bảng thuế để xem chi tiết hoặc nhấn “Thêm mới”.</em></p>
-        }
-        else if (!isEditing && !isAdding)
-        {
-            <!-- Chế độ xem chỉ đọc -->
-            <div>
-                <h5>@selectedTax?.TaxName</h5>
-                <p><strong>Hiệu lực từ:</strong> @selectedTax?.EffectiveFrom</p>
-                <p><strong>Hiệu lực đến:</strong> @(selectedTax?.EffectiveTo?.ToString() ?? "Không giới hạn")</p>
-                <p><strong>Trạng thái:</strong> @GetStatus(selectedTax!)</p>
-
-                <h6 class="mt-3">Các bậc thuế</h6>
-                @if (selectedTax?.TaxBrackets?.Count > 0)
-                {
-                    <table class="table table-sm table-bordered">
-                        <thead>
-                            <tr>
-                                <th>Thấp nhất</th>
-                                <th>Cao nhất</th>
-                                <th>Tỷ lệ (%)</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var b in selectedTax.TaxBrackets)
-                            {
-                                <tr>
-                                    <td>@b.LowerBound.ToString("N0")</td>
-                                    <td>@(b.UpperBound?.ToString("N0") ?? "Không giới hạn")</td>
-                                    <td>@(b.Rate * 100)</td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                }
-                else
-                {
-                    <p><em>Chưa có bậc thuế nào.</em></p>
-                }
+            <div class="toast-fixed">
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="bi bi-check-circle-fill me-2"></i> @successMessage
+                    <button type="button" class="btn-close" @onclick="() => showToast = false"></button>
+                </div>
             </div>
         }
-        else
-        {
-            <!-- Form thêm/sửa -->
-            <EditForm Model="AddModel" OnValidSubmit="SaveTax">
-                <DataAnnotationsValidator />
-                <div class="mb-3">
-                    <label class="form-label">Tên bảng thuế</label>
-                    <InputText class="form-control" @bind-Value="AddModel.TaxName" />
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Hiệu lực từ</label>
-                    <InputDate class="form-control" @bind-Value="AddModel.EffectiveFrom" />
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Hiệu lực đến</label>
-                    <InputDate class="form-control" @bind-Value="AddModel.EffectiveTo" />
-                </div>
 
-                <h6 class="mt-3">Các bậc thuế</h6>
-
-                <div class="row fw-bold border-bottom pb-1 mb-2">
-                    <div class="col">Thấp nhất</div>
-                    <div class="col">Cao nhất</div>
-                    <div class="col">Tỷ lệ (%)</div>
-                </div>
-
-                @foreach (var b in AddModel.TaxBrackets.Select((value, index) => new { value, index }))
-                {
-                    <div class="row mb-2 align-items-center">
-                        <div class="col">
-                            <InputNumber class="form-control" @bind-Value="b.value.LowerBound" placeholder="Thấp nhất" />
-                        </div>
-                        <div class="col">
-                            <InputNumber class="form-control" @bind-Value="b.value.UpperBound" placeholder="Cao nhất" />
-                        </div>
-                        <div class="col">
-                            <InputNumber class="form-control" @bind-Value="b.value.Rate" placeholder="Tỷ lệ (vd 0.1)" />
-                        </div>
-                        <div class="col-auto">
-                            <button class="btn btn-sm btn-outline-danger"
-                                    type="button"
-                                    @onclick="() => RemoveBracket(b.index)">
-                                <i class="bi bi-x-circle"></i>
-                            </button>
-                        </div>
+        <div class="row">
+            <!-- Cột trái: Lịch sử thuế -->
+            <div class="col-lg-4 col-md-5 mb-3 mb-md-0">
+                <div class="history-card">
+                    <div class="history-header">
+                        <i class="bi bi-clock-history me-2"></i>
+                        Lịch sử thuế
                     </div>
-                }
-
-
-
-                <button class="btn btn-sm btn-outline-success mb-3" type="button" @onclick="AddBracket">
-                    <i class="bi bi-plus"></i> Thêm bậc thuế
-                </button>
-
-                <div class="text-end">
-                    <button class="btn btn-success me-2" type="submit">
-                        <i class="bi bi-check-lg"></i> Lưu
-                    </button>
-                    <button class="btn btn-secondary" type="button" @onclick="CancelEdit">
-                        <i class="bi bi-x-lg"></i> Hủy
-                    </button>
+                    <div class="history-body">
+                        @if (taxHistory == null)
+                        {
+                            <div class="text-center py-3">
+                                <div class="spinner-border" style="color: #97322D;" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <p class="mt-2" style="color: #97322D;"><em>Đang tải...</em></p>
+                            </div>
+                        }
+                        else
+                        {
+                            @foreach (var t in taxHistory)
+                            {
+                                <div class="tax-item @(selectedTax?.TaxId == t.TaxId ? "selected" : "")"
+                                     @onclick="() => SelectTax(t)">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div class="flex-grow-1">
+                                            <strong style="color: #97322D;">@t.TaxName</strong><br />
+                                            <small class="text-muted">
+                                                <i class="bi bi-calendar-event me-1"></i>
+                                                Từ: @t.EffectiveFrom.ToString("dd/MM/yyyy")
+                                            </small>
+                                        </div>
+                                        @GetActionButtons(t)
+                                    </div>
+                                    @GetBadge(t)
+                                </div>
+                            }
+                        }
+                    </div>
+                    <div class="px-3 pb-3">
+                        <button class="btn add-new-btn" @onclick="StartAdd">
+                            <i class="bi bi-plus-circle me-2"></i> Thêm mới thuế
+                        </button>
+                    </div>
                 </div>
-            </EditForm>
-        }
-    </div>
+            </div>
 
+            <!-- Cột phải: Chi tiết hoặc Form -->
+            <div class="col-lg-8 col-md-7">
+                <div class="detail-card">
+                    @if (selectedTax == null && !isAdding)
+                    {
+                        <div class="empty-state">
+                            <i class="bi bi-inbox"></i>
+                            <h5>Chưa chọn bảng thuế</h5>
+                            <p class="text-muted">Chọn một bảng thuế bên trái để xem chi tiết hoặc nhấn "Thêm mới".</p>
+                        </div>
+                    }
+                    else if (!isEditing && !isAdding)
+                    {
+                        <!-- Chế độ xem chỉ đọc -->
+                        <div>
+                            <div class="detail-header">
+                                <h4 class="mb-2">
+                                    <i class="bi bi-file-text me-2"></i>
+                                    @selectedTax?.TaxName
+                                </h4>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <p class="mb-1">
+                                            <i class="bi bi-calendar-check me-2"></i>
+                                            <strong>Hiệu lực từ:</strong> @selectedTax?.EffectiveFrom.ToString("dd/MM/yyyy")
+                                        </p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p class="mb-1">
+                                            <i class="bi bi-calendar-x me-2"></i>
+                                            <strong>Hiệu lực đến:</strong> @(selectedTax?.EffectiveTo?.ToString("dd/MM/yyyy") ?? "Không giới hạn")
+                                        </p>
+                                    </div>
+                                </div>
+                                <p class="mb-0">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    <strong>Trạng thái:</strong> @GetStatus(selectedTax!)
+                                </p>
+                            </div>
+
+                            <h5 class="mb-3" style="color: #97322D;">
+                                <i class="bi bi-graph-up me-2"></i>
+                                Các bậc thuế
+                            </h5>
+                            @if (selectedTax?.TaxBrackets?.Count > 0)
+                            {
+                                <table class="table table-sm custom-table align-middle">
+                                    <thead>
+                                        <tr>
+                                            <th><i class="bi bi-arrow-down me-1"></i>Thấp nhất</th>
+                                            <th><i class="bi bi-arrow-up me-1"></i>Cao nhất</th>
+                                            <th><i class="bi bi-percent me-1"></i>Tỷ lệ (%)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var b in selectedTax.TaxBrackets)
+                                        {
+                                            <tr>
+                                                <td>@b.LowerBound.ToString("N0")</td>
+                                                <td>@(b.UpperBound?.ToString("N0") ?? "Không giới hạn")</td>
+                                                <td><strong>@(b.Rate * 100)</strong></td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            }
+                            else
+                            {
+                                <div class="empty-state">
+                                    <i class="bi bi-inbox" style="font-size: 3rem;"></i>
+                                    <p class="text-muted">Chưa có bậc thuế nào.</p>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <!-- Form thêm/sửa -->
+                        <EditForm Model="AddModel" OnValidSubmit="SaveTax">
+                            <DataAnnotationsValidator />
+                            <div class="detail-header">
+                                <h5>
+                                    <i class="bi bi-@(isAdding ? "plus-circle" : "pencil-square") me-2"></i>
+                                    @(isAdding ? "Thêm mới bảng thuế" : "Chỉnh sửa bảng thuế")
+                                </h5>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-12 mb-3">
+                                    <label class="form-label">
+                                        <i class="bi bi-tag me-1"></i>
+                                        Tên bảng thuế
+                                    </label>
+                                    <InputText class="form-control" @bind-Value="AddModel.TaxName" placeholder="Nhập tên bảng thuế" />
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">
+                                        <i class="bi bi-calendar-check me-1"></i>
+                                        Hiệu lực từ
+                                    </label>
+                                    <InputDate class="form-control" @bind-Value="AddModel.EffectiveFrom" />
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">
+                                        <i class="bi bi-calendar-x me-1"></i>
+                                        Hiệu lực đến
+                                    </label>
+                                    <InputDate class="form-control" @bind-Value="AddModel.EffectiveTo" />
+                                </div>
+                            </div>
+
+                            <h6 class="mt-4 mb-3" style="color: #97322D;">
+                                <i class="bi bi-graph-up me-2"></i>
+                                Các bậc thuế
+                            </h6>
+
+                            <div class="bracket-header row">
+                                <div class="col-4">Thấp nhất</div>
+                                <div class="col-4">Cao nhất</div>
+                                <div class="col-3">Tỷ lệ (%)</div>
+                                <div class="col-1"></div>
+                            </div>
+
+                            @foreach (var b in AddModel.TaxBrackets.Select((value, index) => new { value, index }))
+                            {
+                                <div class="bracket-row row align-items-center">
+                                    <div class="col-4">
+                                        <InputNumber class="form-control form-control-sm" @bind-Value="b.value.LowerBound" placeholder="0" />
+                                    </div>
+                                    <div class="col-4">
+                                        <InputNumber class="form-control form-control-sm" @bind-Value="b.value.UpperBound" placeholder="∞" />
+                                    </div>
+                                    <div class="col-3">
+                                        <InputNumber class="form-control form-control-sm" @bind-Value="b.value.Rate" placeholder="0.0" />
+                                    </div>
+                                    <div class="col-1 text-end">
+                                        <button class="btn btn-sm btn-outline-danger"
+                                                type="button"
+                                                @onclick="() => RemoveBracket(b.index)">
+                                            <i class="bi bi-x-lg"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            }
+
+                            <button class="btn btn-outline-success mb-4 w-100" type="button" @onclick="AddBracket">
+                                <i class="bi bi-plus-circle me-2"></i> Thêm bậc thuế
+                            </button>
+
+                            <div class="text-end">
+                                <button class="btn btn-success me-2" type="submit">
+                                    <i class="bi bi-check-lg me-1"></i> Lưu
+                                </button>
+                                <button class="btn btn-secondary" type="button" @onclick="CancelEdit">
+                                    <i class="bi bi-x-lg me-1"></i> Hủy
+                                </button>
+                            </div>
+                        </EditForm>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 @if (showConfirm)
 {
-    <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5);">
-        <div class="modal-dialog">
+    <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.45);">
+        <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Xác nhận</h5>
+                    <h5 class="modal-title">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        Xác nhận
+                    </h5>
                     <button type="button" class="btn-close" @onclick="CancelConfirm"></button>
                 </div>
                 <div class="modal-body">
-                    <p>@confirmMessage</p>
+                    <p class="mb-0">@confirmMessage</p>
                 </div>
                 <div class="modal-footer">
-                    <button class="btn btn-secondary" @onclick="CancelConfirm">Hủy</button>
-                    <button class="btn btn-danger" @onclick="ConfirmAction">Xác nhận</button>
+                    <button class="btn btn-danger" @onclick="CancelConfirm">
+                        <i class="bi bi-x-circle me-1"></i> Hủy
+                    </button>
+                    <button class="btn btn-success" @onclick="ConfirmAction">
+                        <i class="bi bi-check-circle me-1"></i> Xác nhận
+                    </button>
                 </div>
             </div>
         </div>
@@ -377,34 +820,33 @@
     }
 
     private RenderFragment GetActionButtons(TaxDTO t) => @<div>
-    @{
-        DateOnly now = DateOnly.FromDateTime(DateTime.Now);
-        string status = (t.IsActive && t.EffectiveFrom <= now && (t.EffectiveTo == null || t.EffectiveTo >= now))
-        ? "Active"
-        : (!t.IsActive && t.EffectiveFrom > now ? "Upcoming" : "Inactive");
-    }
-    @if (status == "Upcoming")
-    {
-            <button class="btn btn-sm btn-outline-primary me-1"
-                    @onclick:stopPropagation="true"
-                    @onclick="() => EditUpcoming(t)">
-                <i class="bi bi-pencil-square"></i> Sửa
-            </button>
-            <button class="btn btn-sm btn-outline-danger"
-                    @onclick:stopPropagation="true"
-                    @onclick="() => DeleteUpcoming(t.TaxId)">
-                <i class="bi bi-trash"></i> Xóa
-            </button>
-    }
-    else
-    {
-            <button class="btn btn-sm btn-outline-warning"
-                    @onclick:stopPropagation="true"
-                    @onclick="() => ToggleStatus(t)">
-                <i class="bi bi-toggle2-@(t.IsActive ? "on" : "off")"></i>
-                @(t.IsActive ? "Ngừng" : "Kích hoạt")
-            </button>
-    }
+@{
+    DateOnly now = DateOnly.FromDateTime(DateTime.Now);
+    string status = (t.IsActive && t.EffectiveFrom <= now && (t.EffectiveTo == null || t.EffectiveTo >= now))
+    ? "Active"
+    : (!t.IsActive && t.EffectiveFrom > now ? "Upcoming" : "Inactive");
+}
+@if (status == "Upcoming")
+{
+        <button class="btn btn-sm btn-outline-primary action-btn"
+                @onclick:stopPropagation="true"
+                @onclick="() => EditUpcoming(t)">
+            <i class="bi bi-pencil-square"></i>
+        </button>
+        <button class="btn btn-sm btn-outline-danger action-btn"
+                @onclick:stopPropagation="true"
+                @onclick="() => DeleteUpcoming(t.TaxId)">
+            <i class="bi bi-trash"></i>
+        </button>
+}
+else
+{
+        <button class="btn btn-sm btn-outline-warning action-btn"
+                @onclick:stopPropagation="true"
+                @onclick="() => ToggleStatus(t)">
+            <i class="bi bi-toggle2-@(t.IsActive ? "on" : "off")"></i>
+        </button>
+}
 </div>;
 
 private void RemoveBracket(int index)

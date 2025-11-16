@@ -4,82 +4,355 @@
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
 
-<h3 class="mb-4">Cài đặt Chính sách Lương</h3>
+<style>
+    .salary-page {
+        background: linear-gradient(135deg, #FFE4A1 0%, #FFF5E1 100%);
+        min-height: 100vh;
+        padding: 2rem 0;
+    }
 
-<div class="row">
-    <div class="col-lg-8">
-        <!-- Card: Chính sách lương hiện hành -->
-        <div class="card shadow-sm mb-4">
-            <div class="card-header d-flex justify-content-between align-items-center bg-primary text-white">
-                <h5 class="mb-0">
-                    <i class="bi bi-currency-exchange me-2"></i>Chính sách lương hiện hành
-                </h5>
-                <button class="btn btn-sm btn-light" @onclick="GoToHistory">
-                    <i class="bi bi-clock-history"></i> Lịch sử
+    .page-header {
+        background: linear-gradient(135deg, #97322D 0%, #7A2824 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 15px;
+        margin-bottom: 2rem;
+        box-shadow: 0 8px 20px rgba(151, 50, 45, 0.3);
+    }
+
+        .page-header h3 {
+            margin: 0;
+            font-weight: 700;
+            font-size: 1.8rem;
+        }
+
+    .policy-card {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        transition: transform 0.3s ease;
+    }
+
+        .policy-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+    .card-header-custom {
+        background: linear-gradient(135deg, #97322D 0%, #B33D32 100%);
+        color: white;
+        padding: 1.5rem;
+        border: none;
+    }
+
+        .card-header-custom h5 {
+            margin: 0;
+            font-weight: 600;
+        }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        padding: 2rem;
+    }
+
+    .info-item {
+        background: linear-gradient(135deg, #FFF5E1 0%, #FFE4A1 100%);
+        padding: 1.5rem;
+        border-radius: 12px;
+        border-left: 4px solid #97322D;
+        transition: all 0.3s ease;
+    }
+
+        .info-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 12px rgba(151, 50, 45, 0.2);
+        }
+
+    .info-label {
+        color: #97322D;
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.5rem;
+    }
+
+    .info-value {
+        color: #333;
+        font-size: 1.3rem;
+        font-weight: 700;
+        margin: 0;
+    }
+
+        .info-value.highlight {
+            color: #97322D;
+        }
+
+    .btn-primary-custom {
+        background: linear-gradient(135deg, #97322D 0%, #7A2824 100%);
+        border: none;
+        color: white;
+        padding: 0.75rem 2rem;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 10px rgba(151, 50, 45, 0.3);
+    }
+
+        .btn-primary-custom:hover {
+            background: linear-gradient(135deg, #7A2824 0%, #97322D 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(151, 50, 45, 0.4);
+        }
+
+    .btn-outline-custom {
+        border: 2px solid #97322D;
+        color: #97322D;
+        background: white;
+        padding: 0.75rem 2rem;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+        .btn-outline-custom:hover {
+            background: #97322D;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+    .info-sidebar {
+        background: white;
+        border-radius: 15px;
+        padding: 2rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        border-top: 5px solid #97322D;
+    }
+
+        .info-sidebar h5 {
+            color: #97322D;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+        }
+
+    .info-list-item {
+        padding: 1rem;
+        margin-bottom: 1rem;
+        background: #FFF5E1;
+        border-radius: 8px;
+        border-left: 3px solid #FFE4A1;
+        transition: all 0.3s ease;
+    }
+
+        .info-list-item:hover {
+            border-left-color: #97322D;
+            transform: translateX(5px);
+        }
+
+    .status-badge {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    .status-active {
+        background: #28a745;
+        color: white;
+    }
+
+    .status-inactive {
+        background: #dc3545;
+        color: white;
+    }
+
+    .modal-custom .modal-content {
+        border-radius: 15px;
+        border: none;
+        overflow: hidden;
+    }
+
+    .modal-custom .modal-header {
+        background: linear-gradient(135deg, #97322D 0%, #7A2824 100%);
+        color: white;
+        border: none;
+        padding: 1.5rem 2rem;
+    }
+
+    .modal-custom .modal-body {
+        padding: 2rem;
+    }
+
+    .form-control:focus {
+        border-color: #97322D;
+        box-shadow: 0 0 0 0.2rem rgba(151, 50, 45, 0.25);
+    }
+
+    .spinner-custom {
+        border: 4px solid #FFE4A1;
+        border-top: 4px solid #97322D;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 1s linear infinite;
+    }
+
+    @@keyframes spin {
+        0%
+
+    {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: flex-end;
+        padding: 1.5rem 2rem;
+        background: #f8f9fa;
+        border-radius: 0 0 15px 15px;
+    }
+</style>
+
+<div class="salary-page">
+    <div class="container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h3>
+                        <i class="bi bi-currency-exchange me-3"></i>
+                        Quản lý Chính sách Lương
+                    </h3>
+                    <p class="mb-0 mt-2" style="opacity: 0.9;">Cấu hình và điều chỉnh chính sách lương của công ty</p>
+                </div>
+                <button class="btn btn-outline-custom" @onclick="GoToHistory">
+                    <i class="bi bi-clock-history me-2"></i>
+                    Xem lịch sử
                 </button>
             </div>
-            <div class="card-body">
-                @if (salaryPolicy == null)
-                {
-                    <div class="text-center py-4">
-                        <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">Đang tải...</span>
-                        </div>
-                    </div>
-                }
-                else
-                {
-                    <div class="row g-4">
-                        <div class="col-md-6">
-                            <label class="form-label text-muted">Tên chính sách</label>
-                            <p class="fw-bold">@salaryPolicy.SalaryPolicyName.Trim()</p>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label text-muted">Giá trị công việc (1 đơn vị)</label>
-                            <p class="fw-bold text-success">@salaryPolicy.WorkUnitValue.ToString("N0") VNĐ</p>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label text-muted">Nghỉ phép hàng năm</label>
-                            <p class="fw-bold">@salaryPolicy.YearlyPto ngày</p>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label text-muted">Hệ số Overclock</label>
-                            <p class="fw-bold">@salaryPolicy.OverclockMultiplier.ToString("F1")x</p>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label text-muted">Ngày hiệu lực</label>
-                            <p class="fw-bold">@salaryPolicy.EffectiveFrom</p>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label text-muted">Trạng thái</label>
-                            <p class="fw-bold @(salaryPolicy.IsActive ? "text-success" : "text-danger")">
-                                @(salaryPolicy.IsActive ? "Đang hoạt động" : "Đã vô hiệu")
-                            </p>
-                        </div>
-                    </div>
-
-                    <div class="mt-4 text-end">
-                        <button class="btn btn-outline-primary" @onclick="() => OpenEditModal(salaryPolicy)">
-                            <i class="bi bi-pencil-square"></i> Chỉnh sửa
-                        </button>
-                    </div>
-                }
-            </div>
         </div>
-    </div>
 
-    <div class="col-lg-4">
-        <!-- Card: Hướng dẫn nhanh -->
-        <div class="card border-info shadow-sm">
-            <div class="card-header bg-info text-white">
-                <i class="bi bi-info-circle-fill me-2"></i>Thông tin
+        <div class="row g-4">
+            <!-- Main Policy Card -->
+            <div class="col-lg-8">
+                <div class="policy-card">
+                    <div class="card-header-custom">
+                        <h5>
+                            <i class="bi bi-clipboard-check me-2"></i>
+                            Chính sách hiện hành
+                        </h5>
+                    </div>
+
+                    @if (salaryPolicy == null)
+                    {
+                        <div class="text-center py-5">
+                            <div class="spinner-custom mx-auto"></div>
+                            <p class="mt-3 text-muted">Đang tải dữ liệu...</p>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <div class="info-label">
+                                    <i class="bi bi-tag-fill me-1"></i>
+                                    Tên chính sách
+                                </div>
+                                <p class="info-value">@salaryPolicy.SalaryPolicyName.Trim()</p>
+                            </div>
+
+                            <div class="info-item">
+                                <div class="info-label">
+                                    <i class="bi bi-cash-coin me-1"></i>
+                                    Giá trị công việc
+                                </div>
+                                <p class="info-value highlight">@salaryPolicy.WorkUnitValue.ToString("N0") VNĐ</p>
+                            </div>
+
+                            <div class="info-item">
+                                <div class="info-label">
+                                    <i class="bi bi-calendar-heart me-1"></i>
+                                    Nghỉ phép hàng năm
+                                </div>
+                                <p class="info-value">@salaryPolicy.YearlyPto ngày</p>
+                            </div>
+
+                            <div class="info-item">
+                                <div class="info-label">
+                                    <i class="bi bi-speedometer2 me-1"></i>
+                                    Hệ số Overclock
+                                </div>
+                                <p class="info-value">@salaryPolicy.OverclockMultiplier.ToString("F1")x</p>
+                            </div>
+
+                            <div class="info-item">
+                                <div class="info-label">
+                                    <i class="bi bi-calendar-check me-1"></i>
+                                    Ngày hiệu lực
+                                </div>
+                                <p class="info-value">@salaryPolicy.EffectiveFrom.ToString("dd/MM/yyyy")</p>
+                            </div>
+
+                            <div class="info-item">
+                                <div class="info-label">
+                                    <i class="bi bi-activity me-1"></i>
+                                    Trạng thái
+                                </div>
+                                <span class="status-badge @(salaryPolicy.IsActive ? "status-active" : "status-inactive")">
+                                    @(salaryPolicy.IsActive ? "Đang hoạt động" : "Đã vô hiệu")
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="action-buttons">
+                            <button class="btn btn-primary-custom" @onclick="() => OpenEditModal(salaryPolicy)">
+                                <i class="bi bi-pencil-square me-2"></i>
+                                Chỉnh sửa chính sách
+                            </button>
+                        </div>
+                    }
+                </div>
             </div>
-            <div class="card-body">
-                <ul class="list-unstyled mb-0 small">
-                    <li class="mb-2"><i class="bi bi-check-circle text-success"></i> Chỉ có <strong>một</strong> chính sách lương hoạt động tại một thời điểm.</li>
-                    <li class="mb-2"><i class="bi bi-calendar-check text-primary"></i> Thay đổi sẽ có hiệu lực từ ngày được chọn.</li>
-                    <li><i class="bi bi-clock text-warning"></i> Lịch sử chính sách cũ được lưu tại <strong>Lịch sử</strong>.</li>
-                </ul>
+
+            <!-- Sidebar Info -->
+            <div class="col-lg-4">
+                <div class="info-sidebar">
+                    <h5>
+                        <i class="bi bi-lightbulb-fill me-2"></i>
+                        Hướng dẫn sử dụng
+                    </h5>
+
+                    <div class="info-list-item">
+                        <i class="bi bi-check-circle-fill text-success me-2"></i>
+                        <strong>Một chính sách duy nhất:</strong> Chỉ có một chính sách hoạt động tại một thời điểm
+                    </div>
+
+                    <div class="info-list-item">
+                        <i class="bi bi-calendar-event-fill me-2" style="color: #97322D;"></i>
+                        <strong>Ngày hiệu lực:</strong> Thay đổi sẽ có hiệu lực từ ngày được chọn
+                    </div>
+
+                    <div class="info-list-item">
+                        <i class="bi bi-archive-fill text-warning me-2"></i>
+                        <strong>Lưu trữ lịch sử:</strong> Các chính sách cũ được lưu trữ và có thể xem lại
+                    </div>
+
+                    <div class="info-list-item">
+                        <i class="bi bi-shield-fill-check me-2" style="color: #97322D;"></i>
+                        <strong>An toàn dữ liệu:</strong> Mọi thay đổi đều được ghi nhận và có thể truy vết
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -88,60 +361,80 @@
 <!-- Modal chỉnh sửa -->
 @if (showEditModal)
 {
-    <div class="modal fade show d-block" style="background-color: rgba(0,0,0,0.5);" tabindex="-1">
-        <div class="modal-dialog modal-lg">
+    <div class="modal fade show d-block modal-custom" style="background-color: rgba(151, 50, 45, 0.4);" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
-                <div class="modal-header bg-primary text-white">
+                <div class="modal-header">
                     <h5 class="modal-title">
-                        <i class="bi bi-gear-fill me-2"></i>Chỉnh sửa chính sách lương
+                        <i class="bi bi-gear-fill me-2"></i>
+                        Chỉnh sửa chính sách lương
                     </h5>
                     <button type="button" class="btn-close btn-close-white" @onclick="CloseModal"></button>
                 </div>
                 <div class="modal-body">
                     <EditForm Model="@editingPolicy" OnValidSubmit="SaveEditingPolicy">
                         <DataAnnotationsValidator />
-                        <div class="row g-3">
+                        <div class="row g-4">
                             <div class="col-md-6">
-                                <label class="form-label">Tên chính sách <span class="text-danger">*</span></label>
-                                <InputText class="form-control" @bind-Value="editingPolicy.SalaryPolicyName" />
+                                <label class="form-label fw-bold">
+                                    <i class="bi bi-tag me-1"></i>
+                                    Tên chính sách <span class="text-danger">*</span>
+                                </label>
+                                <InputText class="form-control" @bind-Value="editingPolicy.SalaryPolicyName" placeholder="Nhập tên chính sách" />
                                 <ValidationMessage For="@(() => editingPolicy.SalaryPolicyName)" />
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">Giá trị công việc (VNĐ) <span class="text-danger">*</span></label>
-                                <InputNumber class="form-control" @bind-Value="editingPolicy.WorkUnitValue" />
+                                <label class="form-label fw-bold">
+                                    <i class="bi bi-cash me-1"></i>
+                                    Giá trị công việc (VNĐ) <span class="text-danger">*</span>
+                                </label>
+                                <InputNumber class="form-control" @bind-Value="editingPolicy.WorkUnitValue" placeholder="0" />
                                 <ValidationMessage For="@(() => editingPolicy.WorkUnitValue)" />
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">Nghỉ phép hàng năm (ngày) <span class="text-danger">*</span></label>
-                                <InputNumber class="form-control" @bind-Value="editingPolicy.YearlyPto" />
+                                <label class="form-label fw-bold">
+                                    <i class="bi bi-calendar-heart me-1"></i>
+                                    Nghỉ phép hàng năm (ngày) <span class="text-danger">*</span>
+                                </label>
+                                <InputNumber class="form-control" @bind-Value="editingPolicy.YearlyPto" placeholder="12" />
                                 <ValidationMessage For="@(() => editingPolicy.YearlyPto)" />
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">Hệ số Overclock <span class="text-danger">*</span></label>
-                                <InputNumber class="form-control" step="0.1" @bind-Value="editingPolicy.OverclockMultiplier" />
+                                <label class="form-label fw-bold">
+                                    <i class="bi bi-speedometer2 me-1"></i>
+                                    Hệ số Overclock <span class="text-danger">*</span>
+                                </label>
+                                <InputNumber class="form-control" step="0.1" @bind-Value="editingPolicy.OverclockMultiplier" placeholder="1.5" />
                                 <ValidationMessage For="@(() => editingPolicy.OverclockMultiplier)" />
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">Ngày hiệu lực <span class="text-danger">*</span></label>
+                                <label class="form-label fw-bold">
+                                    <i class="bi bi-calendar-check me-1"></i>
+                                    Ngày hiệu lực <span class="text-danger">*</span>
+                                </label>
                                 <InputDate class="form-control" @bind-Value="editingPolicy.EffectiveFrom" />
                                 <ValidationMessage For="@(() => editingPolicy.EffectiveFrom)" />
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">Trạng thái</label>
-                                <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" id="isActiveSwitch" @bind="editingPolicy.IsActive">
-                                    <label class="form-check-label" for="isActiveSwitch">
+                                <label class="form-label fw-bold">
+                                    <i class="bi bi-toggle-on me-1"></i>
+                                    Trạng thái
+                                </label>
+                                <div class="form-check form-switch" style="padding-top: 0.5rem;">
+                                    <input class="form-check-input" type="checkbox" id="isActiveSwitch" @bind="editingPolicy.IsActive" style="cursor: pointer; width: 3rem; height: 1.5rem;">
+                                    <label class="form-check-label ms-2 fw-bold" for="isActiveSwitch" style="cursor: pointer;">
                                         @(editingPolicy.IsActive ? "Đang hoạt động" : "Tạm dừng")
                                     </label>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="mt-4 d-flex justify-content-end gap-2">
-                            <button type="button" class="btn btn-secondary" @onclick="CloseModal">
-                                <i class="bi bi-x-circle"></i> Hủy
+                        <div class="mt-4 d-flex justify-content-end gap-3">
+                            <button type="button" class="btn btn-outline-custom" @onclick="CloseModal">
+                                <i class="bi bi-x-circle me-2"></i>
+                                Hủy bỏ
                             </button>
-                            <button type="submit" class="btn btn-primary" disabled="@isSaving">
+                            <button type="submit" class="btn btn-primary-custom" disabled="@isSaving">
                                 @if (isSaving)
                                 {
                                     <span class="spinner-border spinner-border-sm me-2" role="status"></span>
@@ -149,9 +442,9 @@
                                 }
                                 else
                                 {
-                                    <i class="bi bi-check-circle">Lưu thay đổi</i>
-                                    
-                                                        }
+                                    <i class="bi bi-check-circle me-2"></i>
+                                    <span>Lưu thay đổi</span>
+                                }
                             </button>
                         </div>
                     </EditForm>

@@ -4,6 +4,8 @@ using AttendanceManagementPayrollSystem.UI;
 using Blazorise;
 using Blazorise.Bootstrap5;
 using Blazorise.Icons.FontAwesome;
+using AttendanceManagementPayrollSystem.Services.ServiceList;
+using AttendanceManagementPayrollSystem.Services;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -55,6 +57,11 @@ builder.Services.AddScoped<IAttendanceService, AttendanceServiceImpl>();
 builder.Services.AddScoped<IAttendanceRepository, AttendanceRepositoryImpl>();
 //builder.Services.AddScoped<ClockInAdjustmentRequestService, ClockInAdjustmentRequestServiceImpl>();
 //builder.Services.AddScoped<ClockinComponentService, ClockinComponentServiceImpl>();
+builder.Services.AddScoped<EmployeeAllowanceService, EmployeeAllowanceServiceImpl>();
+builder.Services.AddScoped<AllowanceTypeService, AllowanceTypeServiceImpl>();
+
+
+
 
 
 

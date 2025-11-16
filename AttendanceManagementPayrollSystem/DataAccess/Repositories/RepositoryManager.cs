@@ -27,6 +27,9 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
             builder.Services.AddScoped<EmployeeRepository, EmployeeRepositoryImpl>();
             builder.Services.AddScoped<DepartmentWeeklyShiftRepository, DepartmentWeeklyShiftRepositoryImpl>();
             builder.Services.AddScoped<EmployeeDependentRepository, EmployeeDependentRepositoryImpl>();
+            builder.Services.AddScoped<EmployeeAllowanceRepository, EmployeeAllowanceRepositoryImpl>();
+            builder.Services.AddScoped<AllowanceTypeRepository, AllowanceTypeRepositoryImpl>();
+
 
 
 
