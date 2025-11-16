@@ -950,6 +950,7 @@
             newRequest.EndDate = DateOnly.FromDateTime(newEndDate.Value);
             newRequest.NumbersOfDays = calculatedDays;
             newRequest.EmpId = Employee?.EmpId ?? 0;
+            newRequest.EmpName = Employee.EmpName;
 
             var client = HttpFactory.CreateClient("ApiClient");
             var response = await client.PostAsJsonAsync("api/leave/request", newRequest);
