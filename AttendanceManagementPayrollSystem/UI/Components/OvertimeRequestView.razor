@@ -1,0 +1,152 @@
+﻿@using AttendanceManagementPayrollSystem.DTO
+@using Blazorise
+
+<style>
+    .overtime-card {
+        border: 2px solid #CDE9CE;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        background: #F8FFF8;
+    }
+
+    .overtime-card:hover {
+        box-shadow: 0 5px 12px rgba(0, 0, 0, 0.2);
+        transform: translateY(-2px);
+    }
+
+    .overtime-card .card-header {
+        background: linear-gradient(135deg, #4A8F4A, #3C723C);
+        color: white;
+        font-weight: 600;
+        padding: 0.75rem 1rem;
+        border-bottom: 2px solid #CDE9CE;
+    }
+
+    .overtime-card .card-body {
+        padding: 1rem;
+    }
+
+    .overtime-card .field-label {
+        color: #3C723C;
+        font-weight: 600;
+        font-size: 0.9rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .overtime-card .field-body {
+        color: #444;
+        margin-bottom: 0.75rem;
+    }
+
+    .overtime-card .badge-status {
+        padding: 0.4rem 0.75rem;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 0.85rem;
+    }
+
+    .overtime-approved {
+        background: #90EE90;
+        color: #255B25;
+        border: 1px solid #255B25;
+    }
+
+    .overtime-pending {
+        background: #FFF3CD;
+        color: #946E00;
+        border: 1px solid #946E00;
+    }
+
+    .overtime-rejected {
+        background: #FFB6B6;
+        color: #8F1E1E;
+        border: 1px solid #8F1E1E;
+    }
+
+    .overtime-card .time-display {
+        background: linear-gradient(90deg, #FFF5DC, transparent);
+        border-left: 3px solid #97322D;
+        padding: 0.5rem 0.75rem;
+        border-radius: 4px;
+        display: inline-block;
+        font-family: 'Courier New', monospace;
+        font-weight: 600;
+        color: #97322D;
+    }
+</style>
+
+<Card Class="overtime-card mb-3">
+    <CardHeader class="d-flex justify-content-between align-items-center">
+        <strong>Đơn tăng ca</strong>
+    </CardHeader>
+
+    <CardBody>
+        <Field>
+            <FieldLabel>Ngày yêu cầu</FieldLabel>
+            <FieldBody>@Component.ReqDate.ToString("yyyy-MM-dd")</FieldBody>
+        </Field>
+
+        <Field>
+            <FieldLabel>Giờ bắt đầu / Giờ kết thúc</FieldLabel>
+            <FieldBody>
+                <div class="d-flex flex-row gap-3">
+                    <span class="time-display">⏰ @(Component.StartTime?.ToString("HH:mm") ?? "--:--")</span>
+                    <span class="time-display">🚪 @(Component.EndTime?.ToString("HH:mm") ?? "--:--")</span>
+                </div>
+            </FieldBody>
+        </Field>
+
+
+        <Field>
+            <FieldLabel>Số giờ</FieldLabel>
+            <FieldBody>@(Component.Hours?.ToString("F2") ?? "0.00")</FieldBody>
+        </Field>
+
+        <Field>
+            <FieldLabel>Loại tăng ca</FieldLabel>
+            <FieldBody>@Component.OvertimeTypeName</FieldBody>
+        </Field>
+
+        <Field>
+            <FieldLabel>Tình trạng</FieldLabel>
+            <FieldBody>
+                @if (Component.Status == "Approved")
+                {
+                    <span class="badge-status overtime-approved">Đã duyệt</span>
+                }
+                else if (Component.Status == "Pending")
+                {
+                    <span class="badge-status overtime-pending">Chờ duyệt</span>
+                }
+                else
+                {
+                    <span class="badge-status overtime-rejected">Từ chối</span>
+                }
+            </FieldBody>
+        </Field>
+
+        <Field>
+            <FieldLabel>Lý do</FieldLabel>
+            <FieldBody>@(string.IsNullOrWhiteSpace(Component.Reason) ? "--" : Component.Reason)</FieldBody>
+        </Field>
+
+        @if (Component.ApprovedByName is not null)
+        {
+            <Field>
+                <FieldLabel>Người duyệt</FieldLabel>
+                <FieldBody>@Component.ApprovedByName</FieldBody>
+            </Field>
+
+            <Field>
+                <FieldLabel>Ngày duyệt</FieldLabel>
+                <FieldBody>@(Component.ApprovedDate?.ToString("yyyy-MM-dd") ?? "--")</FieldBody>
+            </Field>
+        }
+    </CardBody>
+</Card>
+
+@code {
+    [Parameter] public OvertimeRequestDTO Component { get; set; }
+}

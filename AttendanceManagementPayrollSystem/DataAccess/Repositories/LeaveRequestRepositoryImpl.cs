@@ -31,16 +31,15 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
             .Where(o => o.EmpId == empId);
 
             if (startDate.HasValue)
-                query = query.Where(o => o.ReqDate >= startDate.Value);
+                query = query.Where(o => o.ReqDate >= startDate);
 
             if (endDate.HasValue)
-                query = query.Where(o => o.ReqDate <= endDate.Value);
+                query = query.Where(o => o.ReqDate <= endDate);
 
             var list = await query
                 .OrderByDescending(o => o.ReqDate)
                 .ToListAsync();
 
-            Console.WriteLine($"count {list.Count}");
             return list;
         }
 

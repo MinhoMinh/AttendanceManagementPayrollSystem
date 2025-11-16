@@ -12,7 +12,6 @@
 
 <PageTitle>Lịch tổng hợp</PageTitle>
 
-<Card>
 <style>
     .header-card {
         background: linear-gradient(135deg, #FFE4A1 0%, #FFF5DC 100%);
@@ -151,7 +150,7 @@
             <CardBody>
                 <!-- Optional info above calendar -->
                 <div class="employee-info">
-                    <strong>Employee:</strong> @Employee?.EmpName
+                    <strong>Nhân viên:</strong> @Employee?.EmpName
                 </div>
 
                 <CalendarContainer DisplayedView="SelectedView" FirstDate="@SelectedDate" TasksList="@ShownTasks.ToArray()">
@@ -193,6 +192,18 @@
 
                             </div>
                         }
+
+                        @if (DayOvertimes != null && DayOvertimes.Any())
+                        {
+                            <div class="d-flex flex-column gap-2">
+                                @foreach (var comp in DayOvertimes)
+                                {
+                                    <OvertimeRequestView Component="@comp" />
+                                }
+
+                            </div>
+                        }
+                        
                     </div>
                 }
                 else
@@ -206,11 +217,6 @@
 </div>
 
 <ClockinReportModal @ref="reportModal" />
-
-  
-
-
-
 
 @code {
     private DisplayedView _selectedView = DisplayedView.Annual;
@@ -260,8 +266,12 @@
     private EmployeeDTO? Employee;
     private ClockinDTO? MonthlyClockin;
     private List<HolidayCalendarDTO>? MonthlyHolidays = new();
+    private List<OvertimeRequestDTO>? MonthlyOvertimes = new();
+
     private List<ClockinDTO>? AnnualClockins = new();
     private List<HolidayCalendarDTO>? AnnualHolidays = new();
+    private List<OvertimeRequestDTO>? AnnualOvertimes = new();
+
     //private Dictionary<DateTime, DailyDetailDTO> DayData = new();
     //private Dictionary<DateTime, ClockinComponentDto> ComponentData = new();
 
@@ -332,7 +342,11 @@
     {
         if (newValue == DisplayedView.Annual)
         {
-            SetAnnualData(); // refresh tasks using current AnnualViewType
+            SetAnnualData();
+        }
+        else if (newValue == DisplayedView.Monthly)
+        {
+            SetMonthlyData();
         }
     }
 
@@ -347,7 +361,7 @@
 
         var client = HttpFactory.CreateClient("ApiClient");
 
-        // 1) Clockins
+        //Clockins
         var response = await client.GetFromJsonAsync<ClockinDTO>($"api/clockin/employee?empId={Employee.EmpId}&month={SelectedDate.Month}&year={SelectedDate.Year}");
         if (response == null)
         {
@@ -357,16 +371,25 @@
 
         MonthlyClockin = response;
 
-        ShownTasks.Clear();
-        int id = 1;
 
+        //holiday
         var monthStart = new DateTime(SelectedDate.Year, SelectedDate.Month, 1);
         var monthEnd = monthStart.AddMonths(1).AddDays(-1);
 
         var holidays = await client.GetFromJsonAsync<IEnumerable<HolidayCalendarDTO>>(
             $"/api/holidaycalendar/employee/{Employee.EmpId}/range?start={monthStart:O}&end={monthEnd:O}");
 
-        MonthlyHolidays = holidays?.ToList() ?? new List<HolidayCalendarDTO>();
+        MonthlyHolidays = holidays?.ToList() ?? new();
+
+        //overtime
+        string startStr = monthStart.ToString("yyyy-MM-dd");
+        string endStr = monthEnd.ToString("yyyy-MM-dd");
+
+        var overtimes = await client.GetFromJsonAsync<IEnumerable<OvertimeRequestDTO>>(
+            $"/api/overtime/history?empId={Employee.EmpId}&startDate={startStr}&endDate={endStr}");
+
+        MonthlyOvertimes = overtimes?.ToList() ?? new();
+
 
         SetMonthlyData();
     }
@@ -381,7 +404,7 @@
 
         var client = HttpFactory.CreateClient("ApiClient");
 
-        // 1. Get clockins
+        // clockins
         var response = await client.GetFromJsonAsync<IEnumerable<ClockinDTO>>($"/api/clockin/employee/period?employeeId={Employee.EmpId}&startDate={SelectedDate}&months={MonthsToDisplay}");
 
         if (response == null)
@@ -391,7 +414,7 @@
         }
         AnnualClockins = response.ToList();
 
-        // 2. Get holidays
+        // holidays
         var endDate = SelectedDate.AddMonths(MonthsToDisplay);
         var response2 = await client.GetFromJsonAsync<IEnumerable<HolidayCalendarDTO>>(
             $"/api/holidaycalendar/employee/{Employee.EmpId}/range?start={SelectedDate:O}&end={endDate:O}");
@@ -402,6 +425,16 @@
             return;
         }
         AnnualHolidays = response2.ToList();
+
+        //overtimes 
+        var monthStart = new DateTime(SelectedDate.Year, SelectedDate.Month, 1);
+        string startStr = monthStart.ToString("yyyy-MM-dd");
+        string endStr = endDate.ToString("yyyy-MM-dd");
+
+        var overtimes = await client.GetFromJsonAsync<IEnumerable<OvertimeRequestDTO>>(
+            $"/api/overtime/history?empId={Employee.EmpId}&startDate={startStr}&endDate={endStr}");
+
+        AnnualOvertimes = overtimes?.ToList() ?? new();
 
         SetAnnualData();
     }
@@ -439,7 +472,19 @@
                 break;
 
             case "GioVuot":
-
+                if (AnnualOvertimes != null)
+                    foreach (var overtime in AnnualOvertimes)
+                    {
+                        ShownTasks.Add(new Tasks
+                            {
+                                ID = id++,
+                                DateStart = overtime.ReqDate.ToDateTime(overtime.StartTime ?? TimeOnly.MinValue),
+                                DateEnd = overtime.ReqDate.ToDateTime(overtime.EndTime ?? TimeOnly.MinValue),
+                                Code = $"Giờ vượt",
+                                Caption = "Lorem ipsum dolor sit amet",
+                                Color = "lightgreen"
+                            });
+                    }
                 break;
 
             case "NgayNghi":
@@ -470,8 +515,72 @@
         await InvokeAsync(StateHasChanged);
     }
 
+    private async Task SetMonthlyData()
+    {
+        if (MonthlyClockin == null) return;
+
+        ShownTasks.Clear();
+        int id = 1;
+
+        // Công (work hours)
+        if (ShowCongMonthly)
+        {
+            foreach (var r in MonthlyClockin.DailyRecords.Where(r => r.ScheduledHour != null))
+            {
+                bool isFull = (r.ActualHour ?? 0m) >= (r.ScheduledHour ?? 0m);
+                ShownTasks.Add(new Tasks
+                    {
+                        ID = id++,
+                        DateStart = new DateTime(MonthlyClockin.Date.Year, MonthlyClockin.Date.Month, r.Day),
+                        DateEnd = new DateTime(MonthlyClockin.Date.Year, MonthlyClockin.Date.Month, r.Day),
+                        Code = $"Giờ làm: {(r.ActualHour ?? 0m):F2}/{(r.ScheduledHour ?? 0m):F2}",
+                        Caption = "",
+                        Color = isFull ? "#90EE90" : "#FFB6C1"
+                    });
+            }
+        }
+
+        // ngay le
+        if (ShowNgayLeMonthly && MonthlyHolidays != null)
+            foreach (var holiday in MonthlyHolidays)
+            {
+                if (holiday.DepartmentHolidays.Count == 0) continue;
+
+                var depholiday = holiday.DepartmentHolidays[0];
+                ShownTasks.Add(new Tasks
+                    {
+                        ID = id++,
+                        DateStart = new DateTime(depholiday.StartDate.Year, depholiday.StartDate.Month, depholiday.StartDate.Day),
+                        DateEnd = new DateTime(depholiday.EndDate.Year, depholiday.EndDate.Month, depholiday.EndDate.Day),
+                        Code = $"Nghỉ lễ: {depholiday.HolidayName}",
+                        Caption = "Lorem ipsum dolor sit amet",
+                        Color = "lightblue"
+                    });
+            }
+
+        //overtime
+        if (ShowGioVuotMonthly && MonthlyOvertimes != null)
+            foreach (var overtime in MonthlyOvertimes)
+            {
+                ShownTasks.Add(new Tasks
+                    {
+                        ID = id++,
+                        DateStart = overtime.ReqDate.ToDateTime(overtime.StartTime ?? TimeOnly.MinValue),
+                        DateEnd = overtime.ReqDate.ToDateTime(overtime.EndTime ?? TimeOnly.MinValue),
+                        Code = $"Giờ vượt",
+                        Caption = "Lorem ipsum dolor sit amet",
+                        Color = "lightgreen"
+                    });
+            }
+
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+
     private List<ClockinComponentDto> DayClockins = new();
     private List<DepartmentHolidayCalendarDTO> DayHolidays = new();
+    private List<OvertimeRequestDTO> DayOvertimes = new();
 
     private async Task ViewDay(ClickTaskParameter taskParams)
     {
@@ -479,6 +588,7 @@
 
         DayClockins.Clear();
         DayHolidays.Clear();
+        DayOvertimes.Clear();
 
         if (SelectedView == DisplayedView.Monthly)
         {
@@ -505,18 +615,27 @@
         }
 
         if (ShowCongMonthly)
-        DayClockins = MonthlyClockin.Components
-            .Where(c => c.Date.HasValue && c.Date.Value.Date == SelectedDay.Value.Date)
-            .Take(3)
-            .ToList();
+            DayClockins = MonthlyClockin.Components
+                .Where(c => c.Date.HasValue && c.Date.Value.Date == SelectedDay.Value.Date)
+                .Take(3)
+                .ToList();
 
         if (ShowNgayLeMonthly && MonthlyHolidays != null)
-        DayHolidays = MonthlyHolidays
-            .SelectMany(h => h.DepartmentHolidays)
-            .Where(dh => dh.StartDate.Date <= SelectedDay.Value.Date &&
-                            dh.EndDate.Date >= SelectedDay.Value.Date)
-            .ToList();
-        
+            DayHolidays = MonthlyHolidays
+                .SelectMany(h => h.DepartmentHolidays)
+                .Where(dh => dh.StartDate.Date <= SelectedDay.Value.Date &&
+                                dh.EndDate.Date >= SelectedDay.Value.Date)
+                .ToList();
+
+        if (ShowGioVuotMonthly && MonthlyOvertimes != null)
+        {
+            var selectedday = DateOnly.FromDateTime(SelectedDay.Value);
+
+            DayOvertimes = MonthlyOvertimes
+                .Where(o => o.ReqDate == selectedday)
+                .ToList();
+        }
+
     }
 
     private void LoadDayAnnual()
@@ -524,10 +643,8 @@
         if (SelectedDay == null) return;
 
         // Cong + GioVuot: use clockins
-        if (AnnualViewType == "Cong" || AnnualViewType == "GioVuot")
+        if (AnnualViewType == "Cong" && AnnualClockins != null)
         {
-            if (AnnualClockins == null) return;
-
             DayClockins = AnnualClockins
                 .SelectMany(c => c.Components)
                 .Where(c => c.Date.HasValue && c.Date.Value.Date == SelectedDay.Value.Date)
@@ -542,6 +659,15 @@
                 .SelectMany(h => h.DepartmentHolidays)
                 .Where(dh => dh.StartDate.Date <= SelectedDay.Value.Date &&
                              dh.EndDate.Date >= SelectedDay.Value.Date)
+                .ToList();
+        }
+
+        if (AnnualViewType == "GioVuot" && AnnualOvertimes != null)
+        {
+            var selectedday = DateOnly.FromDateTime(SelectedDay.Value);
+
+            DayOvertimes = AnnualOvertimes
+                .Where(o => o.ReqDate == selectedday)
                 .ToList();
         }
     }
@@ -590,54 +716,7 @@
         }
     }
 
-    private void SetMonthlyData()
-    {
-        if (MonthlyClockin == null) return;
-
-        ShownTasks.Clear();
-        int id = 1;
-
-        // Công (work hours)
-        if (ShowCongMonthly)
-        {
-            foreach (var r in MonthlyClockin.DailyRecords.Where(r => r.ScheduledHour != null))
-            {
-                bool isFull = (r.ActualHour ?? 0m) >= (r.ScheduledHour ?? 0m);
-                ShownTasks.Add(new Tasks
-                    {
-                        ID = id++,
-                        DateStart = new DateTime(MonthlyClockin.Date.Year, MonthlyClockin.Date.Month, r.Day),
-                        DateEnd = new DateTime(MonthlyClockin.Date.Year, MonthlyClockin.Date.Month, r.Day),
-                        Code = $"Giờ làm: {(r.ActualHour ?? 0m):F2}/{(r.ScheduledHour ?? 0m):F2}",
-                        Caption = "",
-                        Color = isFull ? "#90EE90" : "#FFB6C1"
-                    });
-            }
-        }
-
-        if (ShowNgayLeMonthly && MonthlyHolidays != null)
-            foreach (var holiday in MonthlyHolidays)
-            {
-                if (holiday.DepartmentHolidays.Count == 0) continue;
-
-                var depholiday = holiday.DepartmentHolidays[0];
-                ShownTasks.Add(new Tasks
-                    {
-                        ID = id++,
-                        DateStart = new DateTime(depholiday.StartDate.Year, depholiday.StartDate.Month, depholiday.StartDate.Day),
-                        DateEnd = new DateTime(depholiday.EndDate.Year, depholiday.EndDate.Month, depholiday.EndDate.Day),
-                        Code = $"Nghỉ lễ: {depholiday.HolidayName}",
-                        Caption = "Lorem ipsum dolor sit amet",
-                        Color = "lightblue"
-                    });
-            }
-
-        // Giờ vượt, Ngày nghỉ, Ngày lễ:
-        // add your own projections here based on your DTOs when available
-        // if (ShowGioVuotMonthly) { ... }
-        // if (ShowNgayNghiMonthly) { ... }
-    }
-
+    
     private ClockinReportModal? reportModal;
 
     private async Task OpenReportModal(ClockinComponentDto comp)

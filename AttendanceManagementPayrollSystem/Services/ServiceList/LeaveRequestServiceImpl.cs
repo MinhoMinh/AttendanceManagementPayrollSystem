@@ -23,7 +23,6 @@ namespace AttendanceManagementPayrollSystem.Services.ServiceList
 
             var entity = new LeaveRequest
             {
-
                 EmpId = 3,
                 StartDate = dto.StartDate,
                 EndDate = dto.EndDate,
@@ -64,6 +63,7 @@ namespace AttendanceManagementPayrollSystem.Services.ServiceList
             {
                 ReqId = lr.ReqId,
                 EmpId = lr.EmpId,
+                ReqDate = lr.ReqDate,
                 StartDate = lr.StartDate,
                 EndDate = lr.EndDate,
                 NumbersOfDays = lr.NumbersOfDays,

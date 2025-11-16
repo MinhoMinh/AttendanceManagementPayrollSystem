@@ -150,13 +150,11 @@
             new() { Text = "Quản lý tài khoản nhân viên", ImageSrc = "https://cdn-icons-png.flaticon.com/512/1828/1828926.png", OnClick = EventCallback.Factory.Create(this, NavigateAccountManagement), Visible = HasPermission("employee_account_management") },
             new() { Text = "Khai báo người phụ thuộc", ImageSrc = "https://cdn-icons-png.flaticon.com/512/1828/1828926.png", OnClick = EventCallback.Factory.Create(this, NavigateDependentManagement), Visible = HasPermission("declare_dependent") },
             new() { Text = "Quản lý thưởng", ImageSrc = "https://cdn-icons-png.flaticon.com/512/1828/1828926.png", OnClick = EventCallback.Factory.Create(this, NavigateBonus), Visible = HasPermission("manage_bonus") },
+            new() { Text = "Xem thông kê chấm công", ImageSrc="https://cdn-icons-png.flaticon.com/512/3062/3062634.png", OnClick = EventCallback.Factory.Create(this, NavigateAllClockin), Visible = HasPermission("all_clockin") },
 
         //
         };
-        ManagerService = new()
-        {
-            new() { Text = "Xem thông kê chấm công", ImageSrc="https://cdn-icons-png.flaticon.com/512/3062/3062634.png", OnClick = EventCallback.Factory.Create(this, NavigateAllClockin), Visible = HasPermission("all_clockin") },
-        };
+
     }
 
     private bool HasPermission(string task)

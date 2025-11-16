@@ -1118,14 +1118,14 @@
         updatingEmployeeId = employee.EmpId;
         try
         {
-            var http = HttpFactory.CreateClient();
             var dto = new EmployeeStatusUpdateDTO
             {
                 EmpId = employee.EmpId,
                 IsActive = !employee.IsActive
             };
 
-            var response = await http.PutAsJsonAsync("https://localhost:7088/api/employee/status", dto);
+            var client = HttpFactory.CreateClient("ApiClient");
+            var response = await client.PutAsJsonAsync("api/employee/status", dto);
 
             if (response.IsSuccessStatusCode)
             {

@@ -831,9 +831,10 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var http = HttpFactory.CreateClient();
-        departments = await http.GetFromJsonAsync<List<EmployeeGroupByDepartmentDTO>>(
-            "https://localhost:7088/api/employee/getgroupbydepforview");
+        var client = HttpFactory.CreateClient("ApiClient");
+        departments = await client.GetFromJsonAsync<List<EmployeeGroupByDepartmentDTO>>(
+            "api/employee/getgroupbydepforview");
+
     }
 
 

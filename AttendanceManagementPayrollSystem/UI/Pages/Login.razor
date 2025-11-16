@@ -312,8 +312,9 @@
             isSubmitting = true;
             ErrorMessage = null;
 
-            var client = HttpFactory.CreateClient();
-            var response = await client.PostAsJsonAsync("http://localhost:5038/api/auth/login", loginRequest);
+            var client = HttpFactory.CreateClient("ApiClient");
+            var response = await client.PostAsJsonAsync("api/auth/login", loginRequest);
+
 
             if (!response.IsSuccessStatusCode)
             {
