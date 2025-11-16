@@ -154,5 +154,15 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
             this._context.EmployeeRoles.Add(er);
             await this._context.SaveChangesAsync();
         }
+
+        public async Task<EmployeeWithDepIdDTO?> GetByIdForDepAsync(int id)
+        {
+            return await this._context.Employees.Where(e => e.EmpId == id).Select(e => new EmployeeWithDepIdDTO
+            {
+                EmpName = e.EmpName,
+                DepId = e.DepId,
+                EmpId = e.EmpId
+            }).FirstOrDefaultAsync();
+        }
     }
 }
