@@ -19,13 +19,16 @@ namespace AttendanceManagementPayrollSystem.Services.ServiceList
         private readonly InsuranceRateRepository _insuranceRepo;
 
         private readonly ShiftService _shiftService;
+        private readonly BonusService _bonusService;
 
         public PayRunServiceImpl(ShiftService shiftService, SalaryPolicyRepository salaryPolicyRepo, ClockinRepository clockinRepo,
             PayRunRepository payrollRepo, EmployeeRepository empRepo, HolidayCalendarRepository holidayRepo, 
-            IOvertimeRepository overtimeRepo, TaxRepository taxRepo, InsuranceRateRepository insuranceRepo)
+            IOvertimeRepository overtimeRepo, TaxRepository taxRepo, InsuranceRateRepository insuranceRepo,
+            BonusService bonusService)
         {
             _salaryPolicyRepo = salaryPolicyRepo;
             _shiftService = shiftService;
+            _bonusService = bonusService;
             _clockinRepo = clockinRepo;
             _overtimeRepo = overtimeRepo;
             _payRunRepo = payrollRepo;
@@ -63,6 +66,8 @@ namespace AttendanceManagementPayrollSystem.Services.ServiceList
         {
             var createdByName = await _employeeRepo.GetByIdAsync(createdBy);
 
+            var context = await GetPayRunContext(month, year);
+
             PayRunDto payRunDto = new PayRunDto
             {
                 Name = name,
@@ -72,10 +77,14 @@ namespace AttendanceManagementPayrollSystem.Services.ServiceList
                 CreatedBy = createdBy,
                 CreatedByName = createdByName == null ? "" : createdByName.EmpName,
                 Status = "Pending",
-                Type = "Monthly"
+                Type = "Monthly",
+                TaxId = context.Tax.TaxId,
+                SocialInsuranceId = context.SocialInsurance.RateSetId,
+                HealthInsuranceId = context.HealthInsurance.RateSetId,
+                UnemployeeInsuranceId = context.UnemployeeInsurance.RateSetId,
+                SalaryPolicyId = context.SalaryPolicy.SalId
             };
 
-            var context = await GetPayRunContext(month, year);
 
             var periodStart = context.PeriodStart;
             var periodEnd = context.PeriodEnd;
@@ -88,8 +97,11 @@ namespace AttendanceManagementPayrollSystem.Services.ServiceList
 
             var shiftDictionary = await _shiftService.GetWeeklyShiftDtos(employees.Select(e => e.EmpId));
 
-            //var holidays = await _holidayRepo.GetByRangeAsync(periodStart, periodEnd);
+            var bonus = await _bonusService.GetBonusByTime(DateOnly.FromDateTime(periodStart), DateOnly.FromDateTime(periodEnd));
+
+
             var holidays = context.Holidays;
+
 
             foreach (var employee in employees)
             {
@@ -99,16 +111,11 @@ namespace AttendanceManagementPayrollSystem.Services.ServiceList
 
                 overtimeDict.TryGetValue(employee.EmpId, out var overtimes);
 
-                // filter holidays by employee’s department (done in calculator)
-                //var empHolidays = holidays
-                //    .SelectMany(h => h.DepartmentHolidays)
-                //    .Where(dhc => dhc.DepId == employee.DepId)
-                //    .ToList();
+                var empBonus = bonus
+                    .Where(b => b.EmpBonus.Any(e => e.EmpId == employee.EmpId))
+                    .ToList();
 
-                //var context = new PayRunContext(salaryPolicy, tax, socialInsurance, healthInsurance, unemployeeInsurance,
-                //    empHolidays, periodStart, periodEnd);
-
-                var payItem = PayRunCalculator.CalculatePay(context, employee, shift, overtimes);
+                var payItem = PayRunCalculator.CalculatePay(context, employee, shift, overtimes, empBonus);
                 payRunDto.PayRunItems.Add(payItem);
             }
 
@@ -142,7 +149,13 @@ namespace AttendanceManagementPayrollSystem.Services.ServiceList
             return await _payRunRepo.GetPayRunByEmpIdAndDateAsync(empId, periodMonth, periodYear);
 
         }
-        
+
+        public async Task<List<PayRunPreviewDTO>?> GetPayRunsForEmployeeAsync(
+        int empId, DateTime start, DateTime end)
+        {
+            return await _payRunRepo.GetPayRunsForEmployeeAsync(empId, start, end);
+        }
+
 
         private PayRunBasicDto ToBasicDTO(PayRun run)
         {
@@ -177,6 +190,11 @@ namespace AttendanceManagementPayrollSystem.Services.ServiceList
                 RejectedBy = dto.RejectedBy,
                 RejectedAt = dto.RejectedAt,
                 Type = dto.Type,
+                TaxId = dto.TaxId,
+                SocialInsuranceId = dto.SocialInsuranceId,
+                HealthInsuranceId = dto.HealthInsuranceId,
+                UnemployeeInsuranceId = dto.UnemployeeInsuranceId,
+                SalaryPolicyId = dto.SalaryPolicyId,
                 PayRunItems = dto.PayRunItems?.Select(i => new PayRunItem
                 {
                     PayRunItemId = i.ItemId,

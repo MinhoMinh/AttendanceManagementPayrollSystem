@@ -50,15 +50,15 @@ namespace AttendanceManagementPayrollSystem.Services.ServiceList
         private bool VerifyPassword(string password, string storedHash)
         {
             // Nếu sau này bạn hash password bằng SHA256, chỉ cần mở lại đoạn này
-            //using (SHA256 sha256 = SHA256.Create())
-            //{
-            //    var bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
-            //    var hash = BitConverter.ToString(bytes).Replace("-", "").ToLower();
-            //    return hash == storedHash;
-            //}
+            using (SHA256 sha256 = SHA256.Create())
+            {
+                var bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
+                var hash = BitConverter.ToString(bytes).Replace("-", "").ToLower();
+                return hash == storedHash;
+            }
 
             // Nếu bạn chưa hash, tạm dùng:
-            return password == storedHash;
+            //return password == storedHash;
         }
     }
 }

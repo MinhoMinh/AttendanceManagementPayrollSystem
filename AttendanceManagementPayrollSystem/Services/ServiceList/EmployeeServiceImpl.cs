@@ -1,6 +1,8 @@
 ﻿using AttendanceManagementPayrollSystem.DataAccess.Repositories;
 using AttendanceManagementPayrollSystem.DTO;
 using AttendanceManagementPayrollSystem.Models;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace AttendanceManagementPayrollSystem.Services.ServiceList
 {
@@ -27,7 +29,7 @@ namespace AttendanceManagementPayrollSystem.Services.ServiceList
                 EmpPhoneNumber = dto.EmpPhoneNumber,
                 DepId = dto.DepId,
                 Username = dto.Username,
-                PasswordHash = dto.Password,
+                PasswordHash = Hash(dto.Password),
                 IsActive = true
             };
 
@@ -54,6 +56,16 @@ namespace AttendanceManagementPayrollSystem.Services.ServiceList
             };
 
             await this.employeeRepository.AddRoleForNewEmployee(role);
+        }
+
+        private string Hash(string password)
+        {
+            using (SHA256 sha256 = SHA256.Create())
+            {
+                var bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
+                var hash = BitConverter.ToString(bytes).Replace("-", "").ToLower();
+                return hash;
+            }
         }
 
         public async Task<List<EmployeeBasicDTO>> GetAllEmployeeBasic()

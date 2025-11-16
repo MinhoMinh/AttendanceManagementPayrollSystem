@@ -49,7 +49,6 @@ namespace AttendanceManagementPayrollSystem.Controllers
         [HttpPost("save")]
         public async Task<IActionResult> SaveRegularPayRun([FromBody] PayRunDto payRunDto)
         {
-            Console.Write("hell?");
             if (payRunDto == null)
                 return BadRequest("Invalid pay run data.");
             try
@@ -61,7 +60,7 @@ namespace AttendanceManagementPayrollSystem.Controllers
             catch (Exception ex)
             {
                 Console.WriteLine($"Exception: {ex.Message}");
-                return StatusCode(500, ex.Message);
+                return StatusCode(500, $"hello: {ex.Message}" );
             }
         }
 
@@ -141,6 +140,19 @@ namespace AttendanceManagementPayrollSystem.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
+
+        [HttpGet("getpayrun/{empId:int}")]
+        public async Task<ActionResult<List<PayRunPreviewDTO>>> GetPayRun(
+        int empId, [FromQuery] DateTime start, [FromQuery] DateTime end)
+        {
+            if (start > end)
+                return BadRequest("Start date must be before end date.");
+
+            var result = await _service.GetPayRunsForEmployeeAsync(empId, start, end);
+
+            return result == null ? NotFound() : Ok(result);
+        }
+
 
         [HttpGet("getpayrun/{empId}/{periodMonth}/{periodYear}")]
         public async Task<ActionResult<List<PayRun>>> GetPayRunByEmpIdAndDate(int empId, int periodMonth, int periodYear)

@@ -44,11 +44,15 @@ else
                 <tbody>
                     @foreach (var c in Item.Components)
                     {
+                        var displayAmount = c.ComponentType == "Earning"
+                        ? c.Amount
+                        : -Math.Abs(c.Amount);
+
                         <tr>
                             <td>@c.ComponentType</td>
                             <td>@c.ComponentCode</td>
                             <td>@c.Description</td>
-                            <td>@c.Amount.ToString("C0", viVn)</td>
+                            <td>@displayAmount.ToString("C0", viVn)</td>
                         </tr>
                     }
                 </tbody>

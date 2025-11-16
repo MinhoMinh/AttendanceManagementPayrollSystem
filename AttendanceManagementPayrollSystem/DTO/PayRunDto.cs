@@ -20,6 +20,11 @@
         public string? RejectedByName { get; set; }
         public DateTime? RejectedAt { get; set; }
         public string Type { get; set; }
+        public int? TaxId { get; set; }
+        public int? SocialInsuranceId { get; set; }
+        public int? HealthInsuranceId { get; set; }
+        public int? UnemployeeInsuranceId { get; set; }
+        public int? SalaryPolicyId { get; set; }
 
         public List<PayRunItemDto> PayRunItems { get; set; } = new();
     }

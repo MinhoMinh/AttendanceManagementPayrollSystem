@@ -79,6 +79,12 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
                 ApprovedFinalAt = entity.ApprovedFinalAt,
                 RejectedByName = GetName(entity.RejectedBy),
                 RejectedAt = entity.RejectedAt,
+                TaxId = entity.TaxId,
+                SocialInsuranceId = entity.SocialInsuranceId,
+                HealthInsuranceId = entity.HealthInsuranceId,
+                UnemployeeInsuranceId = entity.UnemployeeInsuranceId,
+                SalaryPolicyId = entity.SalaryPolicyId,
+
                 PayRunItems = entity.PayRunItems.Select(i => new PayRunItemDto
                 {
                     ItemId = i.PayRunItemId,
@@ -158,6 +164,8 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
                     PeriodYear = p.PeriodYear,
                     CreatedDate = p.CreatedDate,
                     Type = p.Type,
+
+
                     PayRunItems = p.PayRunItems
                         .Where(i => i.EmpId == empId)
                         .Select(i => new PayRunItemDto
@@ -187,6 +195,53 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
 
             return items;
 
+        }
+
+        public async Task<List<PayRunPreviewDTO>?> GetPayRunsForEmployeeAsync(
+        int empId, DateTime start, DateTime end)
+        {
+            return await _context.PayRuns
+                .Where(pr => pr.CreatedDate >= start &&
+                             pr.CreatedDate <= end &&
+                             pr.Status.Equals("FinalApproved") &&
+                             pr.PayRunItems.Any(i => i.EmpId == empId))
+                .Select(pr => new PayRunPreviewDTO
+                {
+                    PayrollRunId = pr.PayrollRunId,
+                    Name = pr.Name,
+                    PeriodMonth = pr.PeriodMonth,
+                    PeriodYear = pr.PeriodYear,
+                    CreatedDate = pr.CreatedDate,
+                    Type = pr.Type,
+
+                    PayRunItems = pr.PayRunItems
+                        .Where(i => i.EmpId == empId)
+                        .Select(i => new PayRunItemDto
+                        {
+                            ItemId = i.PayRunItemId,
+                            EmpId = i.EmpId,
+                            EmpName = "", //i.Emp?.EmpName
+                            GrossPay = i.GrossPay,
+                            Deductions = i.Deductions,
+                            NetPay = i.NetPay,
+                            Notes = i.Notes,
+
+                            Components = i.PayRunComponents
+                                .Select(c => new PayRunComponentDto
+                                {
+                                    ComponentId = c.PayRunComponentId,
+                                    ComponentType = c.ComponentType,
+                                    ComponentCode = c.ComponentCode,
+                                    Description = c.Description,
+                                    Amount = c.Amount,
+                                    Taxable = c.Taxable,
+                                    Insurable = c.Insurable,
+                                    CreatedAt = c.CreatedAt
+                                }).ToList()
+                        }).ToList()
+                })
+                .OrderByDescending(x => x.CreatedDate)
+                .ToListAsync();
         }
     }
 }

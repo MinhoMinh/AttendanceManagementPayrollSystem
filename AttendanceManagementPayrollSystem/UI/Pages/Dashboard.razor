@@ -142,7 +142,7 @@
         CompanyService = new()
         {
             new() { Text = "Cập nhật chấm công", ImageSrc = "https://cdn-icons-png.flaticon.com/512/1828/1828926.png", OnClick = EventCallback.Factory.Create(this, NavigateUploadClockins), Visible = HasPermission("upload_clockin") },
-            new() { Text = "Bảng lương cong ty", ImageSrc = "https://cdn-icons-png.flaticon.com/512/3135/3135695.png", OnClick = EventCallback.Factory.Create(this, NavigatePayRun), Visible = HasPermission("view_payroll_run") },
+            new() { Text = "Bảng lương công ty", ImageSrc = "https://cdn-icons-png.flaticon.com/512/3135/3135695.png", OnClick = EventCallback.Factory.Create(this, NavigatePayRun), Visible = HasPermission("view_payroll_run") },
             new() { Text = "Thiết lập ngày lễ", ImageSrc = "https://cdn-icons-png.flaticon.com/512/616/616408.png", OnClick = EventCallback.Factory.Create(this, NavigateHolidaySetup), Visible = HasPermission("edit_holiday_calendar") },
             new() { Text = "Chính sách lương", ImageSrc = "https://cdn-icons-png.flaticon.com/512/709/709496.png", OnClick = EventCallback.Factory.Create(this, NavigateSalaryPolicy), Visible = HasPermission("edit_salary_policy") },
             new() { Text = "Chính sách bảo hiểm/thuế", ImageSrc = "https://cdn-icons-png.flaticon.com/512/942/942799.png", OnClick = EventCallback.Factory.Create(this, NavigateInsuranceTaxPolicy), Visible = HasPermission("edit_tax_insurance") },
@@ -171,14 +171,19 @@
     private void NavigateSelfOvertime() => Navigation.NavigateTo("/overtime/self");
     private void NavigateSelfLeave() => Navigation.NavigateTo("/leave/self");
     private void NavigateBonus() => Navigation.NavigateTo("/bonus-manager");
+    // private void NavigateSelfPayItem()
+    // {
+    //     if (Employee == null) return;
+    //     int empId = Employee.EmpId;
+    //     int month = DateTime.Now.AddYears(-1).Month;
+    //     int year = DateTime.Now.AddYears(-1).Year;
+
+    //     Navigation.NavigateTo($"/payrun/{empId}/{month}/{year}");
+    // }
+
     private void NavigateSelfPayItem()
     {
-        if (Employee == null) return;
-        int empId = Employee.EmpId;
-        int month = DateTime.Now.AddYears(-1).Month;
-        int year = DateTime.Now.AddYears(-1).Year;
-
-        Navigation.NavigateTo($"/payrun/{empId}/{month}/{year}");
+        Navigation.NavigateTo($"/payrun/self");
     }
 
     private void NavigateDepKpi() => Navigation.NavigateTo("/kpi/head");

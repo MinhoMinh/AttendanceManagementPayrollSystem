@@ -1,7 +1,10 @@
 ﻿@using AttendanceManagementPayrollSystem.DTO
 @using Blazorise
+@using System.Globalization
 
 @code {
+    private static readonly CultureInfo viVn = new("vi-VN");
+
     [Parameter] public Dictionary<string, List<PayRunItemDto>>? Groups { get; set; }
     [Parameter] public EventCallback<PayRunItemDto> OnItemSelected { get; set; }
 
@@ -41,9 +44,9 @@ else
                         {
                             <tr style="cursor:pointer" @onclick="@(() => SelectItem(item))">
                                 <td>@item.EmpName</td>
-                                <td>@item.GrossPay.ToString("C")</td>
-                                <td>@item.Deductions.ToString("C")</td>
-                                <td>@item.NetPay.ToString("C")</td>
+                                <td>@item.GrossPay.ToString("C0", viVn)</td>
+                                <td>@item.Deductions.ToString("C0", viVn)</td>
+                                <td>@item.NetPay.ToString("C0", viVn)</td>
                                 <td>@item.Notes</td>
                             </tr>
                         }

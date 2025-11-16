@@ -3,6 +3,7 @@
 @using AttendanceManagementPayrollSystem.DTO
 @using AttendanceManagementPayrollSystem.Services.Helper
 @using AttendanceManagementPayrollSystem.UI.Components
+@inject NavigationManager Navigation
 @inject IHttpClientFactory HttpFactory
 @inject IJSRuntime JS
 
@@ -11,7 +12,7 @@
 
         <div class="d-flex align-items-center gap-2 mb-3">
             <MonthYearPicker @bind-SelectedMonth="periodMonth" @bind-SelectedYear="periodYear" />
-            <button class="btn btn-primary" @onclick="Preview">Preview</button>
+            <button class="btn btn-primary" @onclick="Preview">Xem quy tắc</button>
         </div>
 
         @if (context != null)
@@ -144,6 +145,11 @@
     <div class="col-9">
         @if (payRun != null)
         {
+            <div class="mt-2 d-flex gap-2">
+                <button class="btn btn-primary" @onclick="Save">Lưu</button>
+                <button class="btn btn-secondary" @onclick="Cancel">Hủy</button>
+            </div>
+
             <div class="row">
                 <div class="col-12">
                     <PayRunDetails PayRun="@payRun" />
@@ -252,7 +258,6 @@
 
             payRun = await genResp.Content.ReadFromJsonAsync<PayRunDto>();
             
-            
             groups =
                 employeesByDep.ToDictionary(
                     kv => kv.Key,
@@ -278,10 +283,6 @@
             foreach (var key in emptyKeys)
                 groups.Remove(key);
 
-            foreach (var kvp in groups)
-                NotificationService.Success($"key:{kvp.Key} value count {kvp.Value.Count}");
-
-
             NotificationService.Success("Tạo thành công!");
             confirmButtonText = "Đã xác nhận";
 
@@ -305,4 +306,39 @@
 
     private bool ContextValid =>
     HasSalary && HasTax && HasSocial && HasHealth && HasUnemployee;
+
+    private async Task Save()
+    {
+        if (payRun == null) return;
+
+        try
+        {
+            var client = HttpFactory.CreateClient("ApiClient");
+            var resp = await client.PostAsJsonAsync("api/pay-run/save", payRun);
+
+            if (resp.IsSuccessStatusCode)
+            {
+                NotificationService.Success("Lưu thành công. Chuyển hướng trang trong 3 giây");
+                await Task.Delay(3000);
+                Navigation.NavigateTo("/payruns");
+            }
+            else
+            {
+                var err = await resp.Content.ReadAsStringAsync();
+                NotificationService.Warning(err, "Lỗi");
+            }
+        }
+        catch (Exception ex)
+        {
+            NotificationService.Warning(ex.Message, "Lỗi");
+        }
+    }
+
+    private void Cancel()
+    {
+        payRun = null;
+        groups = null;
+        selectedItem = null;
+    }
+
 }

@@ -1,9 +1,24 @@
-﻿@page "/payrun/{empId:int}/{month:int}/{year:int}"
+﻿@page "/payrun/self"
+
+@inject IJSRuntime JS
 @inject IHttpClientFactory HttpFactory
+@using System.Text.Json
 @using System.Net.Http.Json
 @using AttendanceManagementPayrollSystem.DTO
+@using AttendanceManagementPayrollSystem.UI.Components
 
-<h3>Chi tiết bảng lương</h3>
+<h3>Lịch sử bảng lương</h3>
+
+<div class="row mb-3">
+    <div class="col-md-3">
+        <label>Ngày bắt đầu</label>
+        <input type="date" class="form-control" @bind="startDate" @bind:after="()=> OnDateChanged()" />
+    </div>
+    <div class="col-md-3">
+        <label>Ngày kết thúc</label>
+        <input type="date" class="form-control" @bind="endDate" @bind:after="()=> OnDateChanged()" />
+    </div>
+</div>
 
 @if (isLoading)
 {
@@ -11,134 +26,110 @@
 }
 else if (payRuns == null || !payRuns.Any())
 {
-    <p>Không tìm thấy dữ liệu.</p>
+    <p>Không có dữ liệu.</p>
 }
 else
 {
     <div class="row">
-        <!-- Bên trái: Bảng danh sách bảng lương -->
+        <!-- LEFT: List of pay runs -->
         <div class="col-md-4">
-            @{
-                var CurrentEmployeeName = payRuns
-                .SelectMany(r => r.PayRunItems ?? new List<PayRunItemDto>())
-                .FirstOrDefault(x => x.EmpId == empId)?.EmpName ?? "Không xác định";
-            }
-            <h5>Nhân viên: @CurrentEmployeeName</h5>
+            <h5>@Employee?.EmpName</h5>
+
             <table class="table table-bordered table-hover align-middle shadow-sm">
                 <thead class="table-light">
                     <tr>
-                        <th>Tên bảng lương</th>
+                        <th>Tên</th>
                         <th>Tháng/Năm</th>
-                        <th>Tên nhân viên</th>
                         <th>Net Pay</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach (var run in payRuns)
                     {
-                        if (run.PayRunItems != null && run.PayRunItems.Any())
-                        {
-                            @foreach (var item in run.PayRunItems)
-                            {
-                                <tr class="@(selectedEmpId == item.EmpId && selectedPayrunId == run.PayrollRunId ? "table-primary" : "")"
-                                    style="cursor:pointer"
-                                    @onclick="() => SelectEmployee(item.EmpId, run.PayrollRunId)">
-                                    <td>@run.Name</td>
-                                    <td>@($"{run.PeriodMonth}/{run.PeriodYear}")</td>
-                                    <td>@item.EmpName</td>
-                                    <td>@item.NetPay</td>
-                                </tr>
-                            }
-                        }
-                        else
-                        {
-                            <tr>
-                                <td>@run.Name</td>
-                                <td>@($"{run.PeriodMonth}/{run.PeriodYear}")</td>
-                                <td colspan="2" class="text-muted text-center">Không có nhân viên trong bảng lương này.</td>
-                            </tr>
-                        }
+                        var item = run.PayRunItems.FirstOrDefault(); // Only 1 employee
+                        <tr class="@(selectedRunId == run.PayrollRunId ? "table-primary" : "")"
+                            style="cursor:pointer"
+                            @onclick="@(() => SelectRun(run))">
+
+                            <td>@run.Name</td>
+                            <td>@run.PeriodMonth/@run.PeriodYear</td>
+                            <td>@item?.NetPay</td>
+                        </tr>
                     }
                 </tbody>
             </table>
         </div>
 
-        <!-- Bên phải: Chi tiết -->
+        <!-- RIGHT: PayRunItemDetails -->
         <div class="col-md-8">
             @if (selectedItem != null)
             {
-                <div class="card p-3 shadow-sm">
-                    <h4>@selectedItem.EmpName</h4>
-                    <p><strong>Gross Pay:</strong> @selectedItem.GrossPay</p>
-                    <p><strong>Deductions:</strong> @selectedItem.Deductions</p>
-                    <p><strong>Net Pay:</strong> @selectedItem.NetPay</p>
-                    <p><strong>Notes:</strong> @selectedItem.Notes</p>
-
-                    <h5 class="mt-3">Thành phần lương</h5>
-                    @if (selectedItem.Components != null && selectedItem.Components.Any())
-                    {
-                        <table class="table table-sm table-bordered">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Mã</th>
-                                    <th>Loại</th>
-                                    <th>Mô tả</th>
-                                    <th>Số tiền</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var c in selectedItem.Components)
-                                {
-                                    <tr>
-                                        <td>@c.ComponentCode</td>
-                                        <td>@c.ComponentType</td>
-                                        <td>@c.Description</td>
-                                        <td>@c.Amount</td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
-                    }
-                    else
-                    {
-                        <p><em>Không có chi tiết component.</em></p>
-                    }
-                </div>
+                <PayRunItemDetails Item="selectedItem" />
             }
             else
             {
-                <p class="text-muted mt-4">Chọn lịch sử lương tương ứng bên trái để xem chi tiết.</p>
+                <p class="text-muted mt-4">Chọn một kỳ lương để xem chi tiết.</p>
             }
         </div>
     </div>
-
 }
 
 @code {
-    [Parameter] public int empId { get; set; }
-    [Parameter] public int month { get; set; }
-    [Parameter] public int year { get; set; }
-
     private List<PayRunPreviewDTO>? payRuns;
     private bool isLoading = true;
 
-    private int? selectedEmpId;
-    private int? selectedPayrunId;
+    private EmployeeDTO? Employee;
+
+    private int? selectedRunId;
     private PayRunItemDto? selectedItem;
+
+    private DateTime startDate = DateTime.Now.AddYears(-1);
+    private DateTime endDate = DateTime.Now;
+
+    [Inject] INotificationService NotificationService { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
+            var empJson = await JS.InvokeAsync<string>("localStorage.getItem", "employee");
+            if (!string.IsNullOrWhiteSpace(empJson))
+            {
+                Employee = JsonSerializer.Deserialize<EmployeeDTO>(empJson);
+            }
+        }
+        catch (Exception ex)
+        {
+            NotificationService.Warning("Không thể tìm thấy thông tin nhân viên!", "Lỗi");
+            return;
+        }
+
+        await LoadPayRunsAsync();
+    }
+
+    private async Task LoadPayRunsAsync()
+    {
+        if (Employee == null || Employee.EmpId == 0)
+        {
+            NotificationService.Warning("Không thể tìm thấy thông tin nhân viên!", "Lỗi");
+            return;
+        }
+
+        isLoading = true;
+
+        try
+        {
             var client = HttpFactory.CreateClient("ApiClient");
 
-            payRuns = await client.GetFromJsonAsync<List<PayRunPreviewDTO>>(
-                $"api/pay-run/getpayrun/{empId}/{month}/{year}"
-            );
+            var query =
+                $"api/pay-run/getpayrun/{Employee.EmpId}?start={startDate:yyyy-MM-dd}&end={endDate:yyyy-MM-dd}";
+
+            payRuns = await client.GetFromJsonAsync<List<PayRunPreviewDTO>>(query);
         }
         catch (Exception ex)
         {
             Console.WriteLine("Lỗi khi tải dữ liệu: " + ex.Message);
+            NotificationService.Warning("Lỗi khi tải dữ liệu: " + ex.Message, "Lỗi");
         }
         finally
         {
@@ -146,22 +137,21 @@ else
         }
     }
 
-
-    private void SelectEmployee(int empId, int payrunId)
+    private async Task OnDateChanged()
     {
-        // Nếu click lại cùng nhân viên trong cùng PayRun -> ẩn chi tiết
-        if (selectedEmpId == empId && selectedPayrunId == payrunId)
+        await LoadPayRunsAsync();
+    }
+
+    private void SelectRun(PayRunPreviewDTO run)
+    {
+        if (selectedRunId == run.PayrollRunId)
         {
-            selectedEmpId = null;
-            selectedPayrunId = null;
+            selectedRunId = null;
             selectedItem = null;
+            return;
         }
-        else
-        {
-            selectedEmpId = empId;
-            selectedPayrunId = payrunId;
-            var run = payRuns?.FirstOrDefault(r => r.PayrollRunId == payrunId);
-            selectedItem = run?.PayRunItems?.FirstOrDefault(i => i.EmpId == empId);
-        }
+
+        selectedRunId = run.PayrollRunId;
+        selectedItem = run.PayRunItems.FirstOrDefault(); // Only 1 employee per run
     }
 }

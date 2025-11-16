@@ -26,5 +26,8 @@ namespace AttendanceManagementPayrollSystem.Services.ServiceList
         Task<bool> Reject(int approverId, int payRunId);
 
         Task<List<PayRunPreviewDTO>> GetPayRunByEmpIdAndDateAsync(int empId, int periodMonth, int periodYear);
+
+        Task<List<PayRunPreviewDTO>?> GetPayRunsForEmployeeAsync(int empId, DateTime start, DateTime end);
+
     }
 }

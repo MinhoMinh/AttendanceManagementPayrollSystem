@@ -1,6 +1,7 @@
 ﻿@page "/payruns/{id:int}"
 @using AttendanceManagementPayrollSystem.DTO
 @using System.Text.Json
+@using AttendanceManagementPayrollSystem.UI.Components
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JS
 @inject IHttpClientFactory HttpFactory
@@ -9,25 +10,25 @@
 
 @if (isLoading)
 {
-    <p>Loading...</p>
+    <p>Đang tải...</p>
 }
 else if (loadError)
 {
-    <div class="alert alert-danger">Failed to load pay run data.</div>
+    <div class="alert alert-danger">Không thể tải dữ liệu của đợt tính lương.</div>
 }
 else if (payRun is null)
 {
-    <div class="alert alert-warning">No data found for this Pay Run.</div>
+    <div class="alert alert-warning">Không tìm thấy dữ liệu cho đợt tính lương này.</div>
 }
 else
 {
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h4>Pay Run Details</h4>
+        <h4>Chi tiết đợt tính lương</h4>
         @if (canApproveFirst || canApproveFinal)
         {
             <div class="btn-group">
-                <button class="btn btn-success" @onclick="ShowConfirmModal">Confirm</button>
-                <button class="btn btn-danger" @onclick="ShowRejectModal">Reject</button>
+                <button class="btn btn-success" @onclick="ShowConfirmModal">Xác nhận</button>
+                <button class="btn btn-danger" @onclick="ShowRejectModal">Từ chối</button>
             </div>
         }
     </div>
@@ -38,7 +39,8 @@ else
         </div>
 
         <div class="col-6">
-            <PayRunItemList Items="@payRun.PayRunItems" OnItemSelected="@SelectItem" />
+            <PayRunItemList Groups="@groups"
+                            OnItemSelected="@SelectItem" />
         </div>
 
         <div class="col-4">
@@ -53,14 +55,14 @@ else
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Confirm Pay Run</h5>
+                    <h5 class="modal-title">Xác nhận đợt tính lương</h5>
                 </div>
                 <div class="modal-body">
-                    <p>Are you sure you want to confirm this pay run?</p>
+                    <p>Bạn có chắc chắn muốn xác nhận đợt tính lương này?</p>
                 </div>
                 <div class="modal-footer">
-                    <button class="btn btn-secondary" @onclick="CancelConfirm">Cancel</button>
-                    <button class="btn btn-success" @onclick="ConfirmPayRun">Yes, Confirm</button>
+                    <button class="btn btn-secondary" @onclick="CancelConfirm">Hủy</button>
+                    <button class="btn btn-success" @onclick="ConfirmPayRun">Đồng ý</button>
                 </div>
             </div>
         </div>
@@ -73,19 +75,20 @@ else
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Reject Pay Run</h5>
+                    <h5 class="modal-title">Từ chối đợt tính lương</h5>
                 </div>
                 <div class="modal-body">
-                    <p>Are you sure you want to reject this pay run?</p>
+                    <p>Bạn có chắc chắn muốn từ chối đợt tính lương này?</p>
                 </div>
                 <div class="modal-footer">
-                    <button class="btn btn-secondary" @onclick="CancelReject">Cancel</button>
-                    <button class="btn btn-danger" @onclick="RejectPayRun">Yes, Reject</button>
+                    <button class="btn btn-secondary" @onclick="CancelReject">Hủy</button>
+                    <button class="btn btn-danger" @onclick="RejectPayRun">Đồng ý</button>
                 </div>
             </div>
         </div>
     </div>
 }
+
 
 @code {
     [Parameter] public int Id { get; set; }
@@ -101,7 +104,11 @@ else
     private bool canApproveFirst = false;
     private bool canApproveFinal = false;
 
+    Dictionary<string, List<PayRunItemDto>>? groups;
+
     private void SelectItem(PayRunItemDto item) => selectedItem = item;
+
+    [Inject] INotificationService NotificationService { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -111,13 +118,43 @@ else
             var response = await client.GetAsync($"api/pay-run/{Id}");
 
             if (response.IsSuccessStatusCode)
+            {
                 payRun = await response.Content.ReadFromJsonAsync<PayRunDto>();
+                var employeesByDep =
+                    await client.GetFromJsonAsync<Dictionary<string, List<EmployeeBasicDTO>>>(
+                        "api/department/employees-by-dep");
+
+                groups =
+                    employeesByDep.ToDictionary(
+                        kv => kv.Key,
+                        kv =>
+                            payRun.PayRunItems
+                            .Where(x => kv.Value.Any(e => e.EmpId == x.EmpId))
+                            .ToList()
+                    );
+
+                // items not in group
+                var unassigned = payRun.PayRunItems
+                    .Where(x => !employeesByDep.Values.SelectMany(e => e).Any(e => e.EmpId == x.EmpId))
+                    .ToList();
+
+                if (unassigned.Count > 0)
+                    groups["Unknown"] = unassigned;
+
+                var emptyKeys = groups
+                    .Where(kv => kv.Value == null || kv.Value.Count == 0)
+                    .Select(kv => kv.Key)
+                    .ToList();
+
+                foreach (var key in emptyKeys)
+                    groups.Remove(key);
+            }
             else
                 loadError = true;
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error loading PayRun: {ex.Message}");
+            NotificationService.Warning(ex.Message, "Lỗi");
             loadError = true;
         }
         finally
@@ -143,6 +180,7 @@ else
         }
         catch (Exception ex)
         {
+            NotificationService.Warning($"Lỗi khi kiểm tra quyền hạn: {ex.Message}", "Lỗi");
             Console.Error.WriteLine($"Permission check error: {ex.Message}");
         }
     }
@@ -182,7 +220,7 @@ else
 
         if (employee == null || payRun == null)
         {
-            await JS.InvokeVoidAsync("alert", "Missing employee or pay run data.");
+            NotificationService.Warning($"Không thể tìm thấy nhân viên hoặc bảng lương", "Lỗi");
             return;
         }
 
@@ -201,7 +239,7 @@ else
 
             if (string.IsNullOrEmpty(apiUrl))
             {
-                await JS.InvokeVoidAsync("alert", "You do not have permission for this action.");
+                NotificationService.Warning($"Bạn không có quyện hạn để thực hiện hành động này", "Lỗi");
                 return;
             }
 
@@ -211,19 +249,22 @@ else
 
             if (response.IsSuccessStatusCode)
             {
-                string msg = action == "approve" ? "Pay run approved successfully." : "Pay run rejected.";
-                await JS.InvokeVoidAsync("alert", msg);
+                string msg = action == "approve" ? "Đã duyệt bảng lương thành công." : "Đã từ chối bảng lương.";
+
+                NotificationService.Success($"msg");
+                await Task.Delay(3000);
                 NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
             }
             else
             {
                 var details = await response.Content.ReadAsStringAsync();
-                await JS.InvokeVoidAsync("alert", $"Error: {response.StatusCode} - {details}");
+                NotificationService.Warning($"msg", "Lỗi");
+
             }
         }
         catch (Exception ex)
         {
-            await JS.InvokeVoidAsync("alert", $"Exception: {ex.Message}");
+            NotificationService.Warning($"Exception: {ex.Message}", "Lỗi");
         }
     }
 }

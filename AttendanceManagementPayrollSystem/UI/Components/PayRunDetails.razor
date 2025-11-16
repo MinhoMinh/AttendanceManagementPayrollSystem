@@ -24,6 +24,11 @@ else
             <tr><th>Duyệt cuối lúc</th><td>@PayRun.ApprovedFinalAt?.ToShortDateString()</td></tr>
             <tr><th>Từ chối bởi</th><td>@PayRun.RejectedByName</td></tr>
             <tr><th>Từ chối lúc</th><td>@PayRun.RejectedAt?.ToShortDateString()</td></tr>
+            <tr><th>tax</th><td>@PayRun.TaxId</td></tr>
+            <tr><th>insurance social</th><td>@PayRun.SocialInsuranceId</td></tr>
+            <tr><th>insurance health</th><td>@PayRun.HealthInsuranceId</td></tr>
+            <tr><th>insurance unemp</th><td>@PayRun.UnemployeeInsuranceId</td></tr>
+            <tr><th>policy</th><td>@PayRun.SalaryPolicyId</td></tr>
         </table>
     </div>
 }

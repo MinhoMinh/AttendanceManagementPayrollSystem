@@ -24,5 +24,8 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
         Task SaveRegularPayRun(PayRun run);
 
         Task<List<PayRunPreviewDTO>> GetPayRunByEmpIdAndDateAsync(int empId, int periodMonth, int periodYear);
+
+        Task<List<PayRunPreviewDTO>?> GetPayRunsForEmployeeAsync(int empId, DateTime start, DateTime end);
+
     }
 }

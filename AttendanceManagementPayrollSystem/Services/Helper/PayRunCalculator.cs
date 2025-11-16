@@ -6,7 +6,7 @@ namespace AttendanceManagementPayrollSystem.Services.Helper
     public class PayRunCalculator
     {
         public static PayRunItemDto CalculatePay(PayRunContext context, Employee employee,
-            WeeklyShiftDto shift, List<OvertimeRequest>? overtimes)
+            WeeklyShiftDto shift, List<OvertimeRequest>? overtimes, List<Bonu> bonus)
         {
 
             PayRunItemDto itemDto = new PayRunItemDto
@@ -104,7 +104,7 @@ namespace AttendanceManagementPayrollSystem.Services.Helper
                     var holidayComponent = new PayRunComponentDto
                     {
                         ComponentType = "Earning",
-                        ComponentCode = "HOLIDAY",
+                        ComponentCode = "BONUS",
                         Description = $"Lương nghỉ lễ {holiday.HolidayName}: {holidayUnits} công",
                         Amount = holidayValue,
                         Taxable = true,
@@ -137,6 +137,27 @@ namespace AttendanceManagementPayrollSystem.Services.Helper
                 }
             }
 
+
+            //bonus
+            if (bonus != null && bonus.Count > 0)
+            {
+                foreach (var bonu in bonus)
+                {
+                    decimal value = bonu.BonusAmount;
+                    var componentDto = new PayRunComponentDto
+                    {
+                        ComponentType = "Earning",
+                        ComponentCode = "BONUS",
+                        Description = $"Thưởng: {bonu.BonusName}",
+                        Amount = value,
+                        Taxable = true,
+                        Insurable = true
+                    };
+
+                    itemDto.Components.Add(componentDto);
+                    itemDto.GrossPay += value;
+                }
+            }
 
             //deduction
             //-------------
@@ -207,7 +228,7 @@ namespace AttendanceManagementPayrollSystem.Services.Helper
                 itemDto.Deductions += value;
             }
 
-
+            itemDto.NetPay = itemDto.GrossPay - itemDto.Deductions;
             return itemDto;
         }
 
@@ -215,21 +236,17 @@ namespace AttendanceManagementPayrollSystem.Services.Helper
         {
             decimal totalTax = 0;
 
-            // Ensure brackets are sorted
             var ordered = brackets
                 .OrderBy(b => b.LowerBound)
                 .ToList();
 
             foreach (var b in ordered)
             {
-                // Determine the upper limit for calculation
                 decimal upper = b.UpperBound ?? decimal.MaxValue;
 
-                // If taxable income is below the bracket's lower bound → skip
                 if (taxable <= b.LowerBound)
                     continue;
 
-                // Portion of income inside this bracket
                 decimal taxableInBracket = Math.Min(taxable, upper) - b.LowerBound;
 
                 if (taxableInBracket > 0)
@@ -237,7 +254,6 @@ namespace AttendanceManagementPayrollSystem.Services.Helper
                     totalTax += taxableInBracket * b.Rate;
                 }
 
-                // If taxable < upper bound → no more brackets apply
                 if (taxable <= upper)
                     break;
             }

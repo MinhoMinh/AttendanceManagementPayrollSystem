@@ -10,6 +10,8 @@ namespace AttendanceManagementPayrollSystem.Services.ServiceList
         Task AssignAsync(AssignBonusRequest request);
         Task<DepartmentBonusViewDTO> GetByDepartmentAsync(int depId);
         Task CreateAsync(BonusCreateRequest request);
+
+        Task<List<Bonu>> GetBonusByTime(DateOnly start, DateOnly end);
     }
 
     public class BonusServiceImpl : BonusService
@@ -19,6 +21,16 @@ namespace AttendanceManagementPayrollSystem.Services.ServiceList
         public BonusServiceImpl(AttendanceManagementPayrollSystemContext context)
         {
             _context = context;
+        }
+
+        public async Task<List<Bonu>> GetBonusByTime(DateOnly start, DateOnly end)
+        {
+            var list = await _context.Bonus
+                .Where(b => b.BonusPeriod >= start
+                && b.BonusPeriod <= end)
+                .Include(b => b.EmpBonus)
+                .ToListAsync();
+            return list;
         }
 
         public async Task<IEnumerable<BonusDTO>> GetAllAsync()
