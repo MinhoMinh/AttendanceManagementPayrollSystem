@@ -33,6 +33,17 @@ namespace AttendanceManagementPayrollSystem.Controllers
             return Ok(user);
         }
 
+        [HttpGet("ewd/{id}")]
+        public async Task<IActionResult> GetEmployeeWithDep(int id)
+        {
+            var user = await _repo.GetByIdForDepAsync(id);
+            if (user == null)
+                return NotFound();
+
+            return Ok(user);
+        }
+
+
         // POST: api/users
         //[HttpPost]
         //public async Task<IActionResult> CreateEmployee(Employee emp)

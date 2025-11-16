@@ -24,7 +24,8 @@ namespace AttendanceManagementPayrollSystem.Services.ServiceList
             var entity = new LeaveRequest
             {
 
-                EmpId = 3,
+                EmpId = dto.EmpId,
+                ReqDate = DateOnly.FromDateTime(DateTime.Now),
                 StartDate = dto.StartDate,
                 EndDate = dto.EndDate,
                 Reason = dto.Reason,
@@ -36,6 +37,27 @@ namespace AttendanceManagementPayrollSystem.Services.ServiceList
             await _repository.AddAsync(entity);
             return dto;
         }
+
+        public async Task<IEnumerable<LeaveRequestDTO>> GetAllLeaveRequestByDate(DateOnly? startDate, DateOnly? endDate)
+        {
+            var list = await _repository.GetAllLeaveRequestByDate(startDate, endDate);
+            return list.Select(lr => new LeaveRequestDTO
+            {
+                ReqId = lr.ReqId,
+                EmpId = lr.EmpId,
+                TypeId = lr.TypeId,
+                ReqDate = lr.ReqDate,
+                StartDate = lr.StartDate,
+                EndDate = lr.EndDate,
+                NumbersOfDays = lr.NumbersOfDays,
+                Reason = lr.Reason,
+                Status = lr.Status,
+                ApprovedBy = lr.ApprovedBy,
+                ApprovedDate = lr.ApprovedDate,
+                ApprovedByName = lr.ApprovedByNavigation?.EmpName
+            }).ToList();
+        }
+
         public async Task<IEnumerable<LeaveRequestDTO>> GetByEmployeeIdAsync(int empId)
         {
             var list = await _repository.GetByEmployeeIdAsync(empId);
@@ -52,8 +74,13 @@ namespace AttendanceManagementPayrollSystem.Services.ServiceList
                 Status = lr.Status,
                 ApprovedBy = lr.ApprovedBy,
                 ApprovedDate = lr.ApprovedDate,
-                ApprovedByName = lr.ApprovedByNavigation.EmpName
+                ApprovedByName = lr.ApprovedByNavigation?.EmpName
             }).ToList();
+        }
+
+        public Task<List<LeaveRequestGroupDTO>> GetLeaveRequestGroupByDepIdAndDateRange(int depId, DateTime from, DateTime to)
+        {
+            return this._repository.GetGroupByDepIdAndDateRange(depId, from, to);
         }
 
         public async Task<IEnumerable<LeaveRequestDTO>> GetLeaveHistoryByEmployee(int empId, DateOnly? startDate, DateOnly? endDate)
@@ -69,7 +96,11 @@ namespace AttendanceManagementPayrollSystem.Services.ServiceList
                 NumbersOfDays = lr.NumbersOfDays,
                 Reason = lr.Reason,
                 TypeId = lr.TypeId,
-                Status = lr.Status
+                Status = lr.Status,
+                ApprovedBy=lr.ApprovedBy,
+                ApprovedByName=lr.ApprovedByNavigation?.EmpName,
+                ApprovedDate=lr.ApprovedDate,
+                ReqDate=lr.ReqDate
             }).ToList();
         }
 
@@ -87,6 +118,20 @@ namespace AttendanceManagementPayrollSystem.Services.ServiceList
                     //.ToList();
 
                 return data;
+        }
+
+        public async Task<LeaveRequest> UpdateApprovalAsync(LeaveRequestApprovalDTO dto)
+        {
+            var entity = await this._repository.GetByIdAsync(dto.ReqId);
+
+            if (entity == null)
+                throw new Exception("Leave request not found");
+
+            entity.Status = dto.Status;
+            entity.ApprovedBy = dto.ApprovedBy;
+            entity.ApprovedDate = dto.ApprovedDate;
+
+            return await this._repository.UpdateApprovalAsync(entity);
         }
     }
 }

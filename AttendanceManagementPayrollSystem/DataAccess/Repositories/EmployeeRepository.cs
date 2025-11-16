@@ -25,5 +25,7 @@ namespace AttendanceManagementPayrollSystem.DataAccess.Repositories
 
         Task<IEnumerable<EmployeeGroupByDepartmentDTO>> GetEmployeesGroupedByDepartmentAsync();
         Task AddRoleForNewEmployee(EmployeeRole er);
+
+        Task<EmployeeWithDepIdDTO?> GetByIdForDepAsync(int id);
     }
 }

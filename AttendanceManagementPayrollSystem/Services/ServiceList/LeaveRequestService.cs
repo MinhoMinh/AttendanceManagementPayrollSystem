@@ -13,6 +13,12 @@ namespace AttendanceManagementPayrollSystem.Services.ServiceList
         Task<IEnumerable<LeaveRequestDTO>> GetLeaveHistoryByEmployee(int empId, DateOnly? startDate, DateOnly? endDate);
 
         IEnumerable<LeaveType> GetRates();
+
+        Task<IEnumerable<LeaveRequestDTO>> GetAllLeaveRequestByDate(DateOnly? startDate, DateOnly? endDate);
+
+        Task<LeaveRequest> UpdateApprovalAsync(LeaveRequestApprovalDTO dto);
+
+        Task<List<LeaveRequestGroupDTO>> GetLeaveRequestGroupByDepIdAndDateRange(int depId, DateTime from, DateTime to);
     }
 }
 

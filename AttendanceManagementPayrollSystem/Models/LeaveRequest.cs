@@ -21,7 +21,7 @@ public partial class LeaveRequest
 
     public decimal NumbersOfDays { get; set; }
 
-    public string Reason { get; set; }
+    public string? Reason { get; set; }
 
     public string Status { get; set; }
 
