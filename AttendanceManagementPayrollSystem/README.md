@@ -645,6 +645,34 @@ namespace AMPS.Tests.Repositories
 }
 
 ```
+demo đi từ employee -> department head -> executive 
+website: https://attendancemanagementpayrollsystem20251115091257.azurewebsites.net/
+employee, account: namlh / password: 123
+1. login (h.triết, nói về hash) 
+2. dashboard (minh, nói về role/permission)
+3. lịch làm việc (minh)
+4. bang lương cá nhân (minh)
+5. nghỉ phép (h.triết)
+6. giờ vượt (luân)
+7. bảng tổng hợp (minh)
+8. Bảng lương công ty (minh) (Finance Staff)
+dep head, account: xuanhuongketoan / password: 123
+9. Chấm công phòng ban (h.triet)
+9. Quản lý thưởng(luân)
+10. Nghỉ phép phòng ban (duc)
+10.a. Bảng lương công ty (minh) (Finance Head)
+executive, account: taiem / password: 123
+11. thong tin nhan vien (h.duc)
+12. Bảng lương công ty (minh) (executive)
+13. Chính sách lương (duc)
+14. Chính sách bảo hiểm/thuế (duc)
+đây là các chức năng chính. nếu còn thời gian sẽ đi tiếp các module sau
+specific role
+15. Cập nhật chấm công (minh) (HR Head) account: mai123 / password: 123
+16. Quản lý tài khoản nhân viên (duc) (IT staff) account: hungnv / password: 123
+17. Khai báo người phụ thuộc (duc/triet) (HR staff) account: maitt / password: 123
+
+
 Màn hình kết quả test: 
 <img width="1571" height="552" alt="image" src="https://github.com/user-attachments/assets/fbb3d92b-a49c-4db4-ad1e-418099e78ccc" />
 
