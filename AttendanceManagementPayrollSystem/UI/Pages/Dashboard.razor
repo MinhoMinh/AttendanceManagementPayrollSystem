@@ -146,7 +146,9 @@
             new() { Text = "Quản lý ca làm việc", ImageSrc = "https://cdn-icons-png.flaticon.com/512/1827/1827933.png", OnClick = EventCallback.Factory.Create(this, NavigateShiftManagement), Visible = HasPermission("shift_management") },
             new() { Text = "Quản lý tài khoản nhân viên", ImageSrc = "https://cdn-icons-png.flaticon.com/512/306/306473.png", OnClick = EventCallback.Factory.Create(this, NavigateAccountManagement), Visible = HasPermission("employee_account_management") },
             new() { Text = "Khai báo người phụ thuộc", ImageSrc = "https://cdn-icons-png.flaticon.com/512/456/456212.png", OnClick = EventCallback.Factory.Create(this, NavigateDependentManagement), Visible = HasPermission("declare_dependent") },
-            new() { Text = "Quản lý thưởng", ImageSrc = "https://cdn-icons-png.flaticon.com/512/1828/1828919.png", OnClick = EventCallback.Factory.Create(this, NavigateBonus), Visible = HasPermission("manage_bonus") },
+            new() { Text = "Quản lý loại thưởng", ImageSrc = "https://cdn-icons-png.flaticon.com/512/1828/1828919.png", OnClick = EventCallback.Factory.Create(this, NavigateBonusType), Visible = HasPermission("manage_bonus") },
+            
+            new() { Text = "Gán thưởng", ImageSrc = "https://cdn-icons-png.flaticon.com/512/1828/1828919.png", OnClick = EventCallback.Factory.Create(this, NavigateBonus), Visible = HasPermission("manage_bonus") },
             new() { Text = "Quản lý loại phụ cấp", ImageSrc = "https://cdn-icons-png.flaticon.com/512/1828/1828911.png", OnClick = EventCallback.Factory.Create(this, NavigateAllowanceType), Visible = HasPermission("edit_allowance") },
             new() { Text = "Gán phụ cấp", ImageSrc = "https://cdn-icons-png.flaticon.com/512/1828/1828843.png", OnClick = EventCallback.Factory.Create(this, NavigateEmployeeAllowance), Visible = HasPermission("edit_allowance") },
         };
@@ -167,6 +169,9 @@
     private void NavigateSelfShift() => Navigation.NavigateTo("/shift/self");
     private void NavigateSelfOvertime() => Navigation.NavigateTo("/overtime/self");
     private void NavigateSelfLeave() => Navigation.NavigateTo("/leave/self");
+
+    
+    private void NavigateBonusType() => Navigation.NavigateTo("/bonus-create");
     private void NavigateBonus() => Navigation.NavigateTo("/bonus-manager");
     private void NavigateAllowanceType() => Navigation.NavigateTo("/allowance-types");
     private void NavigateEmployeeAllowance() => Navigation.NavigateTo("/employee-allowances");
