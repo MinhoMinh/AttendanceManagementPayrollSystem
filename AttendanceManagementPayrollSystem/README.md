@@ -644,6 +644,11 @@ namespace AMPS.Tests.Repositories
     }
 }
 
+
+
+
+Màn hình kết quả test: 
+<img width="1571" height="552" alt="image" src="https://github.com/user-attachments/assets/fbb3d92b-a49c-4db4-ad1e-418099e78ccc" />
 ```
 demo đi từ employee -> department head -> executive 
 website: https://attendancemanagementpayrollsystem20251115091257.azurewebsites.net/
@@ -671,11 +676,6 @@ specific role
 15. Cập nhật chấm công (minh) (HR Head) account: mai123 / password: 123
 16. Quản lý tài khoản nhân viên (duc) (IT staff) account: hungnv / password: 123
 17. Khai báo người phụ thuộc (duc/triet) (HR staff) account: maitt / password: 123
-
-
-Màn hình kết quả test: 
-<img width="1571" height="552" alt="image" src="https://github.com/user-attachments/assets/fbb3d92b-a49c-4db4-ad1e-418099e78ccc" />
-
 
 
 
